@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annual Progress Report 2025</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .a4-page {
+            width: 210mm; /* A4 width */
+            min-height: 297mm; /* A4 height */
+            margin: 10mm auto; /* Center with some margin */
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 10mm; /* Internal padding for the content */
+            box-sizing: border-box; /* Include padding in width/height */
+            page-break-after: always; /* Ensure each page breaks after itself for printing */
+        }
+
+        /* Adjustments for print */
+        @media print {
+            body {
+                background-color: white;
+            }
+            .a4-page {
+                margin: 0;
+                border: initial;
+                border-radius: initial;
+                width: initial;
+                min-height: initial;
+                box-shadow: none;
+                page-break-after: always;
+            }
+            .a4-page:last-child {
+                page-break-after: avoid; /* No page break after the last student */
+            }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            height: 70px; /* Adjust as needed */
+            margin-right: 20px;
+        }
+        .header-text h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0;
+            line-height: 1.2;
+            font-weight: bold;
+        }
+        .header-text p {
+            font-size: 1.1rem;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        .report-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .student-info div {
+            flex: 1;
+        }
+        .student-info div:last-child {
+            text-align: right;
+        }
+
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            /*border: 1px solid #000;*/
+            padding: 6px 8px;
+            vertical-align: middle;
+            font-size: 0.85rem;
+        }
+        table thead th {
+            text-align: center;
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        table tbody td {
+            text-align: left;
+        }
+        table .text-center {
+            text-align: center;
+        }
+
+        .section-title {
+            font-weight: bold;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        .evaluation-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .evaluation-section > div {
+            flex: 1;
+            padding: 0 10px;
+        }
+        .evaluation-section .left-panel,
+        .evaluation-section .right-panel {
+            /*border: 1px solid #000;*/
+            padding-right: 10px;
+        }
+
+        .minor-subjects-table th, .minor-subjects-table td {
+            /*border: 1px solid #000;*/
+            padding: 5px 8px;
+            font-size: 0.85rem;
+        }
+        .minor-subjects-table th {
+            text-align: left;
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        .minor-subjects-table .grade-col {
+            width: 30%;
+            text-align: center;
+        }
+
+        .evaluation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .evaluation-table td {
+            border: 1px solid #dbd7d7;
+            padding: 5px 8px;
+            font-size: 0.85rem;
+        }
+        .evaluation-table td:first-child {
+            width: 40%;
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+
+        .class-teacher-remark {
+            border: 1px solid #dbd7d7;
+            padding: 10px;
+            margin-top: 20px;
+            min-height: 80px; /* Adjust as needed for space */
+            font-size: 0.9rem;
+        }
+        .class-teacher-remark p {
+            margin-bottom: 0;
+            font-weight: bold;
+            background-color: #f0f0f0;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .principal-signature {
+            text-align: right;
+            margin-top: 40px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        .invisible-placeholder {
+            visibility: <?php echo ($header === "yes") ? "visible" : "hidden"; ?>;
+        }
+    </style>
+</head>
+<body>
+    <?php 
+    
+    // Grade from average
+    function getGrade($total) {
+        if ($total >= 91) {
+            return '1';
+        } elseif ($total >= 81) {
+            return '2';
+        } elseif ($total >= 71) {
+            return '3';
+        } elseif ($total >= 61) {
+            return '4';
+        } elseif ($total >= 51) {
+            return '5';
+        } elseif ($total >= 41) {
+            return '6';
+        } elseif ($total >= 35) {
+            return '7';
+        } elseif ($total >= 25) {
+            return '8';
+        } elseif ($total >= 1) {
+            return '9';
+        } else {
+            return '-';
+        }
+    }
+
+    // Helper function to show "AB" if the mark is 0
+    // function displayMark($mark) {
+    //     return $mark == 0 ? 'AB' : $mark;
+    // }
+                    
+    foreach ($students as $student): ?>
+    <div class="a4-page">
+        <!-- HEADER -->
+        <div class="header">
+            <img src="https://ignitedsoft.in/stfrancis/assets/sfs_new_logo.png" alt="School Logo" class="invisible-placeholder">
+            <div class="header-text invisible-placeholder">
+                <h1>ST. FRANCIS' SCHOOL</h1>
+                <p>JORETHANG, SOUTH SIKKIM</p>
+            </div>
+        </div>
+    
+        <!-- REPORT TITLE -->
+        <div class="report-title">
+            ANNUAL PROGRESS REPORT 2025<br>
+            CLASS <?php echo $class_detail['name'] . ' ' . $section_detail['name'] ?>
+        </div>
+    
+        <!-- STUDENT INFO -->
+        <div style="padding: 10px;">
+            <table class="table" style="padding: 10px;">
+                <tr>
+                    <td style="width: 33.33%;">
+                        <strong>Student No</strong> <?= $student['student_no'] ?>
+                    </td>
+                    <td style="width: 33.33%;">
+                        <strong>Name</strong> <?= $student['name'] ?>
+                    </td>
+                    <td style="width: 33.33%;">
+                        <strong>Class</strong> <?php echo $class_detail['name'] . ' ' . $section_detail['name'] ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    
+        <!-- MARKS TABLE -->
+        <div style="padding: 10px;">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Major Subjects</th>
+                        <th class="text-center">UT2 (20)</th>
+                        <th class="text-center">FT (80)</th>
+                        <th class="text-center">TOTAL (100)</th>
+                        <th class="text-center">FINAL (100)</th>
+                        <th class="text-center">HY (100)</th>
+                        <th class="text-center">ANNUAL (100)</th>
+                        <th class="text-center">GRADE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <?php
+                    // Get English I & II details
+                    $english_i_total = $student['english_i_total'] ?? 0;
+                    $english_ii_total = $student['english_ii_total'] ?? 0;
+                    $english_avg = $student['english_avg'] ?? 0;
+                    $english_grade = getGrade($english_avg);
+                    ?>
+                    
+                    <!-- English I -->
+                    <tr>
+                        <td><?= $student['subjects']['s1'] ?? 'English I' ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']['s1'] ?? 0 ?></td>
+                        <td class="text-center"><?= $student['final_marks']['s1'] ?? 0 ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']['s1'] + $student['final_marks']['s1'] ?></td>
+                        <td class="text-center" rowspan="2"><?= ceil(($student['final_totals']['s1'] + $student['final_totals']['s2']) / 2) ?></td>
+                        <td class="text-center" rowspan="2"><?= ceil(($student['mid_totals']['s1'] + $student['mid_totals']['s2']) / 2) ?></td>
+                        <td class="text-center" rowspan="2"><?= $english_avg ?></td>
+                        <td class="text-center" rowspan="2"><?= $english_grade ?></td>
+                    </tr>
+                    
+                    <!-- English II -->
+                    <tr>
+                        <td><?= $student['subjects']['s2'] ?? 'English II' ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']['s2'] ?? 0 ?></td>
+                        <td class="text-center"><?= $student['final_marks']['s2'] ?? 0 ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']['s2'] + $student['final_marks']['s2'] ?></td>
+                    </tr>
+                    
+                    <!-- Major Subjects -->
+                    <?php foreach ([3, 4] as $id): ?>
+                        <?php
+                            $subject_name = $student['subjects']["s$id"] ?? 'Subject';
+                            $ut2 = $student['ut2_marks']["s$id"];
+                            $finalt = $student['final_marks']["s$id"];
+                            $total = $student['final_totals']["s$id"];
+                            $grade = getGrade($total);
+                        ?>
+                        <tr>
+                            <td><?= $subject_name ?></td>
+                            <td class="text-center"><?= $student['ut2_marks']["s$id"] ?></td>
+                            <td class="text-center"><?= $student['final_marks']["s$id"] ?></td>
+                            <td class="text-center"><?= $student['final_totals']["s$id"] ?></td>
+                            <td class="text-center"><?= $student['final_totals']["s$id"] ?></td>
+                            <td class="text-center"><?= $student['mid_totals']["s$id"] ?></td>
+                            <td class="text-center"><?= $student['annual_marks']["s$id"] ?></td>
+                            <td class="text-center"><?= getGrade($student['annual_marks']["s$id"]) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    
+                    <?php
+                    // Get Physics, Chemistry and Biology details
+                    $science_grade = getGrade($student['science_avg']);
+                    ?>
+                    
+                    <!-- Physics -->
+                    <tr>
+                        <td><?= $student['subjects']['s5'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']["s5"] ?></td>
+                        <td class="text-center"><?= $student['final_marks']["s5"] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']["s5"] + $student['final_marks']["s5"] ?></td>
+                        <td class="text-center" rowspan="3">
+                            <?= ceil(($student['final_totals']["s5"] + $student['final_totals']["s6"] + $student['final_totals']["s7"]) / 3) ?>
+                        </td>
+                        
+                        <td class="text-center" rowspan="3">
+                            <?= ceil(($student['mid_totals']["s5"] + $student['mid_totals']["s6"] + $student['mid_totals']["s7"]) / 3) ?>
+                        </td>
+                        
+                        <td class="text-center" rowspan="3">
+                            <?= ceil(($student['annual_marks']["s5"] + $student['annual_marks']["s6"] + $student['annual_marks']["s7"]) / 3) ?>
+                        </td>
+                        
+                        <td class="text-center" rowspan="3"><?= $science_grade ?></td>
+                    </tr>
+                    
+                    <!-- Chemistry -->
+                    <tr>
+                        <td><?= $student['subjects']['s6'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']['s6'] ?></td>
+                        <td class="text-center"><?= $student['final_marks']['s6'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']["s6"] + $student['final_marks']["s6"] ?></td>
+                    </tr>
+                    
+                    <!-- Biology -->
+                    <tr>
+                        <td><?= $student['subjects']['s7'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']['s7'] ?></td>
+                        <td class="text-center"><?= $student['final_marks']['s7'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']["s7"] + $student['final_marks']["s7"] ?></td>
+                    </tr>
+
+                    <?php
+                    // Get History & Geography details
+                    $social_grade = getGrade($student['social_avg']);
+                    ?>
+                    
+                    <!-- History -->
+                    <tr>
+                        <td><?= $student['subjects']['s8'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']["s8"] ?></td>
+                        <td class="text-center"><?= $student['final_marks']["s8"] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']["s8"] + $student['final_marks']["s8"] ?></td>
+                        
+                        <td class="text-center" rowspan="2">
+                            <?= ceil(($student['final_totals']["s8"] + $student['final_totals']["s9"]) / 2) ?>
+                        </td>
+                        
+                        <td class="text-center" rowspan="2">
+                            <?= ceil(($student['mid_totals']["s8"] + $student['mid_totals']["s9"]) / 2) ?>
+                        </td>
+                        
+                        <td class="text-center" rowspan="2">
+                            <?= ceil(($student['annual_marks']["s8"] + $student['annual_marks']["s9"]) / 2) ?>
+                        </td>
+                        
+                        <td class="text-center" rowspan="2"><?= $social_grade ?></td>
+                    </tr>
+                    
+                    <!-- Geography -->
+                    <tr>
+                        <td><?= $student['subjects']['s9'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']['s9'] ?></td>
+                        <td class="text-center"><?= $student['final_marks']['s9'] ?></td>
+                        <td class="text-center"><?= $student['ut2_marks']["s9"] + $student['final_marks']["s9"] ?></td>
+                    </tr>
+                    
+                    
+                    <!-- Group 3 Subjects Section Title -->
+                    <?php if (!empty($student['group_3_subject_type_ids'])): ?>
+                        <tr>
+                            <th style="text-align: left;">Group 3 Subject</th>
+                            <th class="text-center">UT2 (100)</th>
+                            <th class="text-center">FT (100)</th>
+                            <th class="text-center">TOTAL (200)</th>
+                            <th class="text-center">FINAL (100)</th>
+                            <th class="text-center">HY (100)</th>
+                            <th class="text-center">ANNUAL (100)</th>
+                            <th class="text-center">GRADE</th>
+                        </tr>
+
+                        <!-- Loop over Group 3 Subjects -->
+                        <?php foreach ($student['group_3_subject_type_ids'] as $index => $id): ?>
+                            <?php
+                                $key = "g3s" . ($index + 1);
+                                $subject_name = $student['group_3_subjects'][$key] ?? 'Group 3 Subjects';
+                            ?>
+                            <tr>
+                                <td><?= $subject_name ?></td>
+                                <td class="text-center"><?= $student['group_3_ut2_marks'][$key] ?></td>
+                                <td class="text-center"><?= $student['group_3_final_marks'][$key] ?></td>
+                                <td class="text-center"><?= $student['group_3_ut2_marks'][$key] + $student['group_3_final_marks'][$key] ?></td>
+                                <td class="text-center"><?= $student['group_3_final_totals'][$key] ?></td>
+                                <td class="text-center"><?= $student['group_3_mid_totals'][$key] ?></td>
+                                <td class="text-center"><?= $student['group_3_annual_marks'][$key] ?></td>
+                                <td class="text-center"><?= getGrade($student['group_3_annual_marks'][$key]) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    
+                    <!-- Grand Total -->
+                    <tr>
+                        <td colspan="6" class="text-end fw-bold">Total</td>
+                        <td class="text-center fw-bold">
+                            <?= $student['grand_total']  ?>
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <!-- Special Subjects Section Title -->
+                    <?php if (!empty($student['special_subject_type_ids'])): ?>
+                        <tr>
+                            <th style="text-align: left;">Special Subjects</th>
+                            <th class="text-center">UT2 (20)</th>
+                            <th class="text-center">FT (80)</th>
+                            <th class="text-center">TOTAL (100)</th>
+                            <th class="text-center">FINAL (100)</th>
+                            <th class="text-center">HY (100)</th>
+                            <th class="text-center">ANNUAL (100)</th>
+                            <th class="text-center">GRADE</th>
+                        </tr>
+                        
+                        <!-- Loop over Special Subjects -->
+                        <?php foreach ($student['special_subject_type_ids'] as $index => $id): ?>
+                            <?php
+                                $key = "sps" . ($index + 1);
+                                $subject_name = $student['special_subjects'][$key] ?? 'Special Subjects';
+                            ?>
+                            <tr>
+                                <td><?= $subject_name ?></td>
+                                <td class="text-center"><?= $student['special_ut2_marks'][$key] ?></td>
+                                <td class="text-center"><?= $student['special_final_marks'][$key] ?></td>
+                                <td class="text-center"><?= $student['special_ut2_marks'][$key] + $student['special_final_marks'][$key] ?></td>
+                                <td class="text-center"><?= $student['special_final_totals'][$key] ?></td>
+                                <td class="text-center"><?= $student['special_mid_totals'][$key] ?></td>
+                                <td class="text-center"><?= $student['special_annual_marks'][$key] ?></td>
+                                <td class="text-center"><?= getGrade($student['special_annual_marks'][$key]) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="evaluation-section">
+            <div class="left-panel">
+                <p class="section-title mb-2" style="padding: 5px;">PERSONAL EVALUATION</p>
+                <table class="table table-bordered minor-subjects-table w-100">
+                    <thead>
+                        <tr>
+                            <th>Minor Subjects</th>
+                            <th class="grade-col">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($student['minor_subjects'])): ?>
+                            <?php foreach ($student['minor_subjects'] as $label => $grade): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($label) ?></td>
+                                    <td class="text-center"><?= htmlspecialchars($grade) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="2" class="text-center">No minor subjects available</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="right-panel">
+                <p class="section-title mb-2" style="padding: 5px;">EVALUATION</p>
+                <table class="table table-bordered evaluation-table w-100">
+                    <tbody>
+                        <tr>
+                            <td>RESULT</td>
+                            <td>
+                                <?php 
+                                    if($student['ut2_absent'] > 0 || $student['final_absent'] > 0) 
+                                    {
+                                        if($student['ut2_absent'] > 0) {
+                                            echo $student['result'];
+                                        }
+                                        
+                                        if($student['final_absent'] > 0) {
+                                            echo "INC";
+                                        }
+                                    } 
+                                    else {
+                                        echo $student['result'];
+                                    }
+                                ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>PERCENTAGE</td>
+                            <td><?= isset($student['percentage']) ? $student['percentage'] . '%' : '' ?></td>
+                        </tr>
+                        <tr>
+                            <td>RANK</td>
+                            <td>
+                                <?php 
+                                    if($student['ut2_absent'] > 0 || $student['final_absent'] > 0) 
+                                    {
+                                        if($student['ut2_absent'] > 0) {
+                                            echo "";
+                                        }
+                                        
+                                        if($student['final_absent'] > 0) {
+                                            echo "N/A";
+                                        }
+                                    } 
+                                    else {
+                                        echo $student['rank'];
+                                    }
+                                ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ATTENDENCE</td>
+                            <td><?= !empty($student['attendence']) ? $student['attendence'] . '%' : '' ?></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="class-teacher-remark mt-4">
+                    <p>CLASS TEACHER'S REMARK</p>
+                    <div style="min-height: 40px;">
+                        <h6 class="text-center"><?php echo $student['remark'] ?></h6>
+                    </div> 
+                </div>
+            </div>
+        </div>
+
+        <div class="principal-signature">
+            <img src="https://ignitedsoft.in/stfrancis/assets/sfs_principal_signature.jpg" alt="School Logo" class="invisible-placeholder">
+            <br>
+            Principal
+        </div>
+    </div>
+    <?php endforeach; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
