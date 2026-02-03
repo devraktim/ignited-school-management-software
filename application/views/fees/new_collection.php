@@ -587,13 +587,13 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
                                         <div class="d-flex justify-content-between px-1">
                                             <small class="text-dark" style="font-weight: bold;">
-                                                Tot.P: <?php echo number_format($fees_gross_totals, 2); ?> INR
+                                                Tot.P: <?php echo number_format($fees_gross_totals + $total_previous_due, 2); ?> INR
                                             </small>
                                             <small class="text-success" style="font-weight: bold;">
-                                                Paid: <?php echo number_format($fees_gross_paid, 2); ?> INR
+                                                Paid: <?php echo number_format($fees_gross_paid + $previous_toal_paid, 2); ?> INR
                                             </small>
                                             <small class="text-danger" style="font-weight: bold;">
-                                                Due: <?php echo number_format($fees_gross_due, 2); ?> INR
+                                                Due: <?php echo number_format($fees_gross_due + ($total_previous_due - $previous_toal_paid), 2); ?> INR
                                             </small>
                                         </div>
                                         
@@ -675,8 +675,8 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                     <td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;">Net Payable Amount</td>
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
                                         <?php
-                                            $net_payable_total = $fees_gross_totals - $total_concession;
-                                            $net_payable_paid = $fees_gross_paid - $total_concession_paid;
+                                            $net_payable_total = ($fees_gross_totals + $total_previous_due) - $total_concession;
+                                            $net_payable_paid = ($fees_gross_paid + $previous_toal_paid) - $total_concession_paid;
                                             $net_payable_due = $net_payable_total - $net_payable_paid;
                                         ?>
                                         
@@ -949,12 +949,12 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
         recalcAll(); 
                 
         let previous_year_total_payble = parseFloat($('#previous-due-total-actual').val())
-        let previous_year_total_paid = 0
-        let previous_year_total_due = 0
+        let previous_year_total_paid = parseFloat($('#previous-due-total-paid').val())
+        let previous_year_total_due = parseFloat($('#previous-due-total-due').val())
 
-        let gross_total_payble = 0
-        let gross_total_paid = 0
-        let gross_year_total_due = 0
+        let gross_total_payble = parseFloat($('#previous-due-total-actual').val())
+        let gross_total_paid = parseFloat($('#previous-due-total-actual').val())
+        let gross_year_total_due = parseFloat($('#previous-due-total-actual').val())
 
     });
 </script>
