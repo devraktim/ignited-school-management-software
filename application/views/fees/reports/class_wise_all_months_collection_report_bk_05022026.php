@@ -59,62 +59,76 @@ foreach ($sections as $s) {
 
 // Dynamic Title Logic for Class & Section
 if ($class_id && $section_id) {
+    // Class + Section
     $classTitle = $classList[$class_id] . ' ' . $sectionList[$section_id];
-} elseif ($class_id) {
+}
+elseif ($class_id) {
+    // Only Class selected
     $classTitle = $classList[$class_id];
-} else {
+}
+else {
+    // No Class selected
     $classTitle = "All Class";
 }
 
-// ==== Get session months from current session ====
-$currentSession = $this->session->academy_session['current_session'];
-$sessionStartMonth = (int)date('n', strtotime($currentSession['start']));
-$sessionEndMonth   = (int)date('n', strtotime($currentSession['end']));
-
-// Determine session-based month order
-$months_to_show = [];
-if ($sessionStartMonth <= $sessionEndMonth) {
-    // Same year: simple range
-    $months_to_show = range($sessionStartMonth, $sessionEndMonth);
-} else {
-    // Different year: wrap around
-    $months_to_show = array_merge(range($sessionStartMonth, 12), range(1, $sessionEndMonth));
-}
-
-// Override if user has selected specific months
+// Determine the months to show
 if (!empty($installments)) {
     $months_to_show = array_map(function($v){ return (int)preg_replace('/\D/', '', $v); }, $installments);
     sort($months_to_show);
+    $title_suffix = "Selected Months (" . implode(', ', array_map(function($m) {
+        return date('M', mktime(0,0,0,$m,10));
+    }, $months_to_show)) . ")";
 }
-
-// Title suffix based on months
-$title_suffix = (!empty($installments) ? "Selected Months (" . implode(', ', array_map(function($m) {
-    return date('M', mktime(0,0,0,$m,10));
-}, $months_to_show)) . ")" : " - (" . date('M', mktime(0,0,0,$months_to_show[0],10)) . " - " . date('M', mktime(0,0,0,end($months_to_show),10)) . ")");
-
+elseif (!empty($month_from) && !empty($month_to) && ($month_from != 1 || $month_to != 12)) {
+    $months_to_show = range($month_from, $month_to);
+    $title_suffix = " - (" . date('M', mktime(0,0,0,$month_from,10)) . " - " . date('M', mktime(0,0,0,$month_to,10)) . ")";
+} else {
+    $months_to_show = range(1, 12);
+    $title_suffix = " - All Months";
+}
 ?>
 
 <?php 
 // Custom function for Indian Number Format with 2 decimal places
 function indian_number_format_with_crore($num) {
-    $num = (string)$num;
-    $arr = explode('.', $num);
-    $num = $arr[0];
-    $decimal = isset($arr[1]) ? '.' . substr($arr[1], 0, 2) : '.00';
+    $num = (string)$num; // Convert to string
+    $arr = explode('.', $num); // Separate the number and the decimal part
+    $num = $arr[0]; // Get the integer part
+    $decimal = isset($arr[1]) ? '.' . substr($arr[1], 0, 2) : ''; // Get the decimal part and limit it to 2 decimal places
+
+    // Ensure the number has 2 decimal points (even if the original number doesn't have decimals)
+    if ($decimal === '') {
+        $decimal = '.00';
+    } else {
+        $decimal = rtrim($decimal, '0'); // Remove trailing zeros if there are any
+        if (strlen($decimal) < 3) {
+            $decimal = str_pad($decimal, 3, '0'); // Ensure 2 decimal places
+        }
+    }
+
     $len = strlen($num);
     $result = '';
+    $i = 0;
+
+    // Separate the last three digits
     if ($len > 3) {
         $lastthree = substr($num, $len - 3, 3);
         $len -= 3;
         $result = ',' . $lastthree . $result;
     }
+
+    // Explode the remaining digits in 2's format
     while ($len > 0) {
         $temp_len = ($len > 2) ? 2 : $len;
         $restunits = substr($num, $len - $temp_len, $temp_len);
         $len -= $temp_len;
         $result = $restunits . $result;
-        if ($len > 0) $result = ',' . $result;
+        if ($len > 0) {
+            $result = ',' . $result;
+        }
     }
+
+    // Return the formatted number with the decimal part
     return $result . $decimal;
 }
 ?>
@@ -122,11 +136,13 @@ function indian_number_format_with_crore($num) {
 <?php if (!empty($report)) {
     $grandTotals = ['gross'=>0,'prev_due'=>0,'conc'=>0,'net'=>0,'paid'=>0,'outstanding'=>0];
     $grandMonthPayable = array_fill(1, 12, 0);
+
     $pageTotals = ['gross'=>0,'prev_due'=>0,'conc'=>0,'net'=>0,'paid'=>0,'outstanding'=>0];
     $pageMonthPayable = array_fill(1, 12, 0);
     $rows = 0;
 
     foreach ($report as $i => $r):
+        // === PAGE START ===
         if ($rows % $rowLimit == 0) {
             if ($rows > 0) { ?>
                 <tr style="font-weight:bold; background:#eaeaea;">
@@ -157,10 +173,14 @@ function indian_number_format_with_crore($num) {
                     <td style="text-align:center;">
                         <div style="font-family:Arial; font-size:22pt;"><?= $school_name ?></div>
                         <div style="font-size:11pt; font-style:italic;"><?= $branch ?></div>
-
                         <?php
+                        $currentSession = $this->session->academy_session['current_session'];
+
+                        // Extract years from start and end dates
                         $startYear = date('Y', strtotime($currentSession['start']));
-                        $endYear   = date('Y', strtotime($currentSession['end']));
+                        $endYear = date('Y', strtotime($currentSession['end']));
+
+                        // Determine the session year display
                         $sessionYearDisplay = ($startYear == $endYear) ? $startYear : $startYear . ' - ' . $endYear;
                         ?>
 
@@ -197,7 +217,7 @@ function indian_number_format_with_crore($num) {
                     </tr>
                 </thead>
                 <tbody>
-        <?php } ?>
+        <?php } // end table header ?>
 
         <tr>
             <td><?= $i+1 ?></td>
@@ -207,7 +227,8 @@ function indian_number_format_with_crore($num) {
             <td><?= $r['student_type']; ?></td>
 
             <?php foreach($months_to_show as $m): 
-                $val = isset($r['monthly_payable'][$m]) ? (float)$r['monthly_payable'][$m] : 0;
+                $p = $r['monthly_payable'][$m];
+                $val = is_numeric($p) ? (float)$p : 0;
             ?>
                 <td><?= indian_number_format_with_crore($val); ?></td>
             <?php 

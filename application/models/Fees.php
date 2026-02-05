@@ -1355,11 +1355,6 @@
                 $students[$r['student_id']]['total'] += $r['total_amount'];
             }
 
-            // echo "<pre>";
-            // print_r($students);
-            // echo "</pre>";
-            // exit();
-
             return $students;
         }
         
@@ -1378,29 +1373,33 @@
                 ws.date_of_leaving
             ');
             $this->db->from('students AS s');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
-            $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
             $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
+            $this->db->join('classes AS c', 'c.id = ses.class_id', 'left');  // Use class_id from student_session
+            $this->db->join('sections AS sec', 'sec.id = ses.section_id', 'left');  // Use section_id from student_session
+            $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
             $this->db->join('withdrawn_students AS ws', 'ws.student_id = s.id', 'left');
             $this->db->where('s.deleted', 0);
-        
+
+            // Filter by session
+            $this->db->where('ses.session_id', $academy_session_id);
+
             // Filters
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);  // filter by student_session.class_id
             }
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);  // filter by student_session.section_id
             }
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-        
+
             // Order
             $this->db->order_by('c.name ASC, sec.name ASC, s.f_name ASC');
-        
+
             // Get all students
             $students = $this->db->get()->result_array();
+
             $final = [];
         
             foreach ($students as $stu) {
@@ -1611,7 +1610,7 @@
         {
             $academy_session_id = $this->session->academy_session['current_session']['id'];
 
-            // === 1️⃣ Get all active students ===
+            // === 1️⃣ Get all active students (current session) ===
             $this->db->select('
                 s.id AS student_id,
                 s.student_no,
@@ -1622,26 +1621,45 @@
                 s.father_mobile,
                 s.mother_mobile
             ');
+
             $this->db->from('students AS s');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
+
+            // 🔹 Join student_session (CURRENT session + not withdrawn)
+            $this->db->join(
+                'student_session AS ses',
+                'ses.student_id = s.id 
+                AND ses.session_id = ' . (int)$academy_session_id . '
+                AND ses.withdraw != 1',
+                'inner'
+            );
+
+            // 🔹 FIXED: class & section via student_session
+            $this->db->join('classes AS c', 'c.id = ses.class_id', 'left');
+            $this->db->join('sections AS sec', 'sec.id = ses.section_id', 'left');
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
-            // ✅ Move withdraw condition into the join
-            $this->db->join('student_session AS ses', 'ses.student_id = s.id AND ses.withdraw != 1', 'left');
+
             $this->db->where('s.deleted', 0);
-        
+
+            // --------------------
+            // Filters (FIXED)
+            // --------------------
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);
             }
+
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);
             }
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-        
+
+            // Optional safety
+            // $this->db->where('ses.passout', 0);
+
             $students = $this->db->get()->result_array();
-        
+
             $final = [];
         
             foreach ($students as $stu) {

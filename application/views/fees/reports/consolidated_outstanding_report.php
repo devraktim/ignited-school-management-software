@@ -177,71 +177,96 @@ $total_rows = count($report);
                 </tr>
             </thead>
             <tbody>
-            <?php
-            $start = $page * $rows_per_page;
-            $end = min($start + $rows_per_page, $total_rows);
+        <?php
+        $start = $page * $rows_per_page;
+        $end = min($start + $rows_per_page, $total_rows);
 
-            // Initialize page totals
-            $page_total = $grand;
-            $sl = $start + 1;
+        // === Initialize page totals to zero ===
+        $page_total = [
+            'school_prev_due'   => 0,
+            'school_payable'    => 0,
+            'school_received'   => 0,
+            'late_fee'          => 0,
+            'other_charges'     => 0,
+            'concession'        => 0,
+            'school_outstanding'=> 0
+        ];
 
-            for($i = $start; $i < $end; $i++):
-                $r = $report[$i];
+        // === Initialize grand total only on first page ===
+        if ($page == 0) {
+            $grand = [
+                'school_prev_due'   => 0,
+                'school_payable'    => 0,
+                'school_received'   => 0,
+                'late_fee'          => 0,
+                'other_charges'     => 0,
+                'concession'        => 0,
+                'school_outstanding'=> 0
+            ];
+        }
 
-                // Add to page totals
-                foreach ($page_total as $key => $val) {
-                    $page_total[$key] += $r[$key];
-                }
-            ?>
-                <tr>
-                    <td><?= $sl++; ?></td>
-                    <td><?= $r['student_no']; ?></td>
-                    <td class="Tdl"><?= htmlspecialchars($r['student_name']); ?></td>
-                    <td><?= $r['class_sec']; ?></td>
-                    <td><?= $r['student_type']; ?></td>
-                    <td><?= htmlspecialchars($r['phone']); ?></td>
-                    <td><?= indian_number_format_with_crore($r['school_prev_due']); ?></td>
-                    <td><?= indian_number_format_with_crore($r['school_payable']); ?></td>
-                    <td><?= indian_number_format_with_crore($r['school_received']); ?></td>
-                    <td><?= indian_number_format_with_crore($r['late_fee']); ?></td>
-                    <td><?= indian_number_format_with_crore($r['other_charges']); ?></td>
-                    <td><?= indian_number_format_with_crore($r['concession']); ?></td>
-                    <td><?= indian_number_format_with_crore($r['school_outstanding']); ?></td>
-                </tr>
-            <?php endfor; ?>
+        $sl = $start + 1;
 
-            <!-- ===== PAGE TOTAL ===== -->
-            <tr class="totals-row">
-                <td colspan="6">Page Total</td>
-                <td><?= indian_number_format_with_crore($page_total['school_prev_due']); ?></td>
-                <td><?= indian_number_format_with_crore($page_total['school_payable']); ?></td>
-                <td><?= indian_number_format_with_crore($page_total['school_received']); ?></td>
-                <td><?= indian_number_format_with_crore($page_total['late_fee']); ?></td>
-                <td><?= indian_number_format_with_crore($page_total['other_charges']); ?></td>
-                <td><?= indian_number_format_with_crore($page_total['concession']); ?></td>
-                <td><?= indian_number_format_with_crore($page_total['school_outstanding']); ?></td>
+        for($i = $start; $i < $end; $i++):
+            $r = $report[$i];
+
+            // --- Add row values to page total
+            foreach ($page_total as $key => $val) {
+                $page_total[$key] += $r[$key];
+            }
+        ?>
+            <tr>
+                <td><?= $sl++; ?></td>
+                <td><?= $r['student_no']; ?></td>
+                <td class="Tdl"><?= htmlspecialchars($r['student_name']); ?></td>
+                <td><?= $r['class_sec']; ?></td>
+                <td><?= $r['student_type']; ?></td>
+                <td><?= htmlspecialchars($r['phone']); ?></td>
+                <td><?= indian_number_format_with_crore($r['school_prev_due']); ?></td>
+                <td><?= indian_number_format_with_crore($r['school_payable']); ?></td>
+                <td><?= indian_number_format_with_crore($r['school_received']); ?></td>
+                <td><?= indian_number_format_with_crore($r['late_fee']); ?></td>
+                <td><?= indian_number_format_with_crore($r['other_charges']); ?></td>
+                <td><?= indian_number_format_with_crore($r['concession']); ?></td>
+                <td><?= indian_number_format_with_crore($r['school_outstanding']); ?></td>
             </tr>
+        <?php endfor; ?>
 
-            <!-- ===== GRAND TOTAL (LAST PAGE ONLY) ===== -->
-            <?php
-                foreach ($grand as $key => $val) {
-                    $grand[$key] += $page_total[$key];
-                }
-            ?>
-            <?php if ($page == $total_pages - 1): ?>
-            <tr class="totals-row">
-                <td colspan="6">Grand Total</td>
-                <td><?= indian_number_format_with_crore($grand['school_prev_due']); ?></td>
-                <td><?= indian_number_format_with_crore($grand['school_payable']); ?></td>
-                <td><?= indian_number_format_with_crore($grand['school_received']); ?></td>
-                <td><?= indian_number_format_with_crore($grand['late_fee']); ?></td>
-                <td><?= indian_number_format_with_crore($grand['other_charges']); ?></td>
-                <td><?= indian_number_format_with_crore($grand['concession']); ?></td>
-                <td><?= indian_number_format_with_crore($grand['school_outstanding']); ?></td>
-            </tr>
-            <?php endif; ?>
+        <!-- ===== PAGE TOTAL ===== -->
+        <tr class="totals-row">
+            <td colspan="6">Page Total</td>
+            <td><?= indian_number_format_with_crore($page_total['school_prev_due']); ?></td>
+            <td><?= indian_number_format_with_crore($page_total['school_payable']); ?></td>
+            <td><?= indian_number_format_with_crore($page_total['school_received']); ?></td>
+            <td><?= indian_number_format_with_crore($page_total['late_fee']); ?></td>
+            <td><?= indian_number_format_with_crore($page_total['other_charges']); ?></td>
+            <td><?= indian_number_format_with_crore($page_total['concession']); ?></td>
+            <td><?= indian_number_format_with_crore($page_total['school_outstanding']); ?></td>
+        </tr>
+
+        <?php
+        // --- Add page total to grand total
+        foreach ($grand as $key => $val) {
+            $grand[$key] += $page_total[$key];
+        }
+
+        // ===== GRAND TOTAL (LAST PAGE ONLY) =====
+        if ($page == $total_pages - 1):
+        ?>
+        <tr class="totals-row">
+            <td colspan="6">Grand Total</td>
+            <td><?= indian_number_format_with_crore($grand['school_prev_due']); ?></td>
+            <td><?= indian_number_format_with_crore($grand['school_payable']); ?></td>
+            <td><?= indian_number_format_with_crore($grand['school_received']); ?></td>
+            <td><?= indian_number_format_with_crore($grand['late_fee']); ?></td>
+            <td><?= indian_number_format_with_crore($grand['other_charges']); ?></td>
+            <td><?= indian_number_format_with_crore($grand['concession']); ?></td>
+            <td><?= indian_number_format_with_crore($grand['school_outstanding']); ?></td>
+        </tr>
+        <?php endif; ?>
             </tbody>
         </table>
+
 
         <?php if ($page < $total_pages - 1): ?>
             <div class="page-break"></div>
