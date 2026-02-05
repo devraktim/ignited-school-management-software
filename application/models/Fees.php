@@ -546,19 +546,20 @@
 
             $this->db->join(
                 'student_session AS ses',
-                'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
+                'ses.student_id = s.id AND ses.session_id = ' . $academy_session_id,
                 'inner'
             );
 
+            // 🔽 CHANGED JOINS HERE
             $this->db->join(
                 'classes AS c',
-                'c.id = s.class_id',
+                'c.id = ses.class_id',
                 'left'
             );
 
             $this->db->join(
                 'sections AS sec',
-                'sec.id = s.section_id',
+                'sec.id = ses.section_id',
                 'left'
             );
 
@@ -568,7 +569,7 @@
                 'left'
             );
 
-            // Withdrawn students (safe join)
+            // Include withdrawn students, but only transactions before withdrawal date
             $this->db->join(
                 'withdrawn_students AS ws',
                 'ws.student_id = s.id AND col.receipt_date <= ws.date_of_leaving',
@@ -584,11 +585,11 @@
             }
 
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);
             }
 
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);
             }
 
             if (!empty($filters['student_type_id'])) {
@@ -703,13 +704,22 @@
                 ws.id AS ws_id,
                 ws.date_of_leaving
             ');
+
             $this->db->from('student_fee_collections AS col');
-            $this->db->join('students AS s', 's.id = col.student_id', 'left');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
+
+            $this->db->join(
+                'student_session AS ss',
+                'ss.student_id = col.student_id 
+                AND ss.session_id = ' . (int)$academy_session_id,
+                'inner'
+            );
+
+            $this->db->join('students AS s', 's.id = ss.student_id', 'left');
+            $this->db->join('classes AS c', 'c.id = ss.class_id', 'left');
+            $this->db->join('sections AS sec', 'sec.id = ss.section_id', 'left');
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
 
-            // Withdrawn students (safe join)
+            // Withdrawn students: include only payments before leaving date
             $this->db->join(
                 'withdrawn_students AS ws',
                 'ws.student_id = s.id AND col.receipt_date <= ws.date_of_leaving',
@@ -719,17 +729,20 @@
             // -----------------------------
             // Step 2: Filters
             // -----------------------------
-            if ($filters['from_date'] && $filters['to_date']) {
+            if (!empty($filters['from_date']) && !empty($filters['to_date'])) {
                 $this->db->where('col.receipt_date >=', $filters['from_date']);
                 $this->db->where('col.receipt_date <=', $filters['to_date']);
             }
 
+            // 🔹 IMPORTANT: filters moved to student_session
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ss.class_id', $filters['class_id']);
             }
+
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ss.section_id', $filters['section_id']);
             }
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
@@ -765,6 +778,7 @@
                         'section_name'      => $r['section_name'],
                         'student_type'      => $r['student_type'],
                         'roll_no'           => $r['roll_no'],
+                        'receipt_date'      => $r['receipt_date'],
                         'gross_amount'      => 0,
                         'net_amount'        => 0,
                         'previous_year_due' => 0,
@@ -830,18 +844,20 @@
 
             $this->db->join('students AS s', 's.id = col.student_id', 'inner');
 
-            // ✅ FIX 1: student_session restricted to current session
+            // 🔹 student_session → current session only
             $this->db->join(
                 'student_session AS ses',
                 'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
                 'inner'
             );
 
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
+            // 🔹 class & section must come from student_session
+            $this->db->join('classes AS c', 'c.id = ses.class_id', 'left');
+            $this->db->join('sections AS sec', 'sec.id = ses.section_id', 'left');
+
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
 
-            // ✅ FIX 2: withdrawn logic moved into JOIN (no OR duplication)
+            // Withdrawn students: allow payments only before leaving date
             $this->db->join(
                 'withdrawn_students AS ws',
                 'ws.student_id = s.id AND col.receipt_date <= ws.date_of_leaving',
@@ -856,12 +872,13 @@
                 $this->db->where('col.receipt_date <=', $filters['to_date']);
             }
 
+            // 🔹 FIXED: class & section filters via student_session
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);
             }
 
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);
             }
 
             if (!empty($filters['student_type_id'])) {
@@ -874,10 +891,11 @@
 
             $this->db->where('col.session_id', $academy_session_id);
 
-            // ✅ FIX 3: guarantee 1 row per receipt
+            // 🔹 guarantee 1 row per receipt
             $this->db->group_by('col.id');
 
             $result = $this->db->get()->result_array();
+
 
             // ---------------------------
             // Step 2: Fetch active fee heads
@@ -965,6 +983,9 @@
        
         public function stateWiseOutstandingReport($filters)
         {
+            // Current academic session
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
             // === 1. Fetch Students with Class, Section, and State Info ===
             $this->db->select('
                 s.id AS student_id,
@@ -980,32 +1001,54 @@
                 state.name AS state_name,
                 ws.date_of_leaving
             ');
+
             $this->db->from('students AS s');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
+
+            // 🔹 Join student_session (current session)
+            $this->db->join(
+                'student_session AS ses',
+                'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
+                'inner'
+            );
+
+            // 🔹 FIXED: class & section via student_session
+            $this->db->join('classes AS c', 'c.id = ses.class_id', 'left');
+            $this->db->join('sections AS sec', 'sec.id = ses.section_id', 'left');
+
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
             $this->db->join('states AS state', 'state.id = s.state_id', 'left');
-        
-            // Optional filters
+
+            // --------------------
+            // Filters (FIXED)
+            // --------------------
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);
             }
+
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);
             }
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
+
             if (!empty($filters['state_id'])) {
                 $this->db->where('s.state_id', $filters['state_id']);
             }
-        
-            // Step 2: Include withdrawn students (all) but will handle payments separately in report
-            $this->db->join('withdrawn_students AS ws', 'ws.student_id = s.id', 'left');
-        
-            // Get the students
+
+
+            // Withdrawn in CURRENT session only
+            
+            $this->db->join(
+                'withdrawn_students AS ws',
+                'ws.student_id = s.id AND ws.session_id = ' . (int)$academy_session_id,
+                'left'
+            );
+            
+            // Execute
             $students = $this->db->get()->result_array();
-        
+
             $final = [];
         
             foreach ($students as $row) {
@@ -1044,6 +1087,9 @@
         
         public function classWiseOutstandingReport($filters)
         {
+            // Current academic session
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
             // === 1. Fetch Students with Class & Section Info ===
             $this->db->select('
                 s.id AS student_id,
@@ -1058,50 +1104,68 @@
                 sec.name AS section_name,
                 ws.date_of_leaving
             ');
+
             $this->db->from('students AS s');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
+
+            // 🔹 Join ONLY current session students
+            $this->db->join(
+                'student_session AS ses',
+                'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
+                'inner'
+            );
+
+            // 🔹 FIXED: class & section via student_session
+            $this->db->join('classes AS c', 'c.id = ses.class_id', 'left');
+            $this->db->join('sections AS sec', 'sec.id = ses.section_id', 'left');
+
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
+
+            // Withdrawn info (current session only)
+            $this->db->join(
+                'withdrawn_students AS ws',
+                'ws.student_id = s.id AND ws.session_id = ' . (int)$academy_session_id,
+                'left'
+            );
+
             $this->db->where('s.deleted', 0);
-        
-            // Filters
+
+            // === Filters (FIXED) ===
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);
             }
+
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);
             }
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-        
-            // Include withdrawn students
-            $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            $this->db->join('withdrawn_students AS ws', 'ws.student_id = s.id', 'left');
-        
+
+            // === Prevent duplicates ===
+            $this->db->group_by('s.id');
+
             // Sorting
             $this->db->order_by('c.name ASC, sec.name ASC, s.f_name ASC');
-        
-            // Get the students
+
+            // Execute
             $students = $this->db->get()->result_array();
+
             $final = [];
-        
+
             foreach ($students as $row) {
-                $student_id = $row['student_id'];
-        
-                // === Call the previous function to get the student's full report ===
-                $student_report = $this->studentMonthlyPaymentReport($student_id);
-        
-                // Extract outstanding from summary
-                $outstanding = $student_report['summary']['outstanding'];
-        
+
+                // Full payment report
+                $student_report = $this->studentMonthlyPaymentReport($row['student_id']);
+
+                $outstanding = $student_report['summary']['outstanding'] ?? 0;
+
                 // Append (W) if withdrawn
                 $student_name = $row['student_name'];
                 if (!empty($row['date_of_leaving'])) {
                     $student_name .= ' (W)';
                 }
-        
-                // Add to the final result
+
                 $final[] = [
                     'student_no'    => $row['student_no'],
                     'student_name'  => $student_name,
@@ -1112,18 +1176,17 @@
                     'student_type'  => $row['student_type'],
                     'class_name'    => $row['class_name'],
                     'section_name'  => $row['section_name'],
-                    'outstanding'   => $outstanding,  // Use outstanding from studentMonthlyPaymentReport
+                    'outstanding'   => $outstanding,
                 ];
             }
-        
+
             return $final;
         }
+
 
         public function previousYearOutstandingReport($filters)
         {
             $academy_session_id = $this->session->academy_session['current_session']['id'];
-
-            // $previous_session_id = $academy_session_id == 5 ? 1 : 0;
 
             $this->db->select('
                 s.id AS student_id,
@@ -1134,23 +1197,45 @@
                 c.name AS class_name,
                 sec.name AS section_name
             ');
+
             $this->db->from('students AS s');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
+
+            // 🔹 Session mapping (current academic session)
+            $this->db->join(
+                'student_session AS ses',
+                'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
+                'inner'
+            );
+
+            // 🔹 Class & section via student_session
+            $this->db->join('classes AS c', 'c.id = ses.class_id', 'left');
+            $this->db->join('sections AS sec', 'sec.id = ses.section_id', 'left');
+
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
+
             $this->db->where('s.deleted', 0);
-    
+
+            // --------------------
+            // Filters (FIXED)
+            // --------------------
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);
             }
+
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);
             }
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-    
+
+            // Optional safety checks
+            // $this->db->where('ses.passout', 0);
+            // $this->db->where('ses.withdraw', 0);
+
             $students = $this->db->get()->result_array();
+
 
             $final = [];
             foreach ($students as $row) {
@@ -1196,32 +1281,60 @@
                 fc.installment_id,
                 SUM(fc.amount) AS total_amount
             ');
+
             $this->db->from('fees_concession AS fc');
+
+            // Student master
             $this->db->join('students AS s', 's.id = fc.student_id', 'left');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
+
+            // 🔹 Session mapping (current session only)
+            $this->db->join(
+                'student_session AS ses',
+                'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
+                'inner'
+            );
+
+            // 🔹 Class & section must come from student_session
+            $this->db->join('classes AS c', 'c.id = ses.class_id', 'left');
+            $this->db->join('sections AS sec', 'sec.id = ses.section_id', 'left');
+
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
+
             $this->db->where('s.deleted', 0);
-        
+
+            // --------------------
+            // Filters (FIXED)
+            // --------------------
             if (!empty($filters['class_id'])) {
-                $this->db->where('s.class_id', $filters['class_id']);
+                $this->db->where('ses.class_id', $filters['class_id']);
             }
+
             if (!empty($filters['section_id'])) {
-                $this->db->where('s.section_id', $filters['section_id']);
+                $this->db->where('ses.section_id', $filters['section_id']);
             }
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-            // if (!empty($filters['session_id'])) {
-            //     $this->db->where('fc.session_id', $filters['session_id']);
-            // }
-            
-            $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
-        
-            $this->db->group_by(['s.id', 'fc.installment_id']);
 
+            // --------------------
+            // Exclude withdrawn students (current session)
+            // --------------------
+            $this->db->join(
+                'withdrawn_students AS ws',
+                'ws.student_id = s.id AND ws.session_id = ' . (int)$academy_session_id,
+                'left'
+            );
+
+            $this->db->where('ws.id IS NULL');
+
+            // --------------------
+            // Group & session filter
+            // --------------------
+            $this->db->group_by(['s.id', 'fc.installment_id']);
             $this->db->where('fc.session_id', $academy_session_id);
+
+            // Execute
             $rows = $this->db->get()->result_array();
             
             // Transform rows → pivot months
@@ -1241,7 +1354,12 @@
                 $students[$r['student_id']]['months'][$month_no] += $r['total_amount'];
                 $students[$r['student_id']]['total'] += $r['total_amount'];
             }
-        
+
+            // echo "<pre>";
+            // print_r($students);
+            // echo "</pre>";
+            // exit();
+
             return $students;
         }
         

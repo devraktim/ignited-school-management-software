@@ -236,10 +236,10 @@
         {   
             $currentSession = $this->session->academy_session['current_session'];
 
-            echo "<pre>";
-            print_r($currentSession);
-            echo "</pre>";
-            exit();
+            // echo "<pre>";
+            // print_r($currentSession);
+            // echo "</pre>";
+            // exit();
 
             $data = [];
             $data['title'] = "Total Concession Report";
@@ -248,7 +248,7 @@
                 'class_id' => $this->input->get('class_id'),
                 'section_id' => $this->input->get('section_id'),
                 'student_type_id' => $this->input->get('student_type_id'),
-                'session_id' => $this->input->get('session_id')
+                // 'session_id' => $this->input->get('session_id')
             ];
         
             $data['records'] = [];
@@ -284,48 +284,6 @@
             
             $this->load->view('fees/reports/class_wise_all_months_collection_report', $data);
         }
-
-        
-        // public function classWiseOutstandingReport()
-        // {
-        //     $academy_session_id = $this->session->academy_session['current_session']['id'];
-
-        //     $data = [];
-        //     $data['title'] = "Class Wise Outstanding Report";
-        
-        //     $filters = [
-        //         'from_date'       => $this->input->get('from_date') ?: date('Y-01-01'), // Default to January 1st
-        //         'to_date'         => $this->input->get('to_date') ?: date('Y-m-d'),     // Default to current date
-        //         'class_id'        => $this->input->get('class_id'),
-        //         'section_id'      => $this->input->get('section_id'),
-        //         'student_type_id' => $this->input->get('student_type_id'),
-        //         'payment_mode'    => $this->input->get('payment_mode'),
-        //     ];
-            
-        //     // Default month_from to January if not provided
-        //     $month_from = $this->input->get('month_from'); // Default to January if not provided
-        //     if ($month_from) {
-        //         // Set from_date to the first day of month_from of the current year
-        //         $filters['from_date'] = date('Y-m-01', strtotime(date('Y') . '-' . date('m', strtotime($month_from)) . '-01'));
-        //     }
-            
-        //     // Default month_to to current month if not provided
-        //     $month_to = $this->input->get('month_to'); // Default to current month if not provided
-        //     if ($month_to) {
-        //         // Set to_date to the last day of month_to of the current year
-        //         $filters['to_date'] = date('Y-m-t', strtotime(date('Y') . '-' . $month_to . '-01'));
-        //     }
-        
-        //     $data['report'] = [];
-        //     $data['report'] = $this->Fees->classWiseOutstandingReport($filters);
-        
-        //     $data['filters'] = $filters;
-        //     $data['classes'] = $this->AcademyClass->get();
-        //     $data['sections'] = $this->Section->get();
-        //     $data['student_types'] = $this->StudentType->get();
-        
-        //     $this->load->view('fees/reports/class_wise_outstanding_report', $data);
-        // }
 
         public function classWiseOutstandingReport()
         {

@@ -68,6 +68,34 @@
     }
 ?>
 
+<?php 
+$currentSession = $this->session->academy_session['current_session'];
+
+$startDate = $currentSession['start'];  // 2026-02-01
+$endDate   = $currentSession['end'];    // 2027-01-31
+
+$startMonth = (int)date('n', strtotime($startDate));
+$endMonth   = (int)date('n', strtotime($endDate));
+
+$startYear = (int)date('Y', strtotime($startDate));
+$endYear   = (int)date('Y', strtotime($endDate));
+
+// Generate month order array
+$monthOrder = [];
+$month = $startMonth;
+while (true) {
+    $monthOrder[] = $month;
+
+    if ($month == $endMonth) break;
+
+    $month++;
+    if ($month > 12) $month = 1;
+}
+
+// Session label
+$sessionLabel = ($startYear == $endYear) ? $startYear : ($startYear . ' - ' . $endYear);
+?>
+
 <?php if (empty($records)): ?>
     <div style="text-align:center; font-size:20px; padding:50px; background:#f7f7f7; border:1px solid #ccc; margin:50px auto; width:80%; color:#d9534f; font-weight:bold;">
         No Data Found
@@ -94,7 +122,7 @@
     
     <hr>
     
-    <div class="BigHeader">Total Concession Report <br> Session 2025</div>
+    <div class="BigHeader">Total Concession Report <br> Session <?= $sessionLabel ?></div>
 
     <table class="GridTable">
         <thead>
@@ -103,15 +131,17 @@
                 <th style="width:18%">Student Name</th>
                 <th style="width:12%">Class/Sec</th>
                 <th style="width:10%">Student Type</th>
-                <?php for($m=1; $m<=12; $m++): ?>
+
+                <?php foreach ($monthOrder as $m): ?>
                     <th style="width:4%"><?= date('M', mktime(0,0,0,$m,1)); ?></th>
-                <?php endfor; ?>
+                <?php endforeach; ?>
+
                 <th style="width:6%">Total</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            $sl=0;
+            $sl = 0;
             $monthly_totals = array_fill(1, 12, 0);
             $grand_total = 0;
 
@@ -123,7 +153,7 @@
                 echo "<td class='Tdc'>".htmlspecialchars($row['class_name'])." / ".htmlspecialchars($row['section_name'])."</td>";
                 echo "<td class='Tdc'>".htmlspecialchars($row['student_type'])."</td>";
 
-                for ($m=1; $m<=12; $m++) {
+                foreach ($monthOrder as $m) {
                     $val = $row['months'][$m] ?? 0;
                     $monthly_totals[$m] += $val;
                     echo "<td class='Tdr'>".indian_number_format_with_crore($val)."</td>";
@@ -136,9 +166,9 @@
             ?>
             <tr style="font-weight:bold; border-top:2px solid #000;">
                 <td colspan="4" class="Tdr">Grand Total :</td>
-                <?php for($m=1;$m<=12;$m++): ?>
+                <?php foreach ($monthOrder as $m): ?>
                     <td class="Tdr"><?= indian_number_format_with_crore($monthly_totals[$m]); ?></td>
-                <?php endfor; ?>
+                <?php endforeach; ?>
                 <td class="Tdr"><?= indian_number_format_with_crore($grand_total); ?></td>
             </tr>
         </tbody>
