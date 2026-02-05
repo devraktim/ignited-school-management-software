@@ -511,12 +511,7 @@
                 $new_records = $this->generate_fees_summary($records);
                 
                 // echo "<pre>";
-                // print_r(array(
-                //     "classes"           =>  $classes,
-                //     "sections"          =>  $sections,
-                //     "student_types"     =>  $student_types,
-                //     "records"           =>  $new_records
-                // ));
+                // print_r($this->session->academy_session['current_session']);
                 // echo "</pre>";
                 // exit();
 
@@ -1270,6 +1265,11 @@
                     $fine_amount = $fs['value'];
                 }
             }
+
+            // echo "<pre>";
+            // print_r($installments);
+            // echo "</pre>";
+            // exit();
          
             $this->load->view("fees/new_collection", array(
                 "students"              =>  $data, 

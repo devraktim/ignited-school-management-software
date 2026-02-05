@@ -228,26 +228,25 @@ $chunks = array_chunk($report, 25);
             <td class="Tdc"><?= date('d-m-Y', strtotime($row['receipt_date'])); ?></td>
             <td class="Tdl">
                 <?php
-    if (!empty($row['pay_period'])) {
-        // Explode the pay_period string into an array of months
-        $months = array_map('trim', explode(',', $row['pay_period']));
-        
-        // Remove duplicate months
-        $uniqueMonths = array_unique($months);
-        
-        // Convert months to full month names (January, February, etc.)
-        $monthNames = array_map(function($m) {
-            $m = (int)$m; // Ensure the month is an integer
-            return date('F', mktime(0, 0, 0, $m + 1, 10)); // Full month name
-        }, $uniqueMonths);
-        
-        // Output the unique month names as a comma-separated list
-        echo implode(', ', $monthNames);
-    } else {
-        echo '-'; // If no months are provided, output a dash
-    }
-?>
-
+                    if (!empty($row['pay_period'])) {
+                        // Explode the pay_period string into an array of months
+                        $months = array_map('trim', explode(',', $row['pay_period']));
+                        
+                        // Remove duplicate months
+                        $uniqueMonths = array_unique($months);
+                        
+                        // Convert months to 3-letter month names (Jan, Feb, etc.)
+                        $monthNames = array_map(function($m) {
+                            $m = (int)$m; // Ensure the month is an integer
+                            return date('M', mktime(0, 0, 0, $m + 1, 10)); // 3-letter month name
+                        }, $uniqueMonths);
+                        
+                        // Output the unique month names as a comma-separated list
+                        echo implode(', ', $monthNames);
+                    } else {
+                        echo '-'; // If no months are provided, output a dash
+                    }
+                ?>
             </td>
             <td class="Tdr"><?= indian_number_format_with_crore($row['gross_amount']); ?></td>
             <td class="Tdr"><?= indian_number_format_with_crore($row['previous_year_due']); ?></td>

@@ -113,123 +113,93 @@
     <?php if(isset($records)) { ?>
         <div class="card card-flush h-xl-100 mb-4" id="students_card">
             <div class="card-body py-9">
-                <?php if(count($records) > 0) { ?>
-
-                <?php
-                // Month master (DO NOT CHANGE ORDER)
-                $months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-                // Get session start month
-                $session = $this->session->academy_session['current_session'];
-                $startMonthIndex = (int)date('n', strtotime($session['start'])) - 1; // 0 based
-
-                // Build visual month order (mapping unchanged)
-                $monthOrder = array_merge(
-                    range($startMonthIndex, 11),
-                    range(0, $startMonthIndex - 1)
-                );
-                ?>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered px-2">
-                        <thead>
+        
+                <?php if(count($records) > 0) { $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; ?>
+                    <div class="table-responsive">
+                        <table class="table table-bordered px-2">
+                          <thead>
                             <tr class="table-dark text-light">
-                                <th class="sticky-header sticky-column-1" style="z-index:5!important;"></th>
-                                <th class="text-nowrap sticky-header sticky-column-2" style="z-index:5!important;">Name</th>
-                                <th class="text-nowrap sticky-header sticky-column-3" style="z-index:5!important;">Student No.</th>
-
-                                <!-- MONTH HEADERS (REARRANGED VISUALLY) -->
-                                <?php foreach ($monthOrder as $mIndex): ?>
-                                    <th class="text-nowrap"><?php echo $months[$mIndex]; ?></th>
-                                <?php endforeach; ?>
-
-                                <th class="text-nowrap">Gross Amt</th>
-                                <th class="text-nowrap">P.Y. Due</th>
-                                <th class="text-nowrap">Concession Amt.</th>
-                                <th class="text-nowrap">Payable</th>
+                              <th class="sticky-header sticky-column-1" style="z-index:5!important;"></th>
+                              <th class="text-nowrap sticky-header sticky-column-2" style="z-index:5!important;">Name</th>
+                              <th class="text-nowrap sticky-header sticky-column-3" style="z-index:5!important;">Student No.</th>
+                              <?php for ($i = 1; $i <= 12; $i++): ?>
+                                <th class="text-nowrap"><?php echo $months[$i - 1]; ?></th>
+                              <?php endfor; ?>
+                              <th class="text-nowrap">Gross Amt</th>
+                              <th class="text-nowrap">P.Y. Due</th>
+                              <th class="text-nowrap">Concession Amt.</th>
+                              <th class="text-nowrap">Payable</th>
                             </tr>
-                        </thead>
-
-                        <tbody>
+                          </thead>
+                        
+                          <tbody>
                             <?php
-                            // Totals
-                            $sumMonthly = array_fill(0, 12, 0.0);
-                            $sumGross = $sumPrevDue = $sumConcession = $sumPayable = 0.0;
-
-                            $sl_no = 0;
-                            foreach ($records as $r):
+                              // initialize accumulators
+                              $sumMonthly = array_fill(0, 12, 0.0);
+                              $sumGross = 0.0;
+                              $sumPrevDue = 0.0;
+                              $sumConcession = 0.0;
+                              $sumPayable = 0.0;
+                        
+                              $sl_no = 0;
+                              foreach ($records as $r):
                                 $sl_no++;
                                 $monthly_total = 0.0;
                                 $outstanding = floatval($r['outstanding_amount'] ?? 0);
                                 $concession = floatval($r['total_concession_fees'] ?? 0);
-
-                                // Calculate monthly totals (mapping NOT changed)
-                                foreach ($monthOrder as $mIndex) {
-                                    $m = floatval($r['monthly_payable'][$mIndex]['payable'] ?? 0);
-                                    $monthly_total += $m;
-                                    $sumMonthly[$mIndex] += $m;
+                        
+                                for ($i = 0; $i < 12; $i++) {
+                                  $m = floatval($r['monthly_payable'][$i]['payable'] ?? 0);
+                                  $monthly_total += $m;
+                                  $sumMonthly[$i] += $m;
                                 }
-
+                        
                                 $gross = floatval($r['total_monthly_fees'] ?? 0);
                                 $net = ($outstanding + $monthly_total) - $concession;
-
+                        
                                 $sumGross += $gross;
                                 $sumPrevDue += $outstanding;
                                 $sumConcession += $concession;
                                 $sumPayable += $net;
                             ?>
-
-                            <tr>
+                              <tr>
                                 <td class="table-warning text-dark p-2 sticky-column-1"><?php echo $sl_no; ?></td>
-
                                 <td class="text-nowrap sticky-column-2" style="background-color:#fbffd1!important">
-                                    <?php echo htmlspecialchars($r['student_name']); ?>
+                                  <?php echo htmlspecialchars($r['student_name']); ?>
                                 </td>
-
                                 <td class="text-nowrap sticky-column-3" style="background-color:#fbffd1!important">
-                                    <?php echo htmlspecialchars($r['student_no']); ?>
+                                  <?php echo htmlspecialchars($r['student_no']); ?>
                                 </td>
-
-                                <!-- MONTH DATA (REARRANGED VISUALLY ONLY) -->
-                                <?php foreach ($monthOrder as $mIndex): ?>
-                                    <td>
-                                        <?php echo number_format($r['monthly_payable'][$mIndex]['payable'] ?? 0, 2); ?>
-                                    </td>
-                                <?php endforeach; ?>
-
+                                <?php for ($i = 0; $i < 12; $i++): ?>
+                                  <td><?php echo number_format($r['monthly_payable'][$i]['payable'] ?? 0, 2); ?></td>
+                                <?php endfor; ?>
+                        
                                 <td><?php echo number_format($gross, 2); ?></td>
                                 <td><?php echo number_format($outstanding, 2); ?></td>
                                 <td><?php echo number_format($concession, 2); ?></td>
                                 <td><?php echo number_format($net, 2); ?></td>
-                            </tr>
-
+                              </tr>
                             <?php endforeach; ?>
-                        </tbody>
-
-                        <tfoot>
+                          </tbody>
+                        
+                          <tfoot>
                             <tr class="table-dark text-light">
-                                <td colspan="3" class="text-start px-2">Total Payable Amount</td>
-
-                                <!-- MONTH TOTAL PLACEHOLDER (ORDER MATCHES DISPLAY) -->
-                                <?php foreach ($monthOrder as $mIndex): ?>
-                                    <td></td>
-                                <?php endforeach; ?>
-
+                              <td colspan="3" class="text-start px-2">Total Payble Amount</td>
+                              <?php foreach ($sumMonthly as $m): ?>
                                 <td></td>
-                                <td></td>
-                                <td></td>
-                                <td><?php echo number_format($sumPayable, 2); ?></td>
+                              <?php endforeach; ?>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td><?php echo number_format($sumPayable, 2); ?></td>
                             </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
+                          </tfoot>
+                        </table>
+                    </div>
                 <?php } else { ?>
-
-                <div class="row justify-content-center">
-                    <h3 class="text-center">No Data Found</h3>
-                </div>
-
+                    <div class="row justify-content-center">
+                        <h3 class="text-center">No Data Found</h3>
+                    </div>
                 <?php } ?>
             </div>
         </div>

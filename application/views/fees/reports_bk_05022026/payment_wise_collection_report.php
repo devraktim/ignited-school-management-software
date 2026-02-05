@@ -54,6 +54,51 @@
     </style>
 </head>
 <body>
+<?php 
+    // Custom function for Indian Number Format with 2 decimal places
+    function indian_number_format_with_crore($num) {
+        $num = (string)$num; // Convert to string
+        $arr = explode('.', $num); // Separate the number and the decimal part
+        $num = $arr[0]; // Get the integer part
+        $decimal = isset($arr[1]) ? '.' . substr($arr[1], 0, 2) : ''; // Get the decimal part and limit it to 2 decimal places
+    
+        // Ensure the number has 2 decimal points (even if the original number doesn't have decimals)
+        if ($decimal === '') {
+            $decimal = '.00';
+        } else {
+            $decimal = rtrim($decimal, '0'); // Remove trailing zeros if there are any
+            if (strlen($decimal) < 3) {
+                $decimal = str_pad($decimal, 3, '0'); // Ensure 2 decimal places
+            }
+        }
+    
+        $len = strlen($num);
+        $result = '';
+        $i = 0;
+    
+        // Separate the last three digits
+        if ($len > 3) {
+            $lastthree = substr($num, $len - 3, 3);
+            $len -= 3;
+            $result = ',' . $lastthree . $result;
+        }
+    
+        // Explode the remaining digits in 2's format
+        while ($len > 0) {
+            $temp_len = ($len > 2) ? 2 : $len;
+            $restunits = substr($num, $len - $temp_len, $temp_len);
+            $len -= $temp_len;
+            $result = $restunits . $result;
+            if ($len > 0) {
+                $result = ',' . $result;
+            }
+        }
+    
+        // Return the formatted number with the decimal part
+        return $result . $decimal;
+    }
+?>
+
 <?php
 $school_name = "St. Francis School";
 $branch = "Jorethang";
@@ -172,7 +217,7 @@ $current_chunk_index = 0;
                         $page_totals[$key]  += $amount;
                         $grand_totals[$key] += $amount;
                     ?>
-                        <td class="Tdr"><?= number_format($amount, 2); ?></td>
+                        <td class="Tdr"><?= indian_number_format_with_crore($amount); ?></td>
                     <?php endforeach; ?>
 
                     <?php
@@ -180,7 +225,7 @@ $current_chunk_index = 0;
                         $page_net_total  += $net_amt;
                         $grand_net_total += $net_amt;
                     ?>
-                    <td class="Tdr" style="font-weight:bold;"><?= number_format($net_amt, 2); ?></td>
+                    <td class="Tdr" style="font-weight:bold;"><?= indian_number_format_with_crore($net_amt); ?></td>
                 </tr>
             <?php endforeach; ?>
 
@@ -189,18 +234,18 @@ $current_chunk_index = 0;
             <tr style="font-weight:bold; background:#f2f2f2;">
                 <td class="Tdc" colspan="7" style="text-align:right;">Page Total :</td>
                 <?php foreach ($visible_columns as $key => $label): ?>
-                    <td class="Tdr"><?= number_format($page_totals[$key], 2); ?></td>
+                    <td class="Tdr"><?= indian_number_format_with_crore($page_totals[$key]); ?></td>
                 <?php endforeach; ?>
-                <td class="Tdr"><?= number_format($page_net_total, 2); ?></td>
+                <td class="Tdr"><?= indian_number_format_with_crore($page_net_total); ?></td>
             </tr>
 
             <?php if ($is_last_chunk): ?>
                 <tr style="font-weight:bold; background:#e2e2e2;">
                     <td class="Tdc" colspan="7" style="text-align:right;">Grand Total :</td>
                     <?php foreach ($visible_columns as $key => $label): ?>
-                        <td class="Tdr"><?= number_format($grand_totals[$key], 2); ?></td>
+                        <td class="Tdr"><?= indian_number_format_with_crore($grand_totals[$key]); ?></td>
                     <?php endforeach; ?>
-                    <td class="Tdr"><?= number_format($grand_net_total, 2); ?></td>
+                    <td class="Tdr"><?= indian_number_format_with_crore($grand_net_total); ?></td>
                 </tr>
             <?php endif; ?>
         </tfoot>

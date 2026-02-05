@@ -115,31 +115,17 @@
                         <label class="form-label">Select Month</label>
                         <select class="form-select" name="month_id" id="month">
                             <option value="">-- Select Month --</option>
-
                             <?php
-                            // Month master (ID mapping must NOT change)
-                            $months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-                            // Get academic session start month
-                            $session = $this->session->academy_session['current_session'];
-                            $startMonthIndex = (int)date('n', strtotime($session['start'])) - 1;
-
-                            // Rearranged display order only
-                            $monthOrder = array_merge(
-                                range($startMonthIndex, 11),
-                                range(0, $startMonthIndex - 1)
-                            );
-
-                            foreach ($monthOrder as $mIndex) {
+                            $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            for ($i = 0; $i < 12; $i++) { // Loop from 0 to 11, skipping 12
                             ?>
-                                <option value="<?php echo $mIndex; ?>"
-                                    <?php echo (isset($_GET['month_id']) && $_GET['month_id'] == $mIndex) ? 'selected' : ''; ?>>
-                                    <?php echo $months[$mIndex]; ?>
+                                <option value="<?php echo $i; ?>" 
+                                    <?php echo (isset($_GET['month_id']) && $_GET['month_id'] == $i) ? 'selected' : ''; ?>>
+                                    <?php echo $months[$i]; ?>
                                 </option>
                             <?php } ?>
                         </select>
                     </div>
-
                     
                     <div class="col-md-2 d-flex align-items-end mb-3">
                         <button type="submit" class="btn btn-primary w-100">Search</button>

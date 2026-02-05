@@ -12,19 +12,48 @@
     </style>
 </head>
 <body>
-<?php
-    $school_name = "St. Francis School";
-    $branch = "Jorethang";
-    $sl = 1;
-    $grand_total = 0; // Initialize Grand Total
-    $report = $report ?? []; // Ensure $report exists
-    $chunks = array_chunk($report, 25);
-    $total_chunks = count($chunks);
-    $current_chunk_index = 0;
-?>
 
 <?php
-// === Filters from GET (moved to the top for reusability) ===
+// -----------------------------------------------------------------------------
+//  Custom function for Indian Number Format with 2 decimal places
+// -----------------------------------------------------------------------------
+function indian_number_format_with_crore($number) {
+    $number = number_format((float)$number, 2, '.', '');
+
+    list($int, $decimal) = explode('.', $number);
+
+    $len = strlen($int);
+
+    if ($len <= 3) {
+        return $int . '.' . $decimal;
+    }
+
+    $last3 = substr($int, -3);
+    $rest = substr($int, 0, $len - 3);
+
+    $formatted = '';
+    while (strlen($rest) > 2) {
+        $formatted = ',' . substr($rest, -2) . $formatted;
+        $rest = substr($rest, 0, -2);
+    }
+
+    $formatted = $rest . $formatted;
+
+    return $formatted . ',' . $last3 . '.' . $decimal;
+}
+// -----------------------------------------------------------------------------
+
+
+$school_name = "St. Francis School";
+$branch = "Jorethang";
+$sl = 1;
+$grand_total = 0;
+$report = $report ?? [];
+$chunks = array_chunk($report, 25);
+$total_chunks = count($chunks);
+$current_chunk_index = 0;
+
+// === Filters ===
 $class_id    = $_GET['class_id'] ?? '';
 $section_id  = $_GET['section_id'] ?? '';
 $state_id    = $_GET['state_id'] ?? '';
@@ -60,24 +89,19 @@ if (!empty($states)) {
         No Data Found
     </div>
 <?php else: ?>
-    <?php
-    foreach ($report as $r) {
-        $grand_total += (float)$r['outstanding'];
-    }
-    ?>
+
+    <?php foreach ($report as $r) { $grand_total += (float)$r['outstanding']; } ?>
+
     <?php foreach ($chunks as $chunk):
         $current_chunk_index++;
         $is_last_chunk = ($current_chunk_index === $total_chunks);
-    ?>
-    <?php
-        // --- Page total for each chunk ---
+
         $page_total = 0;
         foreach ($chunk as $r) {
             $page_total += (float)$r['outstanding'];
-            // NOTE: $grand_total accumulation is now done outside the loop to prevent errors if this were run multiple times.
-            // If you need to re-enable line-by-line accumulation, remove the pre-calculation block above and re-enable it here.
         }
     ?>
+
     <table style="width:98%; border-collapse:collapse; margin-bottom:20px;">
         <tr>
             <td rowspan="2"><img src="<?= base_url('assets/media/logos/logol.png') ?>" style="height:70px;width:70px;"></td>
@@ -114,6 +138,7 @@ if (!empty($states)) {
             </tr>
         </thead>
         <tbody>
+
             <?php foreach ($chunk as $row): ?>
                 <tr>
                     <td class="Tdc"><?= $sl++ ?></td>
@@ -125,25 +150,35 @@ if (!empty($states)) {
                     <td class="Tdc"><?= htmlspecialchars($row['father_mobile']); ?></td>
                     <td class="Tdl"><?= htmlspecialchars($row['mother_name']); ?></td>
                     <td class="Tdc"><?= htmlspecialchars($row['mother_mobile']); ?></td>
-                    <td class="Tdr" style="font-weight:bold;"><?= number_format((float)$row['outstanding'], 2); ?></td>
+
+                    <!-- REPLACED number_format() HERE -->
+                    <td class="Tdr" style="font-weight:bold;"><?= indian_number_format_with_crore((float)$row['outstanding']); ?></td>
                 </tr>
             <?php endforeach; ?>
+
         </tbody>
+
         <tfoot>
             <tr style="font-weight:bold; background:#f4f4f4;">
                 <td colspan="9" class="Tdr">Page Total :</td>
-                <td class="Tdr"><?= number_format($page_total, 2); ?></td>
+
+                <!-- REPLACED number_format() HERE -->
+                <td class="Tdr"><?= indian_number_format_with_crore($page_total); ?></td>
             </tr>
+
             <?php if ($is_last_chunk): ?>
             <tr style="font-weight:bold; background:#dcdcdc;">
                 <td colspan="9" class="Tdr">Grand Total :</td>
-                <td class="Tdr"><?= number_format($grand_total, 2); ?></td>
+
+                <!-- REPLACED number_format() HERE -->
+                <td class="Tdr"><?= indian_number_format_with_crore($grand_total); ?></td>
             </tr>
             <?php endif; ?>
         </tfoot>
     </table>
 
     <div style="page-break-before:always;">&nbsp;</div>
+
     <?php endforeach; ?>
 <?php endif; ?>
 

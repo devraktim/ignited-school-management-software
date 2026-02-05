@@ -12,6 +12,50 @@
     </style>
 </head>
 <body>
+<?php 
+    // Custom function for Indian Number Format with 2 decimal places
+    function indian_number_format_with_crore($num) {
+        $num = (string)$num; // Convert to string
+        $arr = explode('.', $num); // Separate the number and the decimal part
+        $num = $arr[0]; // Get the integer part
+        $decimal = isset($arr[1]) ? '.' . substr($arr[1], 0, 2) : ''; // Get the decimal part and limit it to 2 decimal places
+    
+        // Ensure the number has 2 decimal points (even if the original number doesn't have decimals)
+        if ($decimal === '') {
+            $decimal = '.00';
+        } else {
+            $decimal = rtrim($decimal, '0'); // Remove trailing zeros if there are any
+            if (strlen($decimal) < 3) {
+                $decimal = str_pad($decimal, 3, '0'); // Ensure 2 decimal places
+            }
+        }
+    
+        $len = strlen($num);
+        $result = '';
+        $i = 0;
+    
+        // Separate the last three digits
+        if ($len > 3) {
+            $lastthree = substr($num, $len - 3, 3);
+            $len -= 3;
+            $result = ',' . $lastthree . $result;
+        }
+    
+        // Explode the remaining digits in 2's format
+        while ($len > 0) {
+            $temp_len = ($len > 2) ? 2 : $len;
+            $restunits = substr($num, $len - $temp_len, $temp_len);
+            $len -= $temp_len;
+            $result = $restunits . $result;
+            if ($len > 0) {
+                $result = ',' . $result;
+            }
+        }
+    
+        // Return the formatted number with the decimal part
+        return $result . $decimal;
+    }
+?>
 <?php
     $school_name = "St. Francis School";
     $branch = "Jorethang";
@@ -128,19 +172,19 @@ if (!empty($states)) {
                 <td class="Tdc"><?= htmlspecialchars($row['father_mobile']); ?></td>
                 <td class="Tdl"><?= htmlspecialchars($row['mother_name']); ?></td>
                 <td class="Tdc"><?= htmlspecialchars($row['mother_mobile']); ?></td>
-                <td class="Tdr" style="font-weight:bold;"><?= number_format((float)$row['outstanding'], 2); ?></td>
+                <td class="Tdr" style="font-weight:bold;"><?= indian_number_format_with_crore((float)$row['outstanding']); ?></td>
             </tr>
         <?php endforeach; ?>
     </tbody>
     <tfoot>
         <tr style="font-weight:bold; background:#f4f4f4;">
             <td colspan="9" class="Tdr">Page Total :</td>
-            <td class="Tdr"><?= number_format($page_total, 2); ?></td>
+            <td class="Tdr"><?= indian_number_format_with_crore($page_total); ?></td>
         </tr>
         <?php if ($is_last_chunk): ?>
         <tr style="font-weight:bold; background:#dcdcdc;">
             <td colspan="9" class="Tdr">Grand Total :</td>
-            <td class="Tdr"><?= number_format($grand_total, 2); ?></td>
+            <td class="Tdr"><?= indian_number_format_with_crore($grand_total); ?></td>
         </tr>
         <?php endif; ?>
     </tfoot>

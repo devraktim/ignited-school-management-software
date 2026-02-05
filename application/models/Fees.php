@@ -234,11 +234,11 @@
         
         // Concession Fees
         public function get_concession_fees($sid) {
-            $session_id = $this->session->academy_session['current_session']['id'];
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
             
             return $this->db->get_where('fees_concession', [
                 'student_id' => $sid,
-                'session_id' => $session_id
+                'session_id' => $academy_session_id
             ])->result_array();
         }
         
@@ -376,6 +376,8 @@
         
                 
         public function get_collection_adjusted_fees($data) {
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+        
             // Step 1: Get all expected fee installments (unaggregated)
             $installments = $this->db
                 ->where($data)
@@ -394,6 +396,7 @@
                 ->from('student_fee_collections sfc')
                 ->join('student_fee_collection_installments sfci', 'sfc.id = sfci.collection_id')
                 ->where('sfc.student_id', $student_id)
+                ->where('sfc.session_id', $academy_session_id)
                 ->group_by(['sfci.month', 'sfci.fee_head_id'])
                 ->get()
                 ->result_array();
@@ -511,11 +514,11 @@
         
         // Report
         public function feeCollectionReport($filters)
-        {   
+        {
             $academy_session_id = $this->session->academy_session['current_session']['id'];
 
             // ---------------------------
-            // Step 1: Base Query (fetch raw collections)
+            // Step 1: Base Query (receipt-wise collections)
             // ---------------------------
             $this->db->select('
                 s.student_no,
@@ -532,69 +535,82 @@
                 ws.id AS ws_id,
                 GROUP_CONCAT(DISTINCT inst.month ORDER BY inst.month ASC SEPARATOR ",") AS pay_period
             ');
+
             $this->db->from('student_fee_collections AS col');
-            $this->db->join('students AS s', 's.id = col.student_id', 'left');
-            $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-            $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
-            $this->db->join('student_fee_collection_installments AS inst', 'inst.collection_id = col.id', 'left');
-            
+
+            $this->db->join(
+                'students AS s',
+                's.id = col.student_id',
+                'inner'
+            );
+
+            $this->db->join(
+                'student_session AS ses',
+                'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
+                'inner'
+            );
+
+            $this->db->join(
+                'classes AS c',
+                'c.id = s.class_id',
+                'left'
+            );
+
+            $this->db->join(
+                'sections AS sec',
+                'sec.id = s.section_id',
+                'left'
+            );
+
+            $this->db->join(
+                'student_fee_collection_installments AS inst',
+                'inst.collection_id = col.id',
+                'left'
+            );
+
+            // Withdrawn students (safe join)
+            $this->db->join(
+                'withdrawn_students AS ws',
+                'ws.student_id = s.id AND col.receipt_date <= ws.date_of_leaving',
+                'left'
+            );
+
             // ---------------------------
-            // Step 2: Filters (using only the specified filters)
+            // Step 2: Filters
             // ---------------------------
-            
-            if($filters['from_date'] && $filters['to_date']) {
+            if (!empty($filters['from_date']) && !empty($filters['to_date'])) {
                 $this->db->where('col.receipt_date >=', $filters['from_date']);
                 $this->db->where('col.receipt_date <=', $filters['to_date']);
             }
-            
-            // Apply filters only if they are not empty
+
             if (!empty($filters['class_id'])) {
                 $this->db->where('s.class_id', $filters['class_id']);
             }
-            
+
             if (!empty($filters['section_id'])) {
                 $this->db->where('s.section_id', $filters['section_id']);
             }
-            
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-            
-            if (!empty($filters['payment_mode']) && is_array($filters['payment_mode'])) {
-                $this->db->where_in('col.payment_method', $filters['payment_mode']);
-            } elseif (!empty($filters['payment_mode'])) {
-                $this->db->where('col.payment_method', $filters['payment_mode']);
+
+            if (!empty($filters['payment_mode'])) {
+                $this->db->where_in('col.payment_method', (array)$filters['payment_mode']);
             }
-            
-            // ---------------------------
-            // Step 3: Include withdrawn students, but only transactions before withdrawal
-            // ---------------------------
 
-            // $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            // $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
+            $this->db->where('col.session_id', $academy_session_id);
 
-            $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            $this->db->join('withdrawn_students AS ws', 'ws.student_id = s.id', 'left');
-            
-            $this->db->group_start();
-            $this->db->where('ws.id IS NULL');
-            $this->db->or_where('col.receipt_date <= ws.date_of_leaving');
-            $this->db->group_end();
-            
             // ---------------------------
-            // Step 4: Sorting (based on the `sort_by` filter, but this wasn't included in the filters you shared, so we'll remove it)
-            // ---------------------------
-            $this->db->order_by('col.receipt_date', 'ASC');
-            
-            // ---------------------------
-            // Step 5: Grouping
+            // Step 3: Grouping & Sorting
             // ---------------------------
             $this->db->group_by('col.id');
-            $this->db->where('col.session_id', $academy_session_id);
+            $this->db->order_by('col.receipt_date', 'ASC');
+
             $rows = $this->db->get()->result_array();
-            
+
             // ---------------------------
-            // Step 3: Load active fee heads
+            // Step 4: Load active fee heads
             // ---------------------------
             $fee_heads = $this->db->select('name')
                 ->from('fees_type')
@@ -602,29 +618,31 @@
                 ->where('deleted', 0)
                 ->get()
                 ->result_array();
+
             $fee_head_names = array_column($fee_heads, 'name');
-        
+
             // ---------------------------
-            // Step 4: Decode JSON & compute fee components
+            // Step 5: Decode JSON & compute fee components
             // ---------------------------
             $final = [];
+
             foreach ($rows as $r) {
+
                 $summary = json_decode($r['summary'], true);
-        
+
                 $late_fine = 0;
                 $previous_year_due = 0;
                 $concession = 0;
                 $other_charges = 0;
                 $fee_breakdown = [];
-        
+
                 if (is_array($summary)) {
                     foreach ($summary as $key => $value) {
-                        $amount = (float) $value;
-        
+                        $amount = (float)$value;
+
                         if (in_array($key, $fee_head_names)) {
-                            $fee_breakdown[$key] = isset($fee_breakdown[$key])
-                                ? $fee_breakdown[$key] + $amount
-                                : $amount;
+                            $fee_breakdown[$key] =
+                                ($fee_breakdown[$key] ?? 0) + $amount;
                         } elseif (stripos($key, 'Previous Year Due') !== false) {
                             $previous_year_due += $amount;
                         } elseif (stripos($key, 'Concession') !== false) {
@@ -636,10 +654,12 @@
                         }
                     }
                 }
-                
+
                 $final[] = [
                     'student_no'        => $r['student_no'],
-                    'student_name'      => !empty($r['ws_id']) ? $r['student_name'] . ' (W)' : $r['student_name'],
+                    'student_name'      => !empty($r['ws_id'])
+                                            ? $r['student_name'] . ' (W)'
+                                            : $r['student_name'],
                     'class_name'        => $r['class_name'],
                     'section_name'      => $r['section_name'],
                     'roll_no'           => $r['roll_no'],
@@ -656,7 +676,7 @@
                     'fee_breakdown'     => $fee_breakdown
                 ];
             }
-        
+
             return $final;
         }
 
@@ -665,40 +685,45 @@
             $academy_session_id = $this->session->academy_session['current_session']['id'];
 
             // -----------------------------
-            // Step 1: Base Query (fetch raw rows only)
+            // Step 1: Base Query
             // -----------------------------
             $this->db->select('
+                s.id AS student_id,
                 s.student_no,
                 CONCAT(s.f_name, " ", s.l_name) AS student_name,
                 c.name AS class_name,
                 sec.name AS section_name,
                 st.name AS student_type,
                 s.roll_no,
-                col.id AS collection_id,
-                col.receipt_id,
                 col.receipt_date,
                 col.payment_method,
                 col.gross_amount,
                 col.net_amount,
                 col.summary,
-                ws.id AS ws_id
+                ws.id AS ws_id,
+                ws.date_of_leaving
             ');
             $this->db->from('student_fee_collections AS col');
             $this->db->join('students AS s', 's.id = col.student_id', 'left');
             $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
             $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
-        
+
+            // Withdrawn students (safe join)
+            $this->db->join(
+                'withdrawn_students AS ws',
+                'ws.student_id = s.id AND col.receipt_date <= ws.date_of_leaving',
+                'left'
+            );
+
             // -----------------------------
             // Step 2: Filters
             // -----------------------------
-            // Mandatory Date Range
-            if($filters['from_date'] && $filters['to_date']) {
+            if ($filters['from_date'] && $filters['to_date']) {
                 $this->db->where('col.receipt_date >=', $filters['from_date']);
                 $this->db->where('col.receipt_date <=', $filters['to_date']);
             }
-        
-            // Optional filters
+
             if (!empty($filters['class_id'])) {
                 $this->db->where('s.class_id', $filters['class_id']);
             }
@@ -708,102 +733,83 @@
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-            
-            // ---------------------------
-            // Step 3: Include withdrawn students, but only transactions before withdrawal
-            // ---------------------------
-            
-            // $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            // $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
 
-            $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            $this->db->join('withdrawn_students AS ws', 'ws.student_id = s.id', 'left');
-            
-            $this->db->group_start();
-            $this->db->where('ws.id IS NULL');
-            $this->db->or_where('col.receipt_date <= ws.date_of_leaving');
-            $this->db->group_end();
-        
-            // Payment mode (supports multiple)
-            if (!empty($filters['payment_mode']) && is_array($filters['payment_mode'])) {
-                $this->db->where_in('col.payment_method', $filters['payment_mode']);
-            } elseif (!empty($filters['payment_mode'])) {
-                $this->db->where('col.payment_method', $filters['payment_mode']);
+            if (!empty($filters['payment_mode'])) {
+                $this->db->where_in('col.payment_method', (array)$filters['payment_mode']);
             }
-        
+
             $this->db->where('col.session_id', $academy_session_id);
+
             $rows = $this->db->get()->result_array();
-    
+
             // -----------------------------
-            // Step 4: Load all fee head names
+            // Step 3: Fee Heads
             // -----------------------------
             $fee_heads = $this->db->select('name')->get('fees_type')->result_array();
             $fee_head_names = array_column($fee_heads, 'name');
-        
+
             // -----------------------------
-            // Step 5: Process JSON summary in PHP
+            // Step 4: Group by student
             // -----------------------------
             $final = [];
+
             foreach ($rows as $r) {
+
+                $student_id = $r['student_id'];
+
+                if (!isset($final[$student_id])) {
+                    $final[$student_id] = [
+                        'student_no'        => $r['student_no'],
+                        'student_name'      => !empty($r['ws_id']) ? $r['student_name'] . ' (W)' : $r['student_name'],
+                        'class_name'        => $r['class_name'],
+                        'section_name'      => $r['section_name'],
+                        'student_type'      => $r['student_type'],
+                        'roll_no'           => $r['roll_no'],
+                        'gross_amount'      => 0,
+                        'net_amount'        => 0,
+                        'previous_year_due' => 0,
+                        'concession'        => 0,
+                        'late_fine'         => 0,
+                        'other_charges'     => 0,
+                        'fee_heads'         => []
+                    ];
+                }
+
+                $final[$student_id]['gross_amount'] += $r['gross_amount'];
+                $final[$student_id]['net_amount']   += $r['net_amount'];
+
                 $summary = json_decode($r['summary'], true);
-                
-                // Initialize containers
-                $fee_data = [];
-                $previous_year_due = 0;
-                $concession = 0;
-                $late_fine = 0;
-                $other_charges = 0;
-        
+
                 if (is_array($summary)) {
                     foreach ($summary as $key => $value) {
                         $amount = (float)$value;
-        
+
                         if (in_array($key, $fee_head_names)) {
-                            // Regular Fee Head
-                            $fee_data[$key] = isset($fee_data[$key])
-                                ? $fee_data[$key] + $amount
-                                : $amount;
+                            $final[$student_id]['fee_heads'][$key] =
+                                ($final[$student_id]['fee_heads'][$key] ?? 0) + $amount;
                         } elseif (stripos($key, 'Previous Year Due') !== false) {
-                            $previous_year_due += $amount;
+                            $final[$student_id]['previous_year_due'] += $amount;
                         } elseif (stripos($key, 'Concession') !== false) {
-                            $concession += $amount;
+                            $final[$student_id]['concession'] += $amount;
                         } elseif (stripos($key, 'Late Fine') !== false) {
-                            $late_fine += $amount;
+                            $final[$student_id]['late_fine'] += $amount;
                         } else {
-                            // Treat as Other Charges
-                            $other_charges += $amount;
+                            $final[$student_id]['other_charges'] += $amount;
                         }
                     }
                 }
-                
-                $final[] = [
-                    'student_no'        => $r['student_no'],
-                    'student_name'      => !empty($r['ws_id']) ? $r['student_name'] . ' (W)' : $r['student_name'],
-                    'class_name'        => $r['class_name'],
-                    'section_name'      => $r['section_name'],
-                    'student_type'      => $r['student_type'],
-                    'roll_no'           => $r['roll_no'],
-                    'receipt_id'        => $r['receipt_id'],
-                    'receipt_date'      => $r['receipt_date'],
-                    'payment_method'    => $r['payment_method'],
-                    'gross_amount'      => $r['gross_amount'],
-                    'net_amount'        => $r['net_amount'],
-                    'previous_year_due' => $previous_year_due,
-                    'concession'        => $concession,
-                    'late_fine'         => $late_fine,
-                    'other_charges'     => $other_charges,
-                    'fee_heads'         => $fee_data
-                ];
             }
-        
-            return $final;
+
+            return array_values($final); // reindex array
         }
 
         public function paymentWiseCollectionReport($filters)
         {
             $academy_session_id = $this->session->academy_session['current_session']['id'];
 
-            // Step 1: Fetch raw collection data
+            // ---------------------------
+            // Step 1: Fetch raw collection data (receipt-wise)
+            // ---------------------------
             $this->db->select('
                 col.id,
                 col.summary,
@@ -819,76 +825,94 @@
                 col.net_amount,
                 ws.id AS ws_id
             ');
+
             $this->db->from('student_fee_collections AS col');
-            $this->db->join('students AS s', 's.id = col.student_id', 'left');
+
+            $this->db->join('students AS s', 's.id = col.student_id', 'inner');
+
+            // ✅ FIX 1: student_session restricted to current session
+            $this->db->join(
+                'student_session AS ses',
+                'ses.student_id = s.id AND ses.session_id = ' . (int)$academy_session_id,
+                'inner'
+            );
+
             $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
             $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
             $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
-        
-            // Mandatory date range
-            if($filters['from_date'] && $filters['to_date']) {
+
+            // ✅ FIX 2: withdrawn logic moved into JOIN (no OR duplication)
+            $this->db->join(
+                'withdrawn_students AS ws',
+                'ws.student_id = s.id AND col.receipt_date <= ws.date_of_leaving',
+                'left'
+            );
+
+            // ---------------------------
+            // Filters
+            // ---------------------------
+            if (!empty($filters['from_date']) && !empty($filters['to_date'])) {
                 $this->db->where('col.receipt_date >=', $filters['from_date']);
                 $this->db->where('col.receipt_date <=', $filters['to_date']);
             }
-        
-            // Optional filters
+
             if (!empty($filters['class_id'])) {
                 $this->db->where('s.class_id', $filters['class_id']);
             }
+
             if (!empty($filters['section_id'])) {
                 $this->db->where('s.section_id', $filters['section_id']);
             }
+
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-        
-            // Multiple payment modes
-            if (!empty($filters['payment_mode']) && is_array($filters['payment_mode'])) {
-                $this->db->where_in('col.payment_method', $filters['payment_mode']);
+
+            if (!empty($filters['payment_mode'])) {
+                $this->db->where_in('col.payment_method', (array)$filters['payment_mode']);
             }
-            
-            // ---------------------------
-            // Step 3: Include withdrawn students, but only transactions before withdrawal
-            // --
-            
-            // $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            // $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
-            
-            $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-            $this->db->join('withdrawn_students AS ws', 'ws.student_id = s.id', 'left');
-            
-            $this->db->group_start();
-            $this->db->where('ws.id IS NULL');
-            $this->db->or_where('col.receipt_date <= ws.date_of_leaving');
-            $this->db->group_end();
-        
+
             $this->db->where('col.session_id', $academy_session_id);
+
+            // ✅ FIX 3: guarantee 1 row per receipt
+            $this->db->group_by('col.id');
+
             $result = $this->db->get()->result_array();
-        
-            // Step 2: Fetch active fee heads (for matching)
+
+            // ---------------------------
+            // Step 2: Fetch active fee heads
+            // ---------------------------
             $fee_heads = $this->db->select('TRIM(name) AS name')
-                                  ->from('fees_type')
-                                  ->where('is_active', 1)
-                                  ->where('deleted', 0)
-                                  ->get()
-                                  ->result_array();
-                                  
+                ->from('fees_type')
+                ->where('is_active', 1)
+                ->where('deleted', 0)
+                ->get()
+                ->result_array();
+
             $fee_head_names = array_column($fee_heads, 'name');
-        
-            // Step 3: Process each record and decode summary
+
+            // ---------------------------
+            // Step 3: Process data
+            // ---------------------------
             $final = [];
+
             foreach ($result as $row) {
-                $key = $row['receipt_id'];
-        
-                if (!isset($final[$key])) {
-                    $final[$key] = [
+
+                $receiptKey = $row['receipt_id'];
+
+                if (!isset($final[$receiptKey])) {
+                    $final[$receiptKey] = [
                         'student_no'   => $row['student_no'],
-                        'student_name' => !empty($row['ws_id']) ? $row['student_name'] . ' (W)' : $row['student_name'],
+                        'student_name' => !empty($row['ws_id'])
+                                            ? $row['student_name'] . ' (W)'
+                                            : $row['student_name'],
                         'class_name'   => $row['class_name'],
                         'section_name' => $row['section_name'],
                         'student_type' => $row['student_type'],
                         'receipt_id'   => $row['receipt_id'],
                         'receipt_date' => $row['receipt_date'],
+
+                        // payment modes
                         'cash'         => 0,
                         'debit_card'   => 0,
                         'credit_card'  => 0,
@@ -896,131 +920,49 @@
                         'cheque'       => 0,
                         'neft'         => 0,
                         'bank_deposit' => 0,
+
                         'gross_amount' => $row['gross_amount'],
                         'net_amount'   => $row['net_amount'],
+
                         'previous_year_due' => 0,
                         'late_fine'         => 0,
                         'concession'        => 0,
                         'other_charges'     => 0,
                     ];
                 }
-        
-                // Decode summary JSON safely
+
+                // Decode summary
                 $summaryData = json_decode($row['summary'], true);
                 if (is_array($summaryData)) {
                     foreach ($summaryData as $keyName => $val) {
-                        $val = floatval($val);
-                        $trimKey = trim($keyName);
-        
-                        if (in_array($trimKey, $fee_head_names)) {
-                            // Part of fee heads → already included in gross, so ignore
+                        $val = (float)$val;
+                        $keyName = trim($keyName);
+
+                        if (in_array($keyName, $fee_head_names)) {
                             continue;
-                        } elseif (strcasecmp($trimKey, 'Previous Year Due') == 0) {
-                            $final[$key]['previous_year_due'] += $val;
-                        } elseif (strcasecmp($trimKey, 'Late Fine') == 0) {
-                            $final[$key]['late_fine'] += $val;
-                        } elseif (strcasecmp($trimKey, 'Concession') == 0) {
-                            $final[$key]['concession'] += $val;
+                        } elseif (strcasecmp($keyName, 'Previous Year Due') === 0) {
+                            $final[$receiptKey]['previous_year_due'] += $val;
+                        } elseif (strcasecmp($keyName, 'Late Fine') === 0) {
+                            $final[$receiptKey]['late_fine'] += $val;
+                        } elseif (strcasecmp($keyName, 'Concession') === 0) {
+                            $final[$receiptKey]['concession'] += $val;
                         } else {
-                            $final[$key]['other_charges'] += $val;
+                            $final[$receiptKey]['other_charges'] += $val;
                         }
                     }
                 }
-        
-                // Map payment method
+
+                // ✅ Payment method mapping (now safe)
                 $method = strtolower(trim($row['payment_method']));
-                if (isset($final[$key][$method])) {
-                    $final[$key][$method] += $row['net_amount'];
+                if (isset($final[$receiptKey][$method])) {
+                    $final[$receiptKey][$method] = $row['net_amount'];
                 }
             }
-        
+
             return array_values($final);
         }
 
-        // public function stateWiseOutstandingReport($filters)
-        // {
-        //     // === 1. Fetch Students with Class, Section, and State Info ===
-        //     $this->db->select('
-        //         s.id AS student_id,
-        //         s.student_no,
-        //         CONCAT(s.f_name, " ", s.l_name) AS student_name,
-        //         s.father_name,
-        //         s.father_mobile,
-        //         s.mother_name,
-        //         s.mother_mobile,
-        //         st.name AS student_type,
-        //         c.name AS class_name,
-        //         sec.name AS section_name,
-        //         state.name AS state_name
-        //     ');
-        //     $this->db->from('students AS s');
-        //     $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-        //     $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
-        //     $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
-        //     $this->db->join('states AS state', 'state.id = s.state_id', 'left');
-            
-        //     // Optional filters
-        //     if (!empty($filters['class_id'])) {
-        //         $this->db->where('s.class_id', $filters['class_id']);
-        //     }
-        //     if (!empty($filters['section_id'])) {
-        //         $this->db->where('s.section_id', $filters['section_id']);
-        //     }
-        //     if (!empty($filters['student_type_id'])) {
-        //         $this->db->where('s.student_type_id', $filters['student_type_id']);
-        //     }
-        //     if (!empty($filters['state_id'])) {
-        //         $this->db->where('s.state_id', $filters['state_id']);
-        //     }
-            
-        //     // ---------------------------
-        //     // Step 3: Include withdrawn students, but only transactions before withdrawal
-        //     // -
-            
-        //     // $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-        //     // $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
-            
-        //     $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-        //     $this->db->join('withdrawn_students AS ws', 'ws.student_id = s.id', 'left');
-            
-        //     $this->db->group_start();
-        //     $this->db->where('ws.id IS NULL');
-        //     $this->db->or_where('col.receipt_date <= ws.date_of_leaving');
-        //     $this->db->group_end();
-        
-        //     // Get the students
-        //     $students = $this->db->get()->result_array();
-        
-        //     $final = [];
-        
-        //     foreach ($students as $row) {
-        //         $student_id = $row['student_id'];
-        
-        //         // === Call studentMonthlyPaymentReport to get the full report ===
-        //         $student_report = $this->studentMonthlyPaymentReport($student_id);
-        
-        //         // Extract outstanding from summary
-        //         $outstanding = $student_report['summary']['outstanding'];
-        
-        //         // Add to the final result
-        //         $final[] = [
-        //             'student_no'    => $row['student_no'],
-        //             'student_name'  => $row['student_name'],
-        //             'father_name'   => $row['father_name'],
-        //             'father_mobile' => $row['father_mobile'],
-        //             'mother_name'   => $row['mother_name'],
-        //             'mother_mobile' => $row['mother_mobile'],
-        //             'student_type'  => $row['student_type'],
-        //             'class_name'    => $row['class_name'],
-        //             'section_name'  => $row['section_name'],
-        //             'state_name'    => $row['state_name'],
-        //             'outstanding'   => $outstanding,  // Use outstanding from studentMonthlyPaymentReport
-        //         ];
-        //     }
-        
-        //     return $final;
-        // }
-        
+       
         public function stateWiseOutstandingReport($filters)
         {
             // === 1. Fetch Students with Class, Section, and State Info ===
@@ -1099,75 +1041,6 @@
         
             return $final;
         }
-
-        // public function classWiseOutstandingReport($filters)
-        // {
-        //     // === 1. Fetch Students with Class & Section Info ===
-        //     $this->db->select('
-        //         s.id AS student_id,
-        //         s.student_no,
-        //         CONCAT(s.f_name, " ", s.l_name) AS student_name,
-        //         s.father_name,
-        //         s.father_mobile,
-        //         s.mother_name,
-        //         s.mother_mobile,
-        //         st.name AS student_type,
-        //         c.name AS class_name,
-        //         sec.name AS section_name
-        //     ');
-        //     $this->db->from('students AS s');
-        //     $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-        //     $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
-        //     $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
-        //     $this->db->where('s.deleted', 0);
-            
-        //     // Filters
-        //     if (!empty($filters['class_id'])) {
-        //         $this->db->where('s.class_id', $filters['class_id']);
-        //     }
-        //     if (!empty($filters['section_id'])) {
-        //         $this->db->where('s.section_id', $filters['section_id']);
-        //     }
-        //     if (!empty($filters['student_type_id'])) {
-        //         $this->db->where('s.student_type_id', $filters['student_type_id']);
-        //     }
-            
-        //     $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-        //     $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
-        
-        //     // Sorting
-        //     $this->db->order_by('c.name ASC, sec.name ASC, s.f_name ASC');
-        
-        //     // Get the students
-        //     $students = $this->db->get()->result_array();
-        //     $final = [];
-        
-        //     foreach ($students as $row) {
-        //         $student_id = $row['student_id'];
-        
-        //         // === Call the previous function to get the student's full report ===
-        //         $student_report = $this->studentMonthlyPaymentReport($student_id);
-        
-        //         // Extract outstanding from summary
-        //         $outstanding = $student_report['summary']['outstanding'];
-        
-        //         // Add to the final result
-        //         $final[] = [
-        //             'student_no'    => $row['student_no'],
-        //             'student_name'  => $row['student_name'],
-        //             'father_name'   => $row['father_name'],
-        //             'father_mobile' => $row['father_mobile'],
-        //             'mother_name'   => $row['mother_name'],
-        //             'mother_mobile' => $row['mother_mobile'],
-        //             'student_type'  => $row['student_type'],
-        //             'class_name'    => $row['class_name'],
-        //             'section_name'  => $row['section_name'],
-        //             'outstanding'   => $outstanding,  // Use outstanding from studentMonthlyPaymentReport
-        //         ];
-        //     }
-        
-        //     return $final;
-        // }
         
         public function classWiseOutstandingReport($filters)
         {
@@ -1248,6 +1121,10 @@
 
         public function previousYearOutstandingReport($filters)
         {
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
+            // $previous_session_id = $academy_session_id == 5 ? 1 : 0;
+
             $this->db->select('
                 s.id AS student_id,
                 s.student_no,
@@ -1282,6 +1159,7 @@
                 $this->db->select('SUM(amount) AS amount');
                 $this->db->from('student_outstanding_fees');
                 $this->db->where('student_id', $row['student_id']);
+                $this->db->where('student_outstanding_fees.current_session_id', $academy_session_id);
                 $pay_row = $this->db->get()->row_array();
                 if (!empty($pay_row['amount'])) {
                     $payable = (float)$pay_row['amount'];
@@ -1307,6 +1185,8 @@
         
         public function totalConcessionReport($filters)
         {
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
             $this->db->select('
                 s.id AS student_id,
                 CONCAT(s.f_name, " ", s.l_name) AS student_name,
@@ -1332,14 +1212,16 @@
             if (!empty($filters['student_type_id'])) {
                 $this->db->where('s.student_type_id', $filters['student_type_id']);
             }
-            if (!empty($filters['session_id'])) {
-                $this->db->where('fc.session_id', $filters['session_id']);
-            }
+            // if (!empty($filters['session_id'])) {
+            //     $this->db->where('fc.session_id', $filters['session_id']);
+            // }
             
             $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
             $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
         
             $this->db->group_by(['s.id', 'fc.installment_id']);
+
+            $this->db->where('fc.session_id', $academy_session_id);
             $rows = $this->db->get()->result_array();
             
             // Transform rows → pivot months
@@ -1362,130 +1244,11 @@
         
             return $students;
         }
-
-        // public function classWiseAllMonthsCollectionReport($filters)
-        // {
-        //     // === 1. Fetch Students with Class & Section Info ===
-        //     $this->db->select('
-        //         s.id AS student_id,
-        //         s.student_no,
-        //         CONCAT(s.f_name, " ", s.l_name) AS student_name,
-        //         c.name AS class_name,
-        //         sec.name AS section_name,
-        //         st.name AS student_type
-        //     ');
-        //     $this->db->from('students AS s');
-        //     $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-        //     $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
-        //     $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
-        //     $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-        //     $this->db->where('s.deleted', 0);
-        //     $this->db->where('ses.withdraw !=', 1); // Exclude withdrawn students
-        
-        //     if (!empty($filters['class_id'])) {
-        //         $this->db->where('s.class_id', $filters['class_id']);
-        //     }
-        //     if (!empty($filters['section_id'])) {
-        //         $this->db->where('s.section_id', $filters['section_id']);
-        //     }
-        //     if (!empty($filters['student_type_id'])) {
-        //         $this->db->where('s.student_type_id', $filters['student_type_id']);
-        //     }
-        
-        //     $this->db->order_by('c.name ASC, sec.name ASC, s.f_name ASC');
-        //     $students = $this->db->get()->result_array();
-        
-        //     // === 2. Prepare Final Data ===
-        //     $final = array();
-        
-        //     foreach ($students as $stu) {
-        //         $student_id = $stu['student_id'];
-        
-        //         // Initialize 12 months as "0"
-        //         $monthly_payable = array_fill(1, 12, "0");
-        //         $monthly_paid = array_fill(1, 12, "0");
-        
-        //         // --- Get Payable (from fees table, month = 0–11)
-        //         $this->db->select('month, SUM(amount) AS total_amount');
-        //         $this->db->from('fees');
-        //         $this->db->where('student_id', $student_id);
-        //         $this->db->group_by('month');
-        //         $payable_rows = $this->db->get()->result_array();
-        
-        //         foreach ($payable_rows as $p) {
-        //             $month = (int)$p['month'] + 1; // shift 0–11 → 1–12
-        //             if ($month >= 1 && $month <= 12) {
-        //                 $monthly_payable[$month] = (float)$p['total_amount'];
-        //             }
-        //         }
-        
-        //         // --- Get monthly Paid (from student_fee_collection_installments table -> use net_amount)
-        //         $this->db->select('inst.month, SUM(inst.net_amount) AS total_paid');
-        //         $this->db->from('student_fee_collection_installments AS inst');
-        //         $this->db->join('student_fee_collections AS col', 'col.id = inst.collection_id', 'left');
-        //         $this->db->where('col.student_id', $student_id);
-        //         $this->db->group_by('inst.month');
-        //         $paid_rows = $this->db->get()->result_array();
-        
-        //         foreach ($paid_rows as $pr) {
-        //             $month = (int)$pr['month']; // already 1–12
-        //             if ($month >= 1 && $month <= 12) {
-        //                 $monthly_paid[$month] = (float)$pr['total_paid'];
-        //             }
-        //         }
-        
-        //         // --- Calculate Gross Payable (sum of monthly_payable)
-        //         $gross_payable = array_sum(array_map(function($v) {
-        //             return is_numeric($v) ? $v : 0;
-        //         }, $monthly_payable));
-        
-        //         // --- Paid (receipt-level) from student_fee_collections.net_amount (sum of receipts)
-        //         $this->db->select('SUM(net_amount) AS total_net_paid');
-        //         $this->db->from('student_fee_collections');
-        //         $this->db->where('student_id', $student_id);
-        //         $net_paid_row = $this->db->get()->row_array();
-        //         $paid_total = !empty($net_paid_row['total_net_paid']) ? (float)$net_paid_row['total_net_paid'] : 0;
-        
-        //         // --- Concession from fees_concession table (sum of amount)
-        //         $this->db->select('SUM(amount) AS total_concession');
-        //         $this->db->from('fees_concession');
-        //         $this->db->where('student_id', $student_id);
-        //         $con_row = $this->db->get()->row_array();
-        //         $concession_total = !empty($con_row['total_concession']) ? (float)$con_row['total_concession'] : 0;
-        
-        //         // --- Previous Year Due 
-        //         $previous_year_due = 0;
-        //         $this->db->select('SUM(amount) AS total_due');
-        //         $this->db->from('student_outstanding_fees');
-        //         $this->db->where('student_id', $student_id);
-        //         $due_row = $this->db->get()->row_array();
-        //         $previous_year_due = !empty($due_row['total_due']) ? (float)$due_row['total_due'] : 0;
-        
-        //         // --- Final Computations
-        //         $net_payable = $gross_payable - $concession_total;
-        //         $outstanding = $net_payable - $paid_total;
-        
-        //         // --- Optional: Shift Paid array for alignment (if UI expects last->first)
-        //         $last_value = array_pop($monthly_paid);
-        //         array_unshift($monthly_paid, $last_value);
-        
-        //         $final[] = array_merge($stu, array(
-        //             'monthly_payable' => $monthly_payable,
-        //             'monthly_paid'    => $monthly_paid,
-        //             'gross_payable'   => $gross_payable,
-        //             'previous_due'    => $previous_year_due,
-        //             'concession'      => $concession_total,
-        //             'net_payable'     => $net_payable,
-        //             'paid'            => $paid_total,
-        //             'outstanding'     => (($gross_payable + $previous_year_due) - $concession_total) - $paid_total
-        //         ));
-        //     }
-            
-        //     return $final;
-        // }
         
         public function classWiseAllMonthsCollectionReport($filters)
         {
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
             // === 1. Fetch Students with Class, Section & Withdrawal Info ===
             $this->db->select('
                 s.id AS student_id,
@@ -1564,6 +1327,8 @@
                     $this->db->where('col.receipt_date <=', $withdrawal_date);
                 }
                 $this->db->group_by('inst.month');
+
+                $this->db->where('col.session_id', $academy_session_id);
                 $paid_rows = $this->db->get()->result_array();
         
                 foreach ($paid_rows as $pr) {
@@ -1583,6 +1348,8 @@
                 if ($withdrawal_date) {
                     $this->db->where('receipt_date <=', $withdrawal_date);
                 }
+
+                $this->db->where('student_fee_collections.session_id', $academy_session_id);
                 $net_paid_row = $this->db->get()->row_array();
                 $paid_total = !empty($net_paid_row['total_net_paid']) ? (float)$net_paid_row['total_net_paid'] : 0;
         
@@ -1590,6 +1357,7 @@
                 $this->db->select('SUM(amount) AS total_concession');
                 $this->db->from('fees_concession');
                 $this->db->where('student_id', $student_id);
+                $this->db->where('fees_concession.session_id', $academy_session_id);
                 $con_row = $this->db->get()->row_array();
                 $concession_total = !empty($con_row['total_concession']) ? (float)$con_row['total_concession'] : 0;
         
@@ -1597,6 +1365,7 @@
                 $this->db->select('SUM(amount) AS total_due');
                 $this->db->from('student_outstanding_fees');
                 $this->db->where('student_id', $student_id);
+                $this->db->where('student_outstanding_fees.current_session_id', $academy_session_id);
                 $due_row = $this->db->get()->row_array();
                 $previous_year_due = !empty($due_row['total_due']) ? (float)$due_row['total_due'] : 0;
         
@@ -1622,6 +1391,7 @@
 
         public function studentMonthlyPaymentReport($student_id)
         {
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
             $report = [];
         
             // ==================== 1️⃣ GROSS AMOUNT PAYABLE ====================
@@ -1630,6 +1400,7 @@
             $this->db->join('fees_type AS ft', 'ft.id = f.fees_head_id', 'left');
             $this->db->where('f.student_id', $student_id);
             $this->db->group_by(['f.month', 'f.fees_head_id']);
+            $this->db->where('f.session_id', $academy_session_id);
             $rows = $this->db->get()->result_array();
         
             $months = range(0, 11);
@@ -1670,6 +1441,7 @@
             $this->db->join('student_fee_collection_installments AS inst', 'inst.collection_id = col.id', 'left');
             $this->db->join('fees_type AS ft', 'ft.id = inst.fee_head_id', 'left');
             $this->db->where('col.student_id', $student_id);
+            $this->db->where('col.session_id', $academy_session_id);
             $this->db->group_by('col.id');
             $paid_rows = $this->db->get()->result_array();
         
@@ -1689,6 +1461,7 @@
             $this->db->select('SUM(amount) AS total_concession');
             $this->db->from('fees_concession');
             $this->db->where('student_id', $student_id);
+            $this->db->where('fees_concession.session_id', $academy_session_id);
             $con_row = $this->db->get()->row_array();
             $concession_total = !empty($con_row['total_concession']) ? (float)$con_row['total_concession'] : 0;
         
@@ -1696,6 +1469,7 @@
             $this->db->select('SUM(amount) AS total_due');
             $this->db->from('student_outstanding_fees');
             $this->db->where('student_id', $student_id);
+            $this->db->where('student_outstanding_fees.current_session_id', $academy_session_id);
             $due_row = $this->db->get()->row_array();
             $previous_due = !empty($due_row['total_due']) ? (float)$due_row['total_due'] : 0;
         
@@ -1714,100 +1488,11 @@
         
             return $report;
         }
-
-        // public function consolidatedOutstandingReport($filters)
-        // {
-        //     // === 1️⃣ Get all active students ===
-        //     $this->db->select('
-        //         s.id AS student_id,
-        //         s.student_no,
-        //         CONCAT(s.f_name, " ", s.m_name, " ", s.l_name) AS student_name,
-        //         c.name AS class_name,
-        //         sec.name AS section_name,
-        //         st.name AS student_type,
-        //         s.father_mobile,
-        //         s.mother_mobile
-        //     ');
-        //     $this->db->from('students AS s');
-        //     $this->db->join('classes AS c', 'c.id = s.class_id', 'left');
-        //     $this->db->join('sections AS sec', 'sec.id = s.section_id', 'left');
-        //     $this->db->join('student_types AS st', 'st.id = s.student_type_id', 'left');
-        //     $this->db->join('student_session AS ses', 'ses.student_id = s.id', 'left');
-        //     $this->db->where('s.deleted', 0);
-        //     $this->db->where('ses.withdraw !=', 1);
-        
-        //     if (!empty($filters['class_id'])) {
-        //         $this->db->where('s.class_id', $filters['class_id']);
-        //     }
-        //     if (!empty($filters['section_id'])) {
-        //         $this->db->where('s.section_id', $filters['section_id']);
-        //     }
-        //     if (!empty($filters['student_type_id'])) {
-        //         $this->db->where('s.student_type_id', $filters['student_type_id']);
-        //     }
-        
-        //     $students = $this->db->get()->result_array();
-        
-        //     $final = [];
-        
-        //     foreach ($students as $stu) {
-        //         $student_id = $stu['student_id'];
-        
-        //         // --- Gross Payable from monthly fees
-        //         $payable_school = $this->studentMonthlyPaymentReport($student_id)['summary']['gross_payable'];
-        
-        //         // --- Paid total from student_fee_collections.net_amount
-        //         $this->db->select('SUM(net_amount) AS total_net_paid');
-        //         $this->db->from('student_fee_collections');
-        //         $this->db->where('student_id', $student_id);
-        //         $net_paid_row = $this->db->get()->row_array();
-        //         $paid_total = !empty($net_paid_row['total_net_paid']) ? (float)$net_paid_row['total_net_paid'] : 0;
-        
-        //         // --- Concession from fees_concession table
-        //         $this->db->select('SUM(amount) AS total_concession');
-        //         $this->db->from('fees_concession');
-        //         $this->db->where('student_id', $student_id);
-        //         $con_row = $this->db->get()->row_array();
-        //         $concession_total = !empty($con_row['total_concession']) ? (float)$con_row['total_concession'] : 0;
-        
-        //         // --- Previous Year Due from student_outstanding_fees
-        //         $this->db->select('SUM(amount) AS total_due');
-        //         $this->db->from('student_outstanding_fees');
-        //         $this->db->where('student_id', $student_id);
-        //         $due_row = $this->db->get()->row_array();
-        //         $previous_year_due = !empty($due_row['total_due']) ? (float)$due_row['total_due'] : 0;
-        
-        //         // === Compute outstanding ===
-        //         $outstanding_school = ($payable_school + $previous_year_due) - ($paid_total + $concession_total);
-        
-        //         $final[] = [
-        //             'student_no' => $stu['student_no'],
-        //             'student_name' => $stu['student_name'],
-        //             'class_sec' => $stu['class_name'] . ' ' . $stu['section_name'],
-        //             'student_type' => $stu['student_type'],
-        //             'board_prev_due' => 0,
-        //             'school_prev_due' => $previous_year_due,
-        //             'board_payable' => 0,
-        //             'school_payable' => $payable_school,
-        //             'payable_total' => $payable_school,
-        //             'board_received' => 0,
-        //             'school_received' => $paid_total,
-        //             'late_fee' => 0, // optional, not included here
-        //             'other_charges' => 0, // optional, not included here
-        //             'concession' => $concession_total,
-        //             'received_total' => $paid_total,
-        //             'board_outstanding' => 0,
-        //             'school_outstanding' => $outstanding_school,
-        //             'outstanding_total' => $outstanding_school,
-        //             'phone' => $stu['father_mobile'] ?: $stu['mother_mobile']
-        //         ];
-        //     }
-        
-        //     return $final;
-        // }
-        
+       
         public function consolidatedOutstandingReport($filters)
         {
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
             // === 1️⃣ Get all active students ===
             $this->db->select('
                 s.id AS student_id,
@@ -1851,6 +1536,7 @@
                 $this->db->select('SUM(net_amount) AS total_net_paid');
                 $this->db->from('student_fee_collections');
                 $this->db->where('student_id', $student_id);
+                $this->db->where('student_fee_collections.session_id', $academy_session_id);
                 $net_paid_row = $this->db->get()->row_array();
                 $paid_total = !empty($net_paid_row['total_net_paid']) ? (float)$net_paid_row['total_net_paid'] : 0;
         
@@ -1858,6 +1544,7 @@
                 $this->db->select('SUM(amount) AS total_concession');
                 $this->db->from('fees_concession');
                 $this->db->where('student_id', $student_id);
+                $this->db->where('fees_concession.session_id', $academy_session_id);
                 $con_row = $this->db->get()->row_array();
                 $concession_total = !empty($con_row['total_concession']) ? (float)$con_row['total_concession'] : 0;
         
@@ -1865,6 +1552,7 @@
                 $this->db->select('SUM(amount) AS total_due');
                 $this->db->from('student_outstanding_fees');
                 $this->db->where('student_id', $student_id);
+                $this->db->where('student_outstanding_fees.current_session_id', $academy_session_id);
                 $due_row = $this->db->get()->row_array();
                 $previous_year_due = !empty($due_row['total_due']) ? (float)$due_row['total_due'] : 0;
         

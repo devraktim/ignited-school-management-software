@@ -1079,7 +1079,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             otherFeeCounter++;
             let row = `<tr class="other-fee-row" data-row="${otherFeeCounter}">`;
         
-            row += `<td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;"><input type="number" name="other[${otherFeeCounter}][name]" class="form-control form-control-sm" placeholder="Other Fee Name" required></td>`;
+            row += `<td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;"><input type="text" name="other[${otherFeeCounter}][name]" class="form-control form-control-sm" placeholder="Other Fee Name" required></td>`;
             row += `<td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;"><input type="number" name="other[${otherFeeCounter}][total]" class="form-control form-control-sm total-amount" readonly></td>`;
         
             months.forEach(function (month) {

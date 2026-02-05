@@ -8,7 +8,6 @@
             margin: 15mm;
         }
         body {
-            font-family: Georgia, serif;
             font-size: 10pt;
             margin: 10px;
         }
@@ -55,6 +54,51 @@
     </style>
 </head>
 <body>
+
+<?php 
+    // Custom function for Indian Number Format with 2 decimal places
+    function indian_number_format_with_crore($num) {
+        $num = (string)$num; // Convert to string
+        $arr = explode('.', $num); // Separate the number and the decimal part
+        $num = $arr[0]; // Get the integer part
+        $decimal = isset($arr[1]) ? '.' . substr($arr[1], 0, 2) : ''; // Get the decimal part and limit it to 2 decimal places
+    
+        // Ensure the number has 2 decimal points (even if the original number doesn't have decimals)
+        if ($decimal === '') {
+            $decimal = '.00';
+        } else {
+            $decimal = rtrim($decimal, '0'); // Remove trailing zeros if there are any
+            if (strlen($decimal) < 3) {
+                $decimal = str_pad($decimal, 3, '0'); // Ensure 2 decimal places
+            }
+        }
+    
+        $len = strlen($num);
+        $result = '';
+        $i = 0;
+    
+        // Separate the last three digits
+        if ($len > 3) {
+            $lastthree = substr($num, $len - 3, 3);
+            $len -= 3;
+            $result = ',' . $lastthree . $result;
+        }
+    
+        // Explode the remaining digits in 2's format
+        while ($len > 0) {
+            $temp_len = ($len > 2) ? 2 : $len;
+            $restunits = substr($num, $len - $temp_len, $temp_len);
+            $len -= $temp_len;
+            $result = $restunits . $result;
+            if ($len > 0) {
+                $result = ',' . $result;
+            }
+        }
+    
+        // Return the formatted number with the decimal part
+        return $result . $decimal;
+    }
+?>
 
 <?php 
 $school_name = "St. Francis School";
@@ -156,26 +200,26 @@ $total_rows = count($report);
                     <td><?= $r['class_sec']; ?></td>
                     <td><?= $r['student_type']; ?></td>
                     <td><?= htmlspecialchars($r['phone']); ?></td>
-                    <td><?= number_format($r['school_prev_due'],2); ?></td>
-                    <td><?= number_format($r['school_payable'],2); ?></td>
-                    <td><?= number_format($r['school_received'],2); ?></td>
-                    <td><?= number_format($r['late_fee'],2); ?></td>
-                    <td><?= number_format($r['other_charges'],2); ?></td>
-                    <td><?= number_format($r['concession'],2); ?></td>
-                    <td><?= number_format($r['school_outstanding'],2); ?></td>
+                    <td><?= indian_number_format_with_crore($r['school_prev_due']); ?></td>
+                    <td><?= indian_number_format_with_crore($r['school_payable']); ?></td>
+                    <td><?= indian_number_format_with_crore($r['school_received']); ?></td>
+                    <td><?= indian_number_format_with_crore($r['late_fee']); ?></td>
+                    <td><?= indian_number_format_with_crore($r['other_charges']); ?></td>
+                    <td><?= indian_number_format_with_crore($r['concession']); ?></td>
+                    <td><?= indian_number_format_with_crore($r['school_outstanding']); ?></td>
                 </tr>
             <?php endfor; ?>
 
             <!-- ===== PAGE TOTAL ===== -->
             <tr class="totals-row">
                 <td colspan="6">Page Total</td>
-                <td><?= number_format($page_total['school_prev_due'],2); ?></td>
-                <td><?= number_format($page_total['school_payable'],2); ?></td>
-                <td><?= number_format($page_total['school_received'],2); ?></td>
-                <td><?= number_format($page_total['late_fee'],2); ?></td>
-                <td><?= number_format($page_total['other_charges'],2); ?></td>
-                <td><?= number_format($page_total['concession'],2); ?></td>
-                <td><?= number_format($page_total['school_outstanding'],2); ?></td>
+                <td><?= indian_number_format_with_crore($page_total['school_prev_due']); ?></td>
+                <td><?= indian_number_format_with_crore($page_total['school_payable']); ?></td>
+                <td><?= indian_number_format_with_crore($page_total['school_received']); ?></td>
+                <td><?= indian_number_format_with_crore($page_total['late_fee']); ?></td>
+                <td><?= indian_number_format_with_crore($page_total['other_charges']); ?></td>
+                <td><?= indian_number_format_with_crore($page_total['concession']); ?></td>
+                <td><?= indian_number_format_with_crore($page_total['school_outstanding']); ?></td>
             </tr>
 
             <!-- ===== GRAND TOTAL (LAST PAGE ONLY) ===== -->
@@ -187,13 +231,13 @@ $total_rows = count($report);
             <?php if ($page == $total_pages - 1): ?>
             <tr class="totals-row">
                 <td colspan="6">Grand Total</td>
-                <td><?= number_format($grand['school_prev_due'],2); ?></td>
-                <td><?= number_format($grand['school_payable'],2); ?></td>
-                <td><?= number_format($grand['school_received'],2); ?></td>
-                <td><?= number_format($grand['late_fee'],2); ?></td>
-                <td><?= number_format($grand['other_charges'],2); ?></td>
-                <td><?= number_format($grand['concession'],2); ?></td>
-                <td><?= number_format($grand['school_outstanding'],2); ?></td>
+                <td><?= indian_number_format_with_crore($grand['school_prev_due']); ?></td>
+                <td><?= indian_number_format_with_crore($grand['school_payable']); ?></td>
+                <td><?= indian_number_format_with_crore($grand['school_received']); ?></td>
+                <td><?= indian_number_format_with_crore($grand['late_fee']); ?></td>
+                <td><?= indian_number_format_with_crore($grand['other_charges']); ?></td>
+                <td><?= indian_number_format_with_crore($grand['concession']); ?></td>
+                <td><?= indian_number_format_with_crore($grand['school_outstanding']); ?></td>
             </tr>
             <?php endif; ?>
             </tbody>

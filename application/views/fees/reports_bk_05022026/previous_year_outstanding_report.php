@@ -68,7 +68,50 @@
     </style>
 </head>
 <body>
-
+<?php 
+    // Custom function for Indian Number Format with 2 decimal places
+    function indian_number_format_with_crore($num) {
+        $num = (string)$num; // Convert to string
+        $arr = explode('.', $num); // Separate the number and the decimal part
+        $num = $arr[0]; // Get the integer part
+        $decimal = isset($arr[1]) ? '.' . substr($arr[1], 0, 2) : ''; // Get the decimal part and limit it to 2 decimal places
+    
+        // Ensure the number has 2 decimal points (even if the original number doesn't have decimals)
+        if ($decimal === '') {
+            $decimal = '.00';
+        } else {
+            $decimal = rtrim($decimal, '0'); // Remove trailing zeros if there are any
+            if (strlen($decimal) < 3) {
+                $decimal = str_pad($decimal, 3, '0'); // Ensure 2 decimal places
+            }
+        }
+    
+        $len = strlen($num);
+        $result = '';
+        $i = 0;
+    
+        // Separate the last three digits
+        if ($len > 3) {
+            $lastthree = substr($num, $len - 3, 3);
+            $len -= 3;
+            $result = ',' . $lastthree . $result;
+        }
+    
+        // Explode the remaining digits in 2's format
+        while ($len > 0) {
+            $temp_len = ($len > 2) ? 2 : $len;
+            $restunits = substr($num, $len - $temp_len, $temp_len);
+            $len -= $temp_len;
+            $result = $restunits . $result;
+            if ($len > 0) {
+                $result = ',' . $result;
+            }
+        }
+    
+        // Return the formatted number with the decimal part
+        return $result . $decimal;
+    }
+?>
 <?php
 $school_name = "St. Francis School";
 $branch = "Jorethang";
@@ -122,7 +165,7 @@ if ($total_records > 0):
                 ?>
                 <tr style="font-weight:bold; border-top:2px solid #000;">
                     <td colspan="6" class="Tdr">Page Total :</td>
-                    <td class="Tdr"><?= number_format($page_total['outstanding'], 2); ?></td>
+                    <td class="Tdr"><?= indian_number_format_with_crore($page_total['outstanding']); ?></td>
                 </tr>
                 </tbody>
                 </table>
@@ -164,18 +207,18 @@ if ($total_records > 0):
             <td class="Tdc"><?= htmlspecialchars($row['class_name'].' / '.$row['section_name']) ?></td>
             <td class="Tdc"><?= htmlspecialchars($row['student_type']) ?></td>
             <td class="Tdc"><?= htmlspecialchars($row['phone']) ?></td>
-            <td class="Tdr"><?= number_format($row['outstanding'], 2) ?></td>
+            <td class="Tdr"><?= indian_number_format_with_crore($row['outstanding']) ?></td>
         </tr>
     <?php } ?>
 
     <tr style="font-weight:bold; border-top:2px solid #000;">
             <td colspan="6" class="Tdr">Page Total :</td>
-            <td class="Tdr"><?= number_format($page_total['outstanding'], 2) ?></td>
+            <td class="Tdr"><?= indian_number_format_with_crore($page_total['outstanding']) ?></td>
         </tr>
 
         <tr style="font-weight:bold; border-top:3px double #000;">
             <td colspan="6" class="Tdr">Grand Total :</td>
-            <td class="Tdr"><?= number_format($grand_total['outstanding'], 2) ?></td>
+            <td class="Tdr"><?= indian_number_format_with_crore($grand_total['outstanding']) ?></td>
         </tr>
     </tbody>
     </table>

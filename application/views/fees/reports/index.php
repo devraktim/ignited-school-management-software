@@ -262,7 +262,6 @@
         report('class-wise-all-months-collection')
     }
 
-
     function generateStudentPayment() {
         const studentNo = document.getElementById('student_search').value.trim();
         
@@ -288,8 +287,7 @@
         // If class is selected, proceed as usual
         report('class-wise-outstanding');
     }
-
-    
+  
     function generateStateWiseOutstanding() {
         const stateSelect = document.getElementById('state_id');
         const stateValue = stateSelect.value.trim();
