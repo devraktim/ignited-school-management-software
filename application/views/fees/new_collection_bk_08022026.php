@@ -101,6 +101,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
 <div class="card card-flush h-xl-100">
     <div class="card-body py-9">
         <?php echo form_open(base_url("fees/fees-collection/create"), array("method" => "GET", "target" => "_blank", "id" => "studentSearchForm")) ?> 
+            <?php if(count($students) > 0) { ?>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <div class="form-group">
@@ -117,6 +118,11 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                     </div>
                 </div>
             </div>
+            <?php } else { ?>
+                <div class="row">
+                    <h4 class="text-center">No Data Found</h4>
+                </div>
+            <?php } ?>
         <?php echo form_close(); ?>
     </div>
 </div>
@@ -233,14 +239,16 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
     }
     
     // --- Concession + Previous Year Due data ---
+    $total_concession = 0;
     $concession_map = [];
     if (!empty($concession)) {
         foreach ($concession as $c) {
             $installment_no = (int) str_replace('ins_', '', $c['installment_id']);
             $concession_map[$installment_no - 1] = $c['amount'];
+            $total_concession += $c['amount'];
         }
     }
-    
+
     $previous_due = $outstanding_fees['amount'] ?? 0;
     
     $fees_gross_totals = 0;
@@ -254,8 +262,21 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             <div class="card-body py-9">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="receipt_date" class="form-label">Receipt Date</label>
-                        <input type="date" id="receipt_date" name="receipt_date" class="form-control" value="<?= $today ?>">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <?php $receipt_no = substr(time(), -6); $today = date('Y-m-d'); ?>
+                                <div>
+                                    <label for="receipt_no" class="form-label">Receipt No.</label>
+                                    <input type="text" id="receipt_no" name="receipt_no" class="form-control" value="<?= $receipt_no ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div>
+                                    <label for="receipt_date" class="form-label">Receipt Date</label>
+                                    <input type="date" id="receipt_date" name="receipt_date" class="form-control" value="<?= $today ?>">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="col-md-6 d-flex justify-content-end align-items-center">
@@ -340,9 +361,9 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                                 $fees_gross_due = $fees_gross_due + $fee_data['total_due'];
                                             ?>
                                             <input 
-                                                type="text" 
+                                                type="number" 
                                                 class="form-control form-control-sm total-amount" 
-                                                value="<?= number_format($fee_data['total_amount'], 2) ?>" 
+                                                value="<?= $fee_data['total_amount'] ?>" 
                                                 readonly>
                                         </td>
                             
@@ -401,12 +422,31 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                 <?php if ($fine_counting != 'na') {
                                     $today = new DateTime();
                                     $late_fine_total = 0;
-                                    $month_fines = [];
+                                    $total_paid_fine = 0;
+                                    $total_actual_fine = 0;
                                 
+                                    $month_fines = [];
+                                    $paid_fines = [];
+                                    $actual_fines = [];
+                                
+                                    // Step 1: Calculate paid fine per month
+                                    foreach ($other_payments as $payment) {
+                                        if ($payment['name'] === 'Late Fine') {
+                                            $monthIndex = (int)$payment['month'];
+                                            if (!isset($paid_fines[$monthIndex])) {
+                                                $paid_fines[$monthIndex] = 0;
+                                            }
+                                            $paid_fines[$monthIndex] += floatval($payment['amount']);
+                                        }
+                                    }
+                                
+                                    // Step 2: Loop through each month and calculate fines
                                     foreach ($months as $i => $month) {
                                         $fine = 0;
-                                        if (!empty($due_dates[$i])) {
-                                            $due_date = new DateTime($due_dates[$i]);
+                                        $due_date_str = $due_dates[$i] ?? null;
+                                
+                                        if (!empty($due_date_str)) {
+                                            $due_date = new DateTime($due_date_str);
                                 
                                             if ($today > $due_date) {
                                                 if ($fine_counting == 'day') {
@@ -414,9 +454,10 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                                     $delay_days = $interval->days;
                                                     $fine = $delay_days * $fine_amount;
                                                 } elseif ($fine_counting == 'month') {
-                                                    $delay_months = (($today->format('Y') - $due_date->format('Y')) * 12) + ($today->format('m') - $due_date->format('m'));
+                                                    $delay_months = (($today->format('Y') - $due_date->format('Y')) * 12)
+                                                                    + ($today->format('m') - $due_date->format('m'));
                                                     if ($today->format('d') < $due_date->format('d')) {
-                                                        $delay_months--; // Not completed full month
+                                                        $delay_months--;
                                                     }
                                                     $delay_months = max(0, $delay_months);
                                                     $fine = $delay_months * $fine_amount;
@@ -424,27 +465,63 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                             }
                                         }
                                 
-                                        $month_fines[$month] = $fine;
-                                        $late_fine_total += $fine;
+                                        $paid = $paid_fines[$i] ?? 0;
+                                        $outstanding_fine = max(0, $fine - $paid);
+                                
+                                        // Track values
+                                        $month_fines[$month] = $outstanding_fine;
+                                        $late_fine_total += $outstanding_fine;
+                                        $total_actual_fine += $fine;
+                                        $total_paid_fine += $paid;
+                                        $actual_fines[$i] = $fine;
                                     }
                                 ?>
+                                
                                 <!-- Late Fine Row -->
                                 <tr id="fine-row">
                                     <td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;">Late Fine</td>
+                                
+                                    <!-- Tot.P / Paid / Due Summary -->
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
-                                        <input type="text" name="fine_amount_total" id="fine-total"
-                                               class="form-control form-control-sm total-amount" value="<?= $late_fine_total ?>" readonly>
+                                        <div class="d-flex justify-content-between px-1">
+                                            <small class="text-dark" style="font-weight: bold;">
+                                                Tot.P: <span id="fine-total-actual"><?= number_format($total_actual_fine, 2) ?></span> INR
+                                            </small>
+                                            <small class="text-success" style="font-weight: bold;">
+                                                Paid: <span id="fine-total-paid"><?= number_format($total_paid_fine, 2) ?></span> INR
+                                            </small>
+                                            <small class="text-danger" style="font-weight: bold;">
+                                                Due: <span id="fine-total-due"><?= number_format($late_fine_total, 2) ?></span> INR
+                                            </small>
+                                        </div>
+                                        <input type="number" name="fine_amount_total" id="fine-total"
+                                               class="form-control form-control-sm total-amount" 
+                                               value="<?= $late_fine_total ?>" 
+                                               readonly>
                                     </td>
                                 
+                                    <!-- Monthly Fine Inputs -->
                                     <?php foreach ($months as $i => $month): ?>
                                         <td>
+                                            <div class="d-flex justify-content-between px-1">
+                                                <small class="text-dark" style="font-weight: bold;">
+                                                    P.A: <?= number_format($amount, 2) ?> INR
+                                                </small>
+                                                <small class="<?= $paid > 0 ? 'text-success' : 'text-danger' ?>" style="font-weight: bold;">
+                                                    Paid: <?= number_format($paid, 2) ?> INR
+                                                </small>
+                                            </div>
+                                            
                                             <input 
-                                                type="text" 
+                                                type="number" 
                                                 name="fine_amount_<?= $month ?>"
                                                 class="form-control form-control-sm fine-month month_<?= $month ?> fee-input"
                                                 value="<?= $month_fines[$month] ?? 0 ?>" 
                                                 data-month="<?= $month ?>" 
                                                 data-amount="<?= $month_fines[$month] ?? 0 ?>" 
+                                                data-due-date="<?= $due_dates[$i] ?>"
+                                                data-paid-fine="<?= $paid_fines[$i] ?? 0 ?>"
+                                                data-actual-fine="<?= $actual_fines[$i] ?? 0 ?>"
                                                 readonly 
                                                 disabled>
                                         </td>
@@ -452,33 +529,53 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                     <td></td>
                                 </tr>
                                 <?php } ?>
+
                                 
+                                <?php
+                                // Totals for Previous Year Due
+                                $total_previous_due = $previous_due;
+                                $previous_toal_paid = 0;
+                                
+                                // Step 1: Aggregate payments made
+                                foreach ($other_payments as $op) {
+                                    if ($op['name'] === 'Previous Year Due') {
+                                        $previous_toal_paid = $previous_toal_paid + floatval($op['amount']);
+                                    }
+                                }
+
+                                ?>
                                 
                                 <!-- Previous Year Due -->
                                 <tr id="previous-due-row">
                                     <td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;">Previous Year Due</td>
+                                
+                                    <!-- Total Summary -->
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
                                         <div class="d-flex justify-content-between px-1">
                                             <small class="text-dark" style="font-weight: bold;">
-                                                Tot.P: <?= number_format($previous_due, 2) ?> INR
+                                                Tot.P: <span id="previous-due-total-actual"><?= number_format($total_previous_due, 2) ?></span> INR
                                             </small>
                                             <small class="text-success" style="font-weight: bold;">
-                                                Paid: <?= number_format(0, 2) ?> INR
+                                                Paid: <span id="previous-due-total-paid"><?= number_format($previous_toal_paid, 2) ?></span> INR
                                             </small>
                                             <small class="text-danger" style="font-weight: bold;">
-                                                Due: <?= number_format($previous_due, 2) ?> INR
+                                                Due: <span id="previous-due-total-due"><?= number_format($total_previous_due - $previous_toal_paid, 2) ?></span> INR
                                             </small>
                                         </div>
-                                        
-                                        <input type="text" name="previous_year_due_total" id="previous-due-total" class="form-control form-control-sm" value=0 readonly></td>
+                                        <input type="number" name="previous_year_due_total" id="previous-due-total" class="form-control total-amount form-control-sm" value="0" readonly>
+                                    </td>
+                                
+                                    <!-- Monthly Inputs -->
                                     <?php foreach ($months as $month): ?>
-                                        <td>
-                                            <div class="d-flex justify-content-between px-1">
-                                                <small class="text-dark" style="font-weight: bold;">.</small>
-                                                <small class="text-danger" style="font-weight: bold;">.</small>
-                                            </div>
-                                            
-                                            <input type="number" name="previous_year_due_<?php echo $month; ?>" step="0.01" class="form-control form-control-sm previous-due-month month_<?php echo $month; ?>" data-month="<?= $month ?>" value="0" disabled="">
+                                        <td class="text-center">
+                                            <input type="number"
+                                                   step="0.01"
+                                                   name="previous_year_due_<?= $month ?>"
+                                                   class="form-control form-control-sm previous-due-month fee-input month_<?= $month ?>"
+                                                   data-month="<?= $month ?>"
+                                                   data-paid="0"
+                                                   value="0"
+                                                   disabled>
                                         </td>
                                     <?php endforeach; ?>
                                     <td></td>
@@ -490,57 +587,119 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
                                         <div class="d-flex justify-content-between px-1">
                                             <small class="text-dark" style="font-weight: bold;">
-                                                Tot.P: <?php echo number_format($fees_gross_totals, 2); ?> INR
+                                                Tot.P: <?php echo number_format($fees_gross_totals + $total_previous_due, 2); ?> INR
                                             </small>
                                             <small class="text-success" style="font-weight: bold;">
-                                                Paid: <?php echo number_format($fees_gross_paid, 2); ?> INR
+                                                Paid: <?php echo number_format($fees_gross_paid + $previous_toal_paid, 2); ?> INR
                                             </small>
                                             <small class="text-danger" style="font-weight: bold;">
-                                                Due: <?php echo number_format($fees_gross_due, 2); ?> INR
+                                                Due: <?php echo number_format($fees_gross_due + ($total_previous_due - $previous_toal_paid), 2); ?> INR
                                             </small>
                                         </div>
                                         
-                                        <input type="text" name="gross_amount_total" id="gross-total" class="form-control form-control-sm" readonly>
+                                        <input type="number" name="gross_amount_total" id="gross-total" class="form-control form-control-sm" readonly>
                                     </td>
                                     <?php foreach ($months as $month): ?>
                                         <td>
-                                            <input type="text" name="gross_amount_<?php echo $month; ?>" class="form-control form-control-sm gross-month month_<?php echo $month; ?>" data-month="<?= $month ?>" readonly disabled="">
+                                            <input type="number" name="gross_amount_<?php echo $month; ?>" class="form-control form-control-sm gross-month month_<?php echo $month; ?>" data-month="<?= $month ?>" readonly disabled="">
                                         </td>
                                     <?php endforeach; ?>
                                     <td></td>
                                 </tr>
                                 
+                                <?php
+                                // Step 1: Calculate concession paid per month
+                                $concession_paid_map = [];
+                                $total_concession_paid = 0;
+                                
+                                foreach ($other_payments as $payment) {
+                                    if ($payment['name'] === 'Concession') {
+                                        $month = (int)$payment['month'];
+                                        $paid_amount = (float)$payment['amount'];
+                                        
+                                        if (!isset($concession_paid_map[$month])) {
+                                            $concession_paid_map[$month] = 0;
+                                        }
+                                        $concession_paid_map[$month] += $paid_amount;
+                                        $total_concession_paid = $total_concession_paid + $paid_amount;
+                                    }
+                                }
+                                
+                                
+                                
+                                // Step 2: Calculate totals and prepare concession map for display
+                                // foreach ($months as $month) {
+                                //     $pa = $amount; // Planned amount for the month
+                                //     $paid = $concession_paid_map[$month] ?? 0;
+                                
+                                //     $total_concession_planned += $pa;
+                                //     $total_concession_paid += $paid;
+                                
+                                //     $concession_map[$month] = $paid;
+                                // }
+                                
+                                // $total_concession_due = $total_concession - $total_concession_paid;
+                                ?>
+                                
                                 <!-- Concession Row -->
                                 <tr id="concession-row">
                                     <td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;">Concession</td>
+                                    
+                                    <!-- Totals Column -->
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
-                                        <input type="text" name="concession_amount_total" id="concession-total" class="form-control form-control-sm" readonly></td>
-                                    <?php foreach ($months as $i => $month): 
-                                        $c_amount = $concession_map[$month]; ?>
+                                        <input type="number" name="concession_amount_total" id="concession-total" class="form-control form-control-sm" value="" readonly>
+                                    </td>
+                                
+                                    <!-- Monthly columns -->
+                                    <?php foreach ($months as $month): 
+                                        $c_amount = $concession_map[$month] ?? 0;
+                                        $c_paid = $concession_paid_map[$month] ?? 0;
+                                    ?>
                                         <td>
-                                            <input type="text" name="concession_amount_<?php echo $month; ?>" class="form-control form-control-sm concession-month month_<?php echo $month; ?>" value="<?= $c_amount ?>" data-month="<?= $month ?>" readonly disabled="">
+                                            <input 
+                                                type="number" 
+                                                name="concession_amount_<?= $month; ?>" 
+                                                class="form-control form-control-sm concession-month month_<?= $month; ?>" 
+                                                value="<?= $c_amount - $c_paid ?>" 
+                                                data-month="<?= $month ?>" 
+                                                readonly 
+                                                disabled>
                                         </td>
                                     <?php endforeach; ?>
-                                    <td></td>
+                                
+                                    <td></td> <!-- Optional empty column -->
                                 </tr>
-                    
+
                                 <!-- Net Payable -->
                                 <tr id="net-row">
                                     <td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;">Net Payable Amount</td>
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
+                                        <?php
+                                            $net_payable_total = ($fees_gross_totals + $total_previous_due) - $total_concession;
+                                            $net_payable_paid = ($fees_gross_paid + $previous_toal_paid) - $total_concession_paid;
+                                            $net_payable_due = $net_payable_total - $net_payable_paid;
+                                        ?>
+                                        
                                         <div class="d-flex justify-content-between px-1">
-                                            <small class="text-dark" style="font-weight: bold;">Tot.P: 2000.00 INR</small>
-                                            <small class="text-success" style="font-weight: bold;">Paid: 0.00 INR</small>
-                                            <small class="text-danger" style="font-weight: bold;">Due: 2000.00 INR</small>
+                                            <small class="text-dark" style="font-weight: bold;">
+                                                Tot.P: <?= number_format($net_payable_total, 2) ?> INR
+                                            </small>
+                                            <small class="text-success" style="font-weight: bold;">
+                                                Paid: <?= number_format($net_payable_paid, 2) ?> INR
+                                            </small>
+                                            <small class="text-danger" style="font-weight: bold;">
+                                                Due: <?= number_format($net_payable_due, 2) ?> INR
+                                            </small>
                                         </div>
-                                        <input type="text" name="net_amount_total" id="net-total" class="form-control form-control-sm" readonly></td>
+                                        
+                                        <input type="number" name="net_amount_total" id="net-total" class="form-control form-control-sm" readonly></td>
                                     <?php foreach ($months as $month): ?>
                                         <td>
                                             <div class="d-flex justify-content-between px-1">
                                                 <small class="text-dark" style="font-weight: bold;">.</small>
                                                 <small class="text-danger" style="font-weight: bold;">.</small>
                                             </div>
-                                            <input type="text" name="net_amount_<?php echo $month; ?>" class="form-control form-control-sm net-month month_<?php echo $month; ?>" data-month="<?= $month ?>" readonly disabled="">
+                                            <input type="number" name="net_amount_<?php echo $month; ?>" class="form-control form-control-sm net-month month_<?php echo $month; ?>" data-month="<?= $month ?>" readonly disabled="">
                                         </td>
                                     <?php endforeach; ?>
                                     <td></td>
@@ -560,18 +719,8 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
         <!-- Payment Method Entry-->
         <div class="card card-flush h-xl-100 mt-5">
             <div class="card-body py-9">
-                <?php $receipt_no = substr(time(), -6); $today = date('Y-m-d'); ?>
-                
                 <div class="row">
                         <div class="col-md-6">
-                            <!-- Receipt No -->
-                            <div class="mb-3">
-                                <label for="receipt_no" class="form-label">Receipt No.</label>
-                                <input type="text" id="receipt_no" name="receipt_no" 
-                                       class="form-control" 
-                                       value="<?= $receipt_no ?>">
-                            </div>
-                
                             <!-- Mode of Payment -->
                             <div class="mb-3">
                                 <label for="payment_mode" class="form-label">Mode of Payment</label>
@@ -649,7 +798,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
-<!--Recalculate Totals-->
+<!--Recalculate Totals (Second Columns)-->
 <script>
     let otherFeeCounter = 0;
     const months = <?= json_encode(array_values($months)) ?>;
@@ -685,7 +834,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             $(this).find('.total-amount').val(Math.max(rowTotal, 0));
     
             // Add to gross total
-            grossTotal += rowTotal;
+            // grossTotal += rowTotal;
         });
     
         // Set gross total (clamped)
@@ -697,75 +846,120 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             $(this).val(Math.max(monthTotals[month], 0));
         });
     
-        recalcAll(); // Additional logic, as per your system
+        recalcAll();
     }
 </script>
 
-
+<!--Calculate for Gross and Net Payble-->
 <script>
     function recalcAll() {
-        let grossTotal = 0, concessionTotal = 0, previousDueTotal = parseFloat($("#previous-due-total").val()) || 0;
-        let grossMonth = {}, concessionMonth = {}, prevMonth = {}, netMonth = {};
-
+        let grossTotal = 0,
+            concessionTotal = 0,
+            previousDueTotal = parseFloat($("#previous-due-total").val()) || 0;
+    
+        // Initialize monthly trackers
+        let grossMonth = {}, concessionMonth = {}, fineMonth = {}, prevMonth = {}, netMonth = {};
+    
+        // Setup per-month values
         months.forEach(m => {
             grossMonth[m] = 0;
             concessionMonth[m] = parseFloat($(".concession-month[data-month='" + m + "']").val()) || 0;
             prevMonth[m] = parseFloat($(".previous-due-month[data-month='" + m + "']").val()) || 0;
+            fineMonth[m] = parseFloat($(".fine-month[data-month='" + m + "']").val()) || 0;
         });
-
-        // Calculate Gross
+    
+        // Loop through fee inputs
         $("#fees-table tbody tr").each(function () {
             $(this).find('.fee-input').each(function () {
                 if ($(this).is(':disabled')) return;
-
+    
                 const val = parseFloat($(this).val()) || 0;
-                const month = $(this).data('month') || this.className.match(/month_(\d+)/)[1];
-                grossMonth[month] += val;
-                grossTotal += val;
+                
+                // Get the month from data attribute or fallback to class
+                let month = $(this).data('month');
+                if (!month) {
+                    const match = this.className.match(/month_(\d+)/);
+                    if (match) {
+                        month = match[1];
+                    } else {
+                        console.warn("Month not found for input", this);
+                        return;
+                    }
+                }
+    
+                // Add only the fee input to total — prev and fine handled separately
+                grossMonth[month] = (grossMonth[month] || 0) + val;
+                // grossTotal += val;
             });
         });
-
-        // Fill Gross row
+    
+        // Add fine and previous due to grossMonth values
+        months.forEach(m => {
+            grossMonth[m] += (prevMonth[m] || 0) + (fineMonth[m] || 0);
+            // grossTotal += (fineMonth[m] || 0); // don't add prevMonth again here
+        });
+        
+        $('input.gross-month').each(function () {
+            if (!$(this).is(':disabled')) {
+                const month = $(this).data('month');
+                grossTotal += grossMonth[month] || 0;
+            }
+        });
+        
+        // Update Gross row
         $("#gross-total").val(Math.max(grossTotal, 0));
         $(".gross-month").each(function () {
             let m = $(this).data("month");
-            $(this).val(Math.max(grossMonth[m], 0));
+            $(this).val(Math.max(grossMonth[m] || 0, 0));
         });
-
-        // Calculate Concession
+    
+        // Calculate Concession Total
         concessionTotal = 0;
         $(".concession-month").each(function () {
-            if ($(this).is(':disabled')) return; 
+            if ($(this).is(':disabled')) return;
             concessionTotal += parseFloat($(this).val()) || 0;
         });
         $("#concession-total").val(Math.max(concessionTotal, 0));
-
-        // Calculate Net = Gross - Concession + Previous
-        let netTotal = grossTotal - concessionTotal + previousDueTotal;
-        netTotal = Math.max(netTotal, 0); // Clamp net total
-
+    
+        // Net = Gross - Concession + Previous Due (overall)
+        let netTotal = grossTotal - concessionTotal;
+        netTotal = Math.max(netTotal, 0); // Clamp to 0
+    
+        // Calculate Net per month
         months.forEach(m => {
-            let calculated = grossMonth[m] - (concessionMonth[m] || 0) + (prevMonth[m] || 0);
-            netMonth[m] = Math.max(calculated, 0); // Clamp negative to 0
+            let net = grossMonth[m] - concessionMonth[m];
+            netMonth[m] = Math.max(net, 0); // Clamp negative to 0
         });
-
+    
+        // Update totals in DOM
         $("#net-total").val(netTotal);
         $(".display_amount_payble").text(netTotal);
-
+    
         $(".net-month").each(function () {
             let m = $(this).data("month");
-            $(this).val(Math.max(netMonth[m], 0));
+            $(this).val(Math.max(netMonth[m] || 0, 0));
         });
     }
+    
+    // Trigger recalculation on relevant inputs
+    $(document).on("input", ".fee-input, .concession-month, .previous-due-month, .fine-month", recalcAll);
+    
+    // Run once at page load
+    $(document).ready(function () {
+        recalcAll(); 
+                
+        let previous_year_total_payble = parseFloat($('#previous-due-total-actual').val())
+        let previous_year_total_paid = parseFloat($('#previous-due-total-paid').val())
+        let previous_year_total_due = parseFloat($('#previous-due-total-due').val())
 
-    // Trigger recalculation when ANY relevant input changes
-    $(document).on("input", ".fee-input, .concession-month, .previous-due-month", recalcAll);
+        let gross_total_payble = parseFloat($('#previous-due-total-actual').val())
+        let gross_total_paid = parseFloat($('#previous-due-total-actual').val())
+        let gross_year_total_due = parseFloat($('#previous-due-total-actual').val())
 
-    // Run once at start
-    recalcAll();
+    });
 </script>
 
-
+<!--Check Installment Status-->
 <script>
     // Function to check installment status and disable checkbox if all inputs are zero
     function checkInstallmentStatus() {
@@ -886,7 +1080,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             let row = `<tr class="other-fee-row" data-row="${otherFeeCounter}">`;
         
             row += `<td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;"><input type="text" name="other[${otherFeeCounter}][name]" class="form-control form-control-sm" placeholder="Other Fee Name" required></td>`;
-            row += `<td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;"><input type="text" name="other[${otherFeeCounter}][total]" class="form-control form-control-sm total-amount" readonly></td>`;
+            row += `<td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;"><input type="number" name="other[${otherFeeCounter}][total]" class="form-control form-control-sm total-amount" readonly></td>`;
         
             months.forEach(function (month) {
                 // Check if the checkbox for the current month is checked
@@ -923,7 +1117,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             row.find('.other-month').each(function () {
                 total += parseFloat($(this).val()) || 0;
             });
-            row.find('.total-amount').val(total.toFixed(2));
+            row.find('.total-amount').val(total);
             recalculateTotals();
         });
     
@@ -1009,92 +1203,92 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
 
 <script>
     $(document).ready(function () {
-    $('#previewSubmit').on('click', function () {
-        const modalBody = $('#modalTableBody');
-        modalBody.empty();
+        $('#previewSubmit').on('click', function () {
+            const modalBody = $('#modalTableBody');
+            modalBody.empty();
 
-        const summaryData = {}; // For storing feeLabel: inputVal pairs
+            const summaryData = {}; // For storing feeLabel: inputVal pairs
 
-        // Collect rows from tbody and tfoot
-        $('#fees-table').find('tbody tr, tfoot tr').each(function () {
-            const $row = $(this);
-            const $cells = $row.find('td');
+            // Collect rows from tbody and tfoot
+            $('#fees-table').find('tbody tr, tfoot tr').each(function () {
+                const $row = $(this);
+                const $cells = $row.find('td');
 
-            if ($cells.length < 2) return;
+                if ($cells.length < 2) return;
 
-            // Fee Head Name — either text or input value
-            let feeLabel = $cells.eq(0).text().trim();
-            if (!feeLabel) {
-                const input = $cells.eq(0).find('input');
-                if (input.length) {
-                    feeLabel = input.val()?.trim() || 'Unnamed Fee';
+                // Fee Head Name — either text or input value
+                let feeLabel = $cells.eq(0).text().trim();
+                if (!feeLabel) {
+                    const input = $cells.eq(0).find('input');
+                    if (input.length) {
+                        feeLabel = input.val()?.trim() || 'Unnamed Fee';
+                    }
                 }
-            }
 
-            // Second cell — collect values
-            const $secondCell = $cells.eq(1);
-            const inputVal = $secondCell.find('input').val()?.trim() || '-';
+                // Second cell — collect values
+                const $secondCell = $cells.eq(1);
+                const inputVal = $secondCell.find('input').val()?.trim() || '-';
 
-            const paText = $secondCell.find('small.text-dark').text()?.replace('P.A:', '').trim() || '-';
-            const paidText = $secondCell.find('small.text-danger').text()?.replace('Paid:', '').trim() || '-';
+                const paText = $secondCell.find('small.text-dark').text()?.replace('P.A:', '').trim() || '-';
+                const paidText = $secondCell.find('small.text-danger').text()?.replace('Paid:', '').trim() || '-';
 
-            if (feeLabel || inputVal) {
                 if (feeLabel || inputVal) {
-                    if (feeLabel != "Gross Amount" && feeLabel != "Net Payable Amount") {
-                        $('#modalTableBody').append(`
-                            <tr>
-                                <td>${feeLabel}</td>
-                                <td>${inputVal} INR</td>
-                            </tr>
-                        `);
-                        // Store in summary JSON if inputVal is meaningful (not just "-")
-                        if (inputVal !== '-') {
-                            summaryData[feeLabel] = inputVal;
+                    if (feeLabel || inputVal) {
+                        if (feeLabel != "Gross Amount" && feeLabel != "Net Payable Amount") {
+                            $('#modalTableBody').append(`
+                                <tr>
+                                    <td>${feeLabel}</td>
+                                    <td>${inputVal} INR</td>
+                                </tr>
+                            `);
+                            // Store in summary JSON if inputVal is meaningful (not just "-")
+                            if (inputVal !== '-') {
+                                summaryData[feeLabel] = inputVal;
+                            }
                         }
                     }
                 }
-            }
+            });
+
+            // Store JSON string in the input with name="summary"
+            $('input[name="summary"]').val(JSON.stringify(summaryData));
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            modal.show();
         });
 
-        // Store JSON string in the input with name="summary"
-        $('input[name="summary"]').val(JSON.stringify(summaryData));
-
-        // Show the modal
-        const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-        modal.show();
-    });
-
-    // Final submit
-    $('#finalSubmitBtn1, #finalSubmitBtn2').on('click', function () {
-        
-        // Check if the clicked button is the one with ID #finalSubmitBtn2
-        if ($(this).attr('id') === 'finalSubmitBtn2') {
-            // If it is, find the hidden input with the name "print" and change its value to "yes"
-            $('input[name="print"]').val('yes');
-        } else {
-            // If any other button (like #finalSubmitBtn1) is clicked, set the value to "no"
-            $('input[name="print"]').val('no');
-        }
-        
-        $('#fees-table thead .collect-check').each(function () {
-            var isChecked = $(this).is(':checked');
-
-            // Get the index of the <th> this checkbox is in
-            var th = $(this).closest('th');
-            var colIndex = th.index();
-
-            if (!isChecked) {
-                // Go through each row in the table body and tfoot
-                $('#fees-table tbody tr, #fees-table tfoot tr').each(function () {
-                    var td = $(this).find('td').eq(colIndex);
-                    td.find('input').removeAttr('name');
-                });
+        // Final submit
+        $('#finalSubmitBtn1, #finalSubmitBtn2').on('click', function () {
+            
+            // Check if the clicked button is the one with ID #finalSubmitBtn2
+            if ($(this).attr('id') === 'finalSubmitBtn2') {
+                // If it is, find the hidden input with the name "print" and change its value to "yes"
+                $('input[name="print"]').val('yes');
+            } else {
+                // If any other button (like #finalSubmitBtn1) is clicked, set the value to "no"
+                $('input[name="print"]').val('no');
             }
+            
+            $('#fees-table thead .collect-check').each(function () {
+                var isChecked = $(this).is(':checked');
+
+                // Get the index of the <th> this checkbox is in
+                var th = $(this).closest('th');
+                var colIndex = th.index();
+
+                if (!isChecked) {
+                    // Go through each row in the table body and tfoot
+                    $('#fees-table tbody tr, #fees-table tfoot tr').each(function () {
+                        var td = $(this).find('td').eq(colIndex);
+                        td.find('input').removeAttr('name');
+                    });
+                }
+            });
+            
+            $('#collectionform').submit();
         });
-        
-        $('#collectionform').submit();
     });
-});
 
     $(document).ready(function () {
         $('.fee-input').on('input', function () {
@@ -1107,6 +1301,200 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
         });
     });
 </script>
+
+<!--Recalculate Fine Amount-->
+<script>
+    $(document).ready(function () {
+        var fineCounting = '<?= $fine_counting ?>'; // 'day' or 'month'
+        var fineAmount = <?= json_encode($fine_amount) ?>;
+    
+        $('#receipt_date').on('change', function () {
+            var receiptDateVal = $(this).val();
+            if (!receiptDateVal) return;
+    
+            var receiptDate = new Date(receiptDateVal);
+            var totalFine = 0;
+            var totalActualFine = 0;
+            var totalPaidFine = 0;
+    
+            $('.fine-month').each(function () {
+                var $input = $(this);
+                var dueDateStr = $input.data('due-date');
+                var paidFine = parseFloat($input.data('paid-fine')) || 0;
+                var fine = 0;
+    
+                if (dueDateStr) {
+                    var dueDate = new Date(dueDateStr);
+    
+                    if (receiptDate > dueDate) {
+                        if (fineCounting === 'day') {
+                            var diffTime = receiptDate - dueDate;
+                            var delayDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                            fine = delayDays * fineAmount;
+                        } else if (fineCounting === 'month') {
+                            var yearDiff = receiptDate.getFullYear() - dueDate.getFullYear();
+                            var monthDiff = receiptDate.getMonth() - dueDate.getMonth();
+                            var delayMonths = (yearDiff * 12) + monthDiff;
+    
+                            if (receiptDate.getDate() < dueDate.getDate()) {
+                                delayMonths--;
+                            }
+    
+                            delayMonths = Math.max(0, delayMonths);
+                            fine = delayMonths * fineAmount;
+                        }
+                    }
+                }
+    
+                var outstandingFine = Math.max(0, fine - paidFine);
+    
+                // Update input field
+                $input.val(outstandingFine);
+                $input.attr('data-amount', outstandingFine);
+                $input.attr('data-actual-fine', fine);
+    
+                // Totals
+                totalFine += outstandingFine;
+                totalActualFine += fine;
+                totalPaidFine += paidFine;
+            });
+    
+            // Update summary values
+            $('#fine-total').val(totalFine);
+            $('#fine-total-actual').text(totalActualFine);
+            $('#fine-total-paid').text(totalPaidFine);
+            $('#fine-total-due').text(totalFine);
+        });
+    });
+</script>
+
+<!--Recalculate Previous Year Due-->
+<script>
+    $(document).ready(function () {
+        let totalPreviousDue = parseFloat($('#previous-due-total-due').text().replace(/,/g, '')) || 0;
+
+        $('.previous-due-month').on('input', function () {
+            let totalInputted = 0;
+    
+            // Calculate sum of user inputs
+            $('.previous-due-month').each(function () {
+                let val = parseFloat($(this).val()) || 0;
+                totalInputted += val;
+            });
+    
+            // If user over-inputs, revert the current change
+            if (totalInputted > totalPreviousDue) {
+                let exceededBy = totalInputted - totalPreviousDue;
+                let currentVal = parseFloat($(this).val()) || 0;
+                let newVal = (currentVal - exceededBy).toFixed(2);
+                $(this).val(newVal > 0 ? newVal : 0);
+                totalInputted -= exceededBy;
+            }
+
+        });
+    
+        // Optional: trigger once on page load
+        $('.previous-due-month').trigger('input');
+    });
+</script>
+
+<?php
+$session = $this->session->academy_session['current_session'] ?? null;
+?>
+
+<?php
+    $session = $this->session->academy_session['current_session'] ?? [];
+?>
+
+<script>
+    window.academySession = {
+        start: "<?= $session['start'] ?? '' ?>",
+        end: "<?= $session['end'] ?? '' ?>"
+    };
+</script>
+
+<script>
+$(document).ready(function () {
+
+    if (!academySession.start || !academySession.end) {
+        console.error('Session data missing');
+        return;
+    }
+
+    const table = $('#fees-table');
+
+    // -------- Build session month list --------
+    let startDate = new Date(academySession.start);
+    let endDate   = new Date(academySession.end);
+
+    let sessionMonths = [];
+    let cursor = new Date(startDate);
+    cursor.setDate(1);
+
+    while (cursor <= endDate) {
+        sessionMonths.push(cursor.getMonth());
+        cursor.setMonth(cursor.getMonth() + 1);
+    }
+
+    // -------- Detect month column indexes --------
+    let headerRow = table.find('thead tr');
+    let headerCells = headerRow.children('th');
+
+    let monthColIndexMap = {};
+
+    headerCells.each(function (index) {
+        let monthText = $(this).find('span').first().text().trim();
+        if (monthText) {
+            let monthIndex = new Date(monthText + ' 1, 2000').getMonth();
+            monthColIndexMap[monthIndex] = index;
+        }
+    });
+
+    // Fixed columns
+    const fixedStartCols = [0, 1];                    // Fee Head + Summary
+    const fixedEndCols   = [headerCells.length - 1];  // Action column
+
+    // -------- Final column order --------
+    let finalOrder = [...fixedStartCols];
+
+    sessionMonths.forEach(m => {
+        if (monthColIndexMap[m] !== undefined) {
+            finalOrder.push(monthColIndexMap[m]);
+        }
+    });
+
+    finalOrder.push(...fixedEndCols);
+
+    // -------- Clone entire columns --------
+    let clonedColumns = {};
+
+    finalOrder.forEach(colIndex => {
+        clonedColumns[colIndex] = [];
+        table.find('tr').each(function () {
+            let cell = $(this).children('th,td').eq(colIndex);
+            clonedColumns[colIndex].push(cell.clone(true, true));
+        });
+    });
+
+    // -------- Remove original columns --------
+    table.find('tr').each(function () {
+        let cells = $(this).children('th,td');
+        cells.remove();
+    });
+
+    // -------- Rebuild table with cloned columns --------
+    table.find('tr').each(function (rowIndex) {
+        let row = $(this);
+        finalOrder.forEach(colIndex => {
+            row.append(clonedColumns[colIndex][rowIndex]);
+        });
+    });
+
+    console.log('Columns cloned & reordered:', finalOrder);
+});
+</script>
+
+
 
 
 <?php $this->load->view("inc/app_footer.php"); ?>

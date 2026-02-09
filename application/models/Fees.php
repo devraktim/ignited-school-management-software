@@ -427,10 +427,13 @@
         
        
         public function get_collection_adjusted_fees_other($data) {
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
             // Start by building the SQL query to fetch the necessary data
             $this->db->select('sfc.receipt_date, sfco.name, sfco.month, sfco.amount');
             $this->db->from('student_fee_collections sfc');
             $this->db->join('student_fee_collection_other sfco', 'sfco.collection_id = sfc.id', 'inner');
+            $this->db->where('sfc.session_id', $academy_session_id);
             
             if (!empty($data['student_id'])) {
                 $this->db->where('sfc.student_id', $data['student_id']);

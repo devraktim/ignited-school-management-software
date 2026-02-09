@@ -674,6 +674,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                 <tr id="net-row">
                                     <td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;">Net Payable Amount</td>
                                     <td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;">
+
                                         <?php
                                             $net_payable_total = ($fees_gross_totals + $total_previous_due) - $total_concession;
                                             $net_payable_paid = ($fees_gross_paid + $previous_toal_paid) - $total_concession_paid;
@@ -947,15 +948,6 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
     // Run once at page load
     $(document).ready(function () {
         recalcAll(); 
-                
-        let previous_year_total_payble = parseFloat($('#previous-due-total-actual').val())
-        let previous_year_total_paid = parseFloat($('#previous-due-total-paid').val())
-        let previous_year_total_due = parseFloat($('#previous-due-total-due').val())
-
-        let gross_total_payble = parseFloat($('#previous-due-total-actual').val())
-        let gross_total_paid = parseFloat($('#previous-due-total-actual').val())
-        let gross_year_total_due = parseFloat($('#previous-due-total-actual').val())
-
     });
 </script>
 
@@ -1060,6 +1052,26 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
     });
 </script>
 
+<?php 
+
+$currentSession = $this->session->academy_session['current_session'];
+
+$start = new DateTime($currentSession['start']);
+$end   = new DateTime($currentSession['end']);
+
+$other_months = [];
+
+while ($start <= $end) {
+    // PHP month: 1–12 → JS month: 0–11 (Jan = 0)
+    $other_months[] = (int)$start->format('n') - 1;
+    $start->modify('+1 month');
+}
+
+// remove duplicates just in case
+$other_months = array_values(array_unique($other_months));
+
+?>
+
 <script>
     $(document).ready(function () {
         // Toggle read-only fields for a given installment column
@@ -1074,6 +1086,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             recalculateTotals();
         });
     
+        const othe_months = <?= json_encode($other_months) ?>;
 
         $('#add-other-fee').click(function () {
             otherFeeCounter++;
@@ -1082,7 +1095,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
             row += `<td class="text-nowrap sticky-column-1 px-3" style="background-color: #f1f1f1 !important;"><input type="text" name="other[${otherFeeCounter}][name]" class="form-control form-control-sm" placeholder="Other Fee Name" required></td>`;
             row += `<td class="text-nowrap sticky-column-2" style="background-color: #f1f1f1 !important;"><input type="number" name="other[${otherFeeCounter}][total]" class="form-control form-control-sm total-amount" readonly></td>`;
         
-            months.forEach(function (month) {
+            othe_months.forEach(function (month) {
                 // Check if the checkbox for the current month is checked
                 var isChecked = $('#collect_' + month).prop('checked');
                 
@@ -1093,7 +1106,7 @@ $selected_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
                                 class="form-control form-control-sm other-month fee-input month_${month}"
                                 data-month="${month}" 
                                 ${isChecked ? '' : 'disabled'}
-                                readonly>
+                                >
                         </td>`;
             });
         
