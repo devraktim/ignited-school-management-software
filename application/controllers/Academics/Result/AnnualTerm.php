@@ -106,7 +106,7 @@
                     "class_id"                 => $class_id,
                     "section_id"               => $section_id,
                     "student_session.promoted" => "ANY",
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                     // "student_no"    => "3876/2022/005/LKG"
                 ]);
         
@@ -168,7 +168,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student_id,
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ]);
         
                         $subject_id   = $student_subject['subject_id'] ?? null;
@@ -287,7 +287,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student_id,
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ]);
                     
                         $subject_id   = $student_subject['subject_id'] ?? null;
@@ -521,7 +521,7 @@
                     "class_id"                   => $class_id,
                     "section_id"                 => $section_id,
                     "student_session.promoted"   => "ANY",
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                     // "student_no"                 => "3567/2018/047/LKG"
                 ]);
             
@@ -585,7 +585,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ]);
             
                         if (!$student_subject) continue;
@@ -704,7 +704,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ]);
             
                         if (!$student_subject) continue;
@@ -959,7 +959,7 @@
                     "class_id"                   => $class_id,
                     "section_id"                 => $section_id,
                     "student_session.promoted"   => "ANY",
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                     // "student_no"                 => "3615/2019/028/III"
                 ]);
             
@@ -1034,7 +1034,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ]);
                         if (!$student_subject) continue;
             
@@ -1188,7 +1188,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ]);
                         if (!$student_subject) continue;
             
@@ -1285,7 +1285,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ]);
                         if (!$student_subject) continue;
             
@@ -1605,7 +1605,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ));
             
                         $subject_id = isset($student_subject['subject_id']) ? $student_subject['subject_id'] : null;
@@ -1723,7 +1723,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => 1
+                            "current_session_id" => $session_id
                         ));
             
                         $subject_id = isset($student_subject['subject_id']) ? $student_subject['subject_id'] : null;

@@ -1,7 +1,7 @@
 <?php 
     defined('BASEPATH') OR exit('No direct script access allowed');
 
-    class HalfYearly extends CI_Controller {
+    class FirstTerm extends CI_Controller {
         public function __construct() {
             parent::__construct();
             $this->load->model("AcademyClass");
@@ -46,7 +46,7 @@
                
                 $s = $this->Student->get_where([
                     "s.student_no" => $this->input->post("student_no"),
-                    "student_session.session_id" => $session_id,
+                    "student_session.session_id" => 1,
                     "student_session.promoted"      => "ANY",
                 ]);
                 
@@ -86,7 +86,7 @@
                     "class_id"                 => $class_id,
                     "section_id"               => $section_id,
                     "student_session.promoted" => "ANY",
-                    "student_session.session_id" => $session_id,
+                    "student_session.session_id" => 1,
                 ]);
             
                 $records = [];
@@ -143,7 +143,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student_id,
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ]);
             
                         $subject_id   = $student_subject['subject_id'] ?? null;
@@ -188,7 +188,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student_id,
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ]);
             
                         $subject_id   = $student_subject['subject_id'] ?? null;
@@ -339,7 +339,7 @@
                     "class_id"                   => $class_id,
                     "section_id"                 => $section_id,
                     "student_session.promoted"   => "ANY",
-                    "student_session.session_id" => $session_id,
+                    "student_session.session_id" => 1,
                 ]);
             
                 $records = [];
@@ -386,7 +386,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ]);
             
                         if (!$student_subject) continue;
@@ -458,7 +458,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ]);
             
                         if (!$student_subject) continue;
@@ -589,7 +589,7 @@
                     "class_id"                   => $class_id,
                     "section_id"                 => $section_id,
                     "student_session.promoted"   => "ANY",
-                    "student_session.session_id" => $session_id,
+                    "student_session.session_id" => 1,
                 ]);
             
                 $records       = [];
@@ -637,7 +637,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ]);
                         if (!$student_subject) continue;
             
@@ -733,7 +733,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ]);
                         if (!$student_subject) continue;
                         $subject_id = $student_subject['subject_id'];
@@ -764,7 +764,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ]);
                         if (!$student_subject) continue;
                         $subject_id = $student_subject['subject_id'];
@@ -918,7 +918,7 @@
                     "class_id"                 => $class_id,
                     "section_id"               => $section_id,
                     "student_session.promoted" => "ANY",
-                    "student_session.session_id" => $session_id,
+                    "student_session.session_id" => 1,
                 ));
             
                 $records = array();
@@ -971,7 +971,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ));
             
                         $subject_id = isset($student_subject['subject_id']) ? $student_subject['subject_id'] : null;
@@ -1052,7 +1052,7 @@
                             "academy_class_id"   => $class_id,
                             "student_id"         => $student['id'],
                             "subject_type_id"    => $id,
-                            "current_session_id" => $session_id
+                            "current_session_id" => 1
                         ));
             
                         $subject_id = isset($student_subject['subject_id']) ? $student_subject['subject_id'] : null;
@@ -1228,18 +1228,3 @@
             return;
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

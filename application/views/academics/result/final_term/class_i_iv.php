@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Annual Progress Report 2025</title>
+    <title>Annual Progress Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -197,9 +197,11 @@
             </div>
         </div>
     
+        <?php $currentSession = $this->session->academy_session['current_session']; ?>
+        
         <!-- REPORT TITLE -->
         <div class="report-title">
-            ANNUAL PROGRESS REPORT 2025<br>
+            ANNUAL PROGRESS REPORT <?php echo (date('Y', strtotime($currentSession['start'])) == date('Y', strtotime($currentSession['end']))) ? date('Y', strtotime($currentSession['start'])) : date('Y', strtotime($currentSession['start'])) . '-' . date('Y', strtotime($currentSession['end'])); ?><br>
             CLASS <?php echo $class_detail['name'] . ' ' . $section_detail['name'] ?>
         </div>
     

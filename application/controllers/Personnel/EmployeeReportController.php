@@ -60,6 +60,11 @@
                 "records"           => $records
             ];
 
+            // echo "<pre>";
+            // print_r($data);
+            // echo "</pre>";
+            // exit();
+
             $this->load->view("employee/reports/employee_list", $data);
         }
         

@@ -35,8 +35,9 @@
                 if($session_id = $this->AcademySession->insert($data))
                 {
                     $this->ClassSection->copy_data($session_id);
+                    
+                    // Copy Previous Session Exam Paper Data to New Session Exam Paper
                     $this->ExamPaper->copy_data($session_id);
-                    // $this->StudentSubject->copy_data($session_id);
                 }
                 
                 

@@ -207,36 +207,44 @@
                     </tr>
                 </tbody>
             </table>
-            <div class="BigHeader" style="width:90%; margin: 0 auto; margin-top:20px">Inactive Employee List</div>
+            <div class="BigHeader" style="width:90%; margin: 0 auto; margin-top:20px">Employee Personal Details</div>
 
             <table class="GridTable" style="width:94%; margin: 0 auto; margin-top:30px">
                 <tbody>
+                    <tr>
+                        <th class="Thc" style="width:3%">&nbsp;</th>
+                        <th class="Thc">CODE</th>
+                        <th class="Thl">NAME</th>
+                        <th class="Thc">CATEGORY</th>
+                        <th class="Thc">RELIGION</th>
+                        <th class="Thc">NATIONALITY</th>
+                        <th class="Thc">QUALIFICATION</th>
+                        <th class="Thc">PAN No</th>
+                        <th class="Thc">VOTER ID</th>
+                        <th class="Thc">ADHAAR NO</th>
+                        <th class="Thc">MARITAL STATUS</th>
+                        <th class="Thc">SPOUSE</th>
+                        <th class="Thc">FATHER</th>
+                        <th class="Thc">MOTHER</th>
+                    </tr>
+                    <?php $sl_no = 0; foreach ($records as $record) { $sl_no++; ?>
                         <tr>
-                            <th class="Thc" style="width:3%">&nbsp;</th>
-                            <th class="Thc">Code</th>
-                            <th class="Thl">Name</th>
-                            <th class="Thc">DOB</th>
-                            <th class="Thc">Since</th>
-                            <th class="Thc">Department</th>
-                            <th class="Thc">Designation</th>
-                            <th class="Thc">Type</th>
-                            <th class="Thc">Job Status</th>
-                            <th class="Thc">Mobile No</th>
+                            <td class="Tdc"><?php echo $sl_no; ?></td>
+                            <td class="Tdc"><?php echo $record['emp_code']; ?></td>
+                            <td class="Tdc"><?php echo $record['f_name'] . " " . $record['m_name'] . " " . $record['l_name']; ?></td>
+                            <td class="Tdc"><?php echo isset($categories[$record['category_id']]) ? $categories[$record['category_id']]['name'] : ''; ?></td>
+                            <td class="Tdc"><?php echo isset($religions[$record['religion_id']]) ? $religions[$record['religion_id']]['name'] : ''; ?></td>
+                            <td class="Tdc"><?php echo isset($nationalities[$record['nationality_id']]) ? $nationalities[$record['nationality_id']]['name'] : ''; ?></td>
+                            <td class="Tdc"><?php echo isset($qualifications[$record['qualification_id']]) ? $qualifications[$record['qualification_id']]['name'] : ''; ?></td>
+                            <td class="Tdc"><?php echo $record['pan_no']; ?></td>
+                            <td class="Tdc"><?php echo $record['voter_id']; ?></td>
+                            <td class="Tdc"><?php echo $record['aadhar_no']; ?></td>
+                            <td class="Tdc"><?php echo $record['marital_status']; ?></td>
+                            <td class="Tdc"><?php echo $record['spouse']; ?></td>
+                            <td class="Tdc"><?php echo $record['father']; ?></td>
+                            <td class="Tdc"><?php echo $record['mother']; ?></td>
                         </tr>
-                        <?php foreach($records as $record) { $sl_no++ ?>
-                            <tr>
-                                <td class="Tdc"><?php echo $sl_no; ?></td>
-                                <td class="Tdc"><?php echo $record['emp_code']; ?></td>
-                                <td class="Tdc"><?php echo $record['f_name'] . " " . $record['m_name'] . " " . $record['l_name']; ?></td>
-                                <td class="Tdc"><?php echo date('d-m-Y', strtotime($record['dob'])); ?></td>
-                                <td class="Tdc"><?php echo date('d-m-Y', strtotime($record['since'])); ?></td>
-                                <td class="Tdc"><?php echo $departments[$record['department_id'] - 1]['name']; ?></td>
-                                <td class="Tdc"><?php echo $designations[$record['department_id'] - 1]['name']; ?></td>
-                                <td class="Tdc"><?php echo $employee_types[$record['emp_type_id'] - 1]['name']; ?></td>
-                                <td class="Tdc"><?php echo $job_statuses[$record['job_status_id'] - 1]['name']; ?></td>
-                                <td class="Tdc"><?php echo $record['mobile_no']; ?></td>
-                            </tr>
-                        <?php } ?>
+                    <?php } ?>
                 </tbody>
             </table>
             <div style="page-break-before:always">&nbsp;</div>

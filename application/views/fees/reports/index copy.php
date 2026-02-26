@@ -36,48 +36,22 @@
                                         <input type="date" class="form-control" id="to_date" name="to_date" value="<?= isset($_GET['to_date']) ? $_GET['to_date'] : '' ?>">
                                     </td>
                         
-                                    <?php
-                                    // Get academic session
-                                    $session = $this->session->academy_session['current_session'];
-
-                                    $startMonthIndex = (int)date('n', strtotime($session['start'])) - 1; // 0-based index
-                                    $endMonthIndex   = (int)date('n', strtotime($session['end'])) - 1;   // 0-based index
-
-                                    // Create reordered month array based on session
-                                    if ($startMonthIndex <= $endMonthIndex) {
-                                        $monthOrder = range($startMonthIndex, $endMonthIndex);
-                                    } else {
-                                        $monthOrder = array_merge(
-                                            range($startMonthIndex, 11),
-                                            range(0, $endMonthIndex)
-                                        );
-                                    }
-                                    ?>
-
                                     <td><label class="me-2">From Month</label></td>
                                     <td>
                                         <select class="form-select me-3 month-select" name="month_from" style="width:auto;">
                                             <option value="">Please Select</option>
-                                            <?php foreach ($monthOrder as $mIndex) { 
-                                                $monthValue = $mIndex + 1; // convert 0-based to 1-12
-                                            ?>
-                                                <option value="<?= $monthValue ?>">
-                                                    <?= date("F", mktime(0, 0, 0, $monthValue, 1)) ?>
-                                                </option>
+                                            <?php foreach (range(1, 12) as $m) { ?>
+                                                <option value="<?= $m ?>"><?= date("F", mktime(0, 0, 0, $m, 1)) ?></option>
                                             <?php } ?>
                                         </select>
                                     </td>
-
+                        
                                     <td><label class="me-2">To Month</label></td>
                                     <td>
                                         <select class="form-select me-3 month-select" name="month_to" style="width:auto;">
                                             <option value="">Please Select</option>
-                                            <?php foreach ($monthOrder as $mIndex) { 
-                                                $monthValue = $mIndex + 1;
-                                            ?>
-                                                <option value="<?= $monthValue ?>">
-                                                    <?= date("F", mktime(0, 0, 0, $monthValue, 1)) ?>
-                                                </option>
+                                            <?php foreach (range(1, 12) as $m) { ?>
+                                                <option value="<?= $m ?>"><?= date("F", mktime(0, 0, 0, $m, 1)) ?></option>
                                             <?php } ?>
                                         </select>
                                     </td>
@@ -179,7 +153,7 @@
                 <div class="card-body py-9">
                     <h4 class="text-center text-dark bg-secondary py-3 mb-3">Payment & Outstanding Reports</h4>
                     <button type="button" class="btn btn-primary mb-3 w-100" onclick="generateClassMonthlyCollection()">Class wise Monthly/Months Collection</button>
-                    <button type="button" class="btn btn-primary mb-3 w-100 d-none" onclick="generateClassAllCollection()">Class wise All Months Collection</button>
+                    <button type="button" class="btn btn-primary mb-3 w-100" onclick="generateClassAllCollection()">Class wise All Months Collection</button>
                     <button type="button" class="btn btn-primary mb-3 w-100" onclick="generateClassOutstanding()">Class wise Outstanding</button>
                     
                     <select class="form-select" id="state_id" name="state_id">

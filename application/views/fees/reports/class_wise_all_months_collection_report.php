@@ -66,26 +66,97 @@ if ($class_id && $section_id) {
     $classTitle = "All Class";
 }
 
+// // ==== Get session months from current session ====
+// $currentSession = $this->session->academy_session['current_session'];
+// $sessionStartMonth = (int)date('n', strtotime($currentSession['start']));
+// $sessionEndMonth   = (int)date('n', strtotime($currentSession['end']));
+
+// // Determine session-based month order
+// $months_to_show = [];
+// if ($sessionStartMonth <= $sessionEndMonth) {
+//     // Same year: simple range
+//     $months_to_show = range($sessionStartMonth, $sessionEndMonth);
+// } else {
+//     // Different year: wrap around
+//     $months_to_show = array_merge(range($sessionStartMonth, 12), range(1, $sessionEndMonth));
+// }
+
+// // Override if user has selected specific months
+// // if (!empty($installments)) {
+// //     $months_to_show = array_map(function($v){ return (int)preg_replace('/\D/', '', $v); }, $installments);
+// //     sort($months_to_show);
+// // }
+
+// // Override if month range is provided
+// if (!empty($month_from) && !empty($month_to)) {
+//     $month_from = (int) $month_from;
+//     $month_to   = (int) $month_to;
+
+//     // Ensure valid month numbers (1–12)
+//     if ($month_from >= 1 && $month_from <= 12 && 
+//         $month_to >= 1 && $month_to <= 12) {
+
+//         if ($month_from <= $month_to) {
+//             // Normal range (e.g., 3 to 7)
+//             $months_to_show = range($month_from, $month_to);
+//         } else {
+//             // Cross-year range (e.g., 10 to 3)
+//             $months_to_show = array_merge(
+//                 range($month_from, 12),
+//                 range(1, $month_to)
+//             );
+//         }
+//     }
+// }
+
+
 // ==== Get session months from current session ====
-$currentSession = $this->session->academy_session['current_session'];
-$sessionStartMonth = (int)date('n', strtotime($currentSession['start']));
-$sessionEndMonth   = (int)date('n', strtotime($currentSession['end']));
+$currentSession     = $this->session->academy_session['current_session'];
+$sessionStartMonth  = (int) date('n', strtotime($currentSession['start']));
+$sessionEndMonth    = (int) date('n', strtotime($currentSession['end']));
 
-// Determine session-based month order
-$months_to_show = [];
+// Build full session month order
 if ($sessionStartMonth <= $sessionEndMonth) {
-    // Same year: simple range
-    $months_to_show = range($sessionStartMonth, $sessionEndMonth);
+    $sessionMonthsOrder = range($sessionStartMonth, $sessionEndMonth);
 } else {
-    // Different year: wrap around
-    $months_to_show = array_merge(range($sessionStartMonth, 12), range(1, $sessionEndMonth));
+    // Cross-year session (e.g. April to March)
+    $sessionMonthsOrder = array_merge(
+        range($sessionStartMonth, 12),
+        range(1, $sessionEndMonth)
+    );
 }
 
-// Override if user has selected specific months
-if (!empty($installments)) {
-    $months_to_show = array_map(function($v){ return (int)preg_replace('/\D/', '', $v); }, $installments);
-    sort($months_to_show);
+// Default: show full session
+$months_to_show = $sessionMonthsOrder;
+
+
+// ==== Override if month range is provided ====
+if (!empty($month_from) && !empty($month_to)) {
+
+    $month_from = (int) $month_from;
+    $month_to   = (int) $month_to;
+
+    if ($month_from >= 1 && $month_from <= 12 &&
+        $month_to >= 1 && $month_to <= 12) {
+
+        // Generate selected range (calendar logic first)
+        if ($month_from <= $month_to) {
+            $selectedMonths = range($month_from, $month_to);
+        } else {
+            $selectedMonths = array_merge(
+                range($month_from, 12),
+                range(1, $month_to)
+            );
+        }
+
+        // Reorder selected months based on session order
+        $months_to_show = array_values(
+            array_intersect($sessionMonthsOrder, $selectedMonths)
+        );
+    }
 }
+
+
 
 // Title suffix based on months
 $title_suffix = (!empty($installments) ? "Selected Months (" . implode(', ', array_map(function($m) {

@@ -93,6 +93,7 @@
                                                     <h4 class="card-title text-center">
                                                         <?php echo $employee['f_name'] . ' ' . $employee['m_name'] . ' ' . $employee['l_name']; ?>
                                                     </h4>
+                                                    <p class="text-center text-muted"><?php echo $employee['designation_name'] ?></p>
                                                 </div>
                                             </div>
                                         </a>

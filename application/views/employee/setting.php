@@ -1,7 +1,18 @@
 <?php $this->load->view("inc/app_header.php"); ?>
 
-    <div class="row mb-5">
-        <h1>Personnel Settings</h1>
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-6">
+            <h1 class="mb-0">Personnel Settings</h1>
+        </div>
+
+        <div class="col-md-6 text-end">
+            <?php if ($this->session->flashdata('success')) { ?>
+                <div class="alert alert-success alert-dismissible d-inline-block mb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <strong><?php echo $this->session->flashdata('success') ?></strong>
+                </div>
+            <?php } ?>
+        </div>
     </div>
 
     <form action="<?php echo base_url()?>personnel/settings/store" method="POST">
@@ -55,7 +66,7 @@
                                 <label class="col-form-label">Display Inactive Employees</label>
                             </div>
                             <div class="col-md-8">
-                                <select class="form-select" name="employee_display_withdrawn_student">
+                                <select class="form-select" name="employee_display_inactive">
                                     <option value="1" <?php if($settings['employee_display_inactive'] == "1") {echo "selected";}?>>Yes</option>
                                     <option value="0" <?php if($settings['employee_display_inactive'] == "0") {echo "selected";}?>>No</option>
                                 </select>
@@ -67,7 +78,7 @@
                                 <label class="col-form-label">Display Retired Employees</label>
                             </div>
                             <div class="col-md-8">
-                                <select class="form-select" name="employee_display_withdrawn_student">
+                                <select class="form-select" name="employee_display_retired">
                                     <option value="1" <?php if($settings['employee_display_retired'] == "1") {echo "selected";}?>>Yes</option>
                                     <option value="0" <?php if($settings['employee_display_retired'] == "0") {echo "selected";}?>>No</option>
                                 </select>
@@ -79,7 +90,7 @@
                                 <label class="col-form-label">Display Resigned Employees</label>
                             </div>
                             <div class="col-md-8">
-                                <select class="form-select" name="employee_display_withdrawn_student">
+                                <select class="form-select" name="employee_display_resigned">
                                     <option value="1" <?php if($settings['employee_display_resigned'] == "1") {echo "selected";}?>>Yes</option>
                                     <option value="0" <?php if($settings['employee_display_resigned'] == "0") {echo "selected";}?>>No</option>
                                 </select>

@@ -16,6 +16,7 @@
             $this->load->model("Holiday");
             $this->load->model("AbsentReason");
             $this->load->model("EmployeeAttendance");
+            $this->load->model("Setting");
         }
 
         public function index() {
@@ -25,6 +26,7 @@
 
             $employee_types = $this->EmployeeType->get();
             $employees = $this->Employee->get();
+            
             
             // echo "<pre>";
             // print_r(array("employees" => $employees, "employee_types" => $employee_types));

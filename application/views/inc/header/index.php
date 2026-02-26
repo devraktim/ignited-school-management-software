@@ -35,7 +35,15 @@
 			<!--end::Menu wrapper-->
 			
 			<!--begin::Menu wrapper-->
-				<h1 style="margin-top: 18px; font-size: 30px;">School Management System</h1>
+				<?php $currentSession = $this->session->academy_session['current_session']; ?>
+				<h1 style="margin-top: 18px; font-size: 20px; text-align: center;">
+					School Management System
+					<div style="text-align: center; font-size: 14px; color: #777; margin-top: 4px;">
+						(Session: <?= date('Y', strtotime($currentSession['start'])) ?> 
+						- 
+						<?= date('Y', strtotime($currentSession['end'])) ?>)
+					</div>
+				</h1>
 			<!--end::Menu wrapper-->
 			
 			<!--begin::Navbar-->
@@ -149,26 +157,32 @@
 					<!--begin::User account menu-->
 					<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-color fw-semibold py-4 fs-6 w-275px" data-kt-menu="true">
 						<!--begin::Menu item-->
-						<div class="menu-item px-3">
-							<div class="menu-content d-flex align-items-center px-3">
-								<!--begin::Avatar-->
-								<div class="symbol symbol-50px me-5">
-									<?php if($this->session->user['image']) { ?>
-										<img src="<?php echo base_url('storage/employees/') . $this->session->user['image'] ?>">
-									<?php } else {?>
-										<img src="<?php echo base_url('assets/media/avatar/') ?><?php echo $this->session->user['sex'] == 'male' ? 'male.jpg' : 'female.jpg' ?>">
-									<?php } ?>
+						<div class="menu-content d-flex align-items-center px-3">
+							
+							<!--begin::Avatar-->
+							<div class="symbol symbol-50px me-5">
+								<?php if($this->session->user['image']) { ?>
+									<img src="<?php echo base_url('storage/employees/') . $this->session->user['image'] ?>">
+								<?php } else { ?>
+									<img src="<?php echo base_url('assets/media/avatar/') ?><?php echo $this->session->user['sex'] == 'male' ? 'male.jpg' : 'female.jpg' ?>">
+								<?php } ?>
+							</div>
+							<!--end::Avatar-->
+
+							<div class="d-flex flex-column">
+								<div class="fw-bold d-flex align-items-center fs-5">
+									<?php echo $this->session->user['username'] ?>
 								</div>
-								<!--end::Avatar-->
-								<!--begin::Username-->
-								<div class="d-flex flex-column">
-									<div class="fw-bold d-flex align-items-center fs-5"><?php echo $this->session->user['username'] ?> 
-									<span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2"></span></div>
-									<a href="#" class="fw-semibold text-muted text-hover-primary fs-7"></a>
+
+								<!-- Session dates -->
+								<div class="text-muted fs-7">
+									<?= date('Y', strtotime($this->session->academy_session['current_session']['start'])) ?>
+									-
+									<?= date('Y', strtotime($this->session->academy_session['current_session']['end'])) ?>
 								</div>
-								<!--end::Username-->
 							</div>
 						</div>
+
 						<!--end::Menu item-->
 						<!--begin::Menu separator-->
 						<div class="separator my-2"></div>

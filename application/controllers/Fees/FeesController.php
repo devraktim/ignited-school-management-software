@@ -1230,8 +1230,27 @@
                     "student_id"        => $st['id'],
                     "session_id"        => $this->session->academy_session['current_session']['id']
                 ));
-                
-                $student_fees_heads = $this->Fees->get_class_student_fees([$st['student_session_class_id']], [$st['student_type_id']]);
+
+                $target_class = [];
+                $target_class[] = [
+                    "id" => $st['student_session_class_id']
+                ];
+
+
+                $target_student_type = [];
+                $target_student_type[] = [
+                    "id" => $st['student_type_id']
+                ];
+
+                // echo "<pre>";
+                // print_r($target_class);
+                // print_r($target_student_type);
+                // echo "</pre>";
+                // exit();
+
+                $student_fees_heads = $this->Fees->get_class_student_fees_data([$st['student_session_class_id']], [$st['student_type_id']]);
+                   
+                // $student_fees_heads = $this->Fees->get_class_student_fees($target_class, $target_student_type); 
                 
                 $concession = $this->Fees->get_concession_fees($st['id']);
                 
@@ -1266,10 +1285,7 @@
                 }
             }
 
-            // echo "<pre>";
-            // print_r($installments);
-            // echo "</pre>";
-            // exit();
+          
          
             $this->load->view("fees/new_collection", array(
                 "students"              =>  $data, 

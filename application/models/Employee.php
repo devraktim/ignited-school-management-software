@@ -5,17 +5,46 @@
 
         private $table = "employees";
 
+        // public function get($id = NULL) {
+        //     if($id) {
+        //         return $this->db->select("employees.*, 
+        //                                   categories.name as category,
+        //                                   religions.name as religion,
+        //                                   nationalities.name as nationality,
+        //                                   departments.name as department,
+        //                                   employee_types.name as emp_type,
+        //                                   job_status.name as job_status,
+        //                                   designations.name as designation,
+        //                                 ")
+        //                         ->from($this->table)
+        //                         ->join("categories",    "employees.category_id = categories.id")
+        //                         ->join("religions",     "employees.religion_id = religions.id")
+        //                         ->join("nationalities", "employees.nationality_id = nationalities.id")
+        //                         ->join("departments",   "employees.department_id = departments.id")
+        //                         ->join("employee_types","employees.emp_type_id = employee_types.id")
+        //                         ->join("job_status",    "employees.job_status_id = job_status.id")
+        //                         ->join("designations",  "employees.designation_id = designations.id")
+        //                         ->where(["employees.id" => $id, "employees.deleted" => 0])
+        //                         ->get()
+        //                         ->row_array();
+
+        //         // return $this->db->where(["id" => $id, "deleted" => 0])->get($this->table)->row_array();
+        //     }
+        //     else {
+        //         return $this->db->where("deleted", 0)->where('id !=', 1)->get($this->table)->result_array();
+        //     }
+        // }
+
         public function get($id = NULL) {
             if($id) {
                 return $this->db->select("employees.*, 
-                                          categories.name as category,
-                                          religions.name as religion,
-                                          nationalities.name as nationality,
-                                          departments.name as department,
-                                          employee_types.name as emp_type,
-                                          job_status.name as job_status,
-                                          designations.name as designation,
-                                        ")
+                                        categories.name as category,
+                                        religions.name as religion,
+                                        nationalities.name as nationality,
+                                        departments.name as department,
+                                        employee_types.name as emp_type,
+                                        job_status.name as job_status,
+                                        designations.name as designation")
                                 ->from($this->table)
                                 ->join("categories",    "employees.category_id = categories.id")
                                 ->join("religions",     "employees.religion_id = religions.id")
@@ -27,11 +56,16 @@
                                 ->where(["employees.id" => $id, "employees.deleted" => 0])
                                 ->get()
                                 ->row_array();
-
-                // return $this->db->where(["id" => $id, "deleted" => 0])->get($this->table)->row_array();
             }
             else {
-                return $this->db->where("deleted", 0)->where('id !=', 1)->get($this->table)->result_array();
+
+                return $this->db->select("employees.*, designations.name as designation_name")
+                                ->from($this->table)
+                                ->join("designations", "employees.designation_id = designations.id")
+                                ->where("employees.deleted", 0)
+                                ->where("employees.id !=", 1)
+                                ->get()
+                                ->result_array();
             }
         }
         

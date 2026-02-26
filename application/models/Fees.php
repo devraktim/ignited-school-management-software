@@ -31,6 +31,13 @@
         }
 
         public function get_class_student_fees($classes, $student_types) {
+
+                
+                // echo "<pre>";
+                // print_r($classes);
+                // echo "</pre>";
+              
+                    
             $records = [];
             $academy_session_id = $this->session->academy_session['current_session']['id'];
             
@@ -50,7 +57,65 @@
                         ])
                         ->get("class_studentType_feesType")
                         ->result_array();
+
+                    // Loop through each result to check the delete permission
+                    foreach ($results as $key => $fee) {
+                        
+                        // Check if there's a corresponding record in the 'fees' table
+                        $fee_match = $this->db->select('id')
+                            ->where('fees_head_id', $fee['fees_type_id'])
+                            ->where('session_id', $academy_session_id)
+                            ->get('fees')
+                            ->row_array();
+                        
+                        // If a match is found, set delete_permission to 0, otherwise set it to 1
+                        if ($fee_match) {
+                            $results[$key]['delete_permission'] = 0;
+                        } else {
+                            $results[$key]['delete_permission'] = 1;
+                        }
+                    }
                     
+                    // Store the results in the final data array
+                    $data["student_types"][] = [
+                        "type"          => $student_type,
+                        "fees_heads"    => $results
+                    ];
+                }
+                
+                $records[] = $data;
+            }
+        
+            return $records;
+        }
+        public function get_class_student_fees_data($classes, $student_types) {
+
+                
+                // echo "<pre>";
+                // print_r($classes);
+                // echo "</pre>";
+              
+                    
+            $records = [];
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+            
+            foreach ($classes as $class) {
+                $data = [];
+                $data["class"] = $class;
+                $data["student_types"] = [];
+                
+                foreach ($student_types as $student_type) {
+                    // Fetch the relevant data from the database
+                    $results = $this->db->select('fees_type.name, class_studentType_feesType.fees_type_id, class_studentType_feesType.status')
+                        ->join('fees_type', 'fees_type.id = class_studentType_feesType.fees_type_id')
+                        ->where([
+                            "class_id" => $class,
+                            "student_type_id" => $student_type, 
+                            "class_studentType_feesType.session_id" => $academy_session_id, 
+                        ])
+                        ->get("class_studentType_feesType")
+                        ->result_array();
+
                     // Loop through each result to check the delete permission
                     foreach ($results as $key => $fee) {
                         
@@ -1429,6 +1494,7 @@
                     $this->db->where('month <=', $withdrawal_month);
                 }
                 $this->db->group_by('month');
+                $this->db->where('session_id', $academy_session_id);
                 $payable_rows = $this->db->get()->result_array();
         
                 foreach ($payable_rows as $p) {

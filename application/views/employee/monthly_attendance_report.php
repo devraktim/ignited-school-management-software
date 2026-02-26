@@ -224,7 +224,7 @@
             elseif ($attendance) {
         
                 if ($attendance['attendance'] === 'P') {
-                    $cellContent = '<span class="text-success fw-bold fs-5">✔</span>';
+                    $cellContent = '<span class="text-dark fw-bold fs-5">P</span>';
                     $totalPresent++;
                 }
                 elseif ($attendance['attendance'] === 'A') {
@@ -240,7 +240,7 @@
                             data-bs-toggle="tooltip"
                             data-bs-html="true"
                             title="' . htmlspecialchars($tooltip, ENT_QUOTES, 'UTF-8') . '"
-                        >✖</span>';
+                        >A</span>';
                 }
             }
         ?>

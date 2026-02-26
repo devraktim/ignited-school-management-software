@@ -46,7 +46,7 @@
                
                 $s = $this->Student->get_where([
                     "s.student_no" => $this->input->post("student_no"),
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                     "student_session.promoted"      => "ANY",
                 ]);
                 
@@ -86,7 +86,7 @@
                     "class_id"                 => $class_id,
                     "section_id"               => $section_id,
                     "student_session.promoted" => "ANY",
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                 ]);
             
                 $records = [];
@@ -339,7 +339,7 @@
                     "class_id"                   => $class_id,
                     "section_id"                 => $section_id,
                     "student_session.promoted"   => "ANY",
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                 ]);
             
                 $records = [];
@@ -589,7 +589,7 @@
                     "class_id"                   => $class_id,
                     "section_id"                 => $section_id,
                     "student_session.promoted"   => "ANY",
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                 ]);
             
                 $records       = [];
@@ -918,7 +918,7 @@
                     "class_id"                 => $class_id,
                     "section_id"               => $section_id,
                     "student_session.promoted" => "ANY",
-                    "student_session.session_id" => 1,
+                    "student_session.session_id" => $session_id,
                 ));
             
                 $records = array();
@@ -1215,7 +1215,7 @@
                     "student_id"    => $student_id, 
                     "class_id"      => $class_id,
                     "section_id"    => $section_id,
-                    "session_id"    => $session_id,
+                    "session_id"    => $$session_id,
                     "exam_id"       => $exam_id,
                     "username"      => $record['student_no'],
                     "password"      => str_replace('-', '', $record['student_sob']),
