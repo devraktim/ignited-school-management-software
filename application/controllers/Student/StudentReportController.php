@@ -84,17 +84,24 @@
                 return redirect(base_url());
             }
 
+            $currentSession = $this->session->academy_session['current_session'];
             $clauses = $this->format_search_key($_POST);
+
+            // Assign session start and end dates
+            $clauses['s.from_date'] = $currentSession['start'];
+            $clauses['s.to_date']   = $currentSession['end'];
             
             foreach($clauses as $key=>$value)
             {
                 if(is_null($value) || $value == '' || empty($value))
                     unset($clauses[$key]);
             }
-            
-            $clauses["student_session.new_session_id"] = $this->session->academy_session['current_session']['id'];
+           
+            // $clauses["student_session.new_session_id"] = $this->session->academy_session['current_session']['id'];
 
-            $data['students'] = $this->Student->get_where($clauses);
+            $data['students']   = $this->Student->get_where($clauses);
+            $data['classes']    = $this->AcademyClass->get();
+            $data['sections']   = $this->Section->get();
 
             $this->load->view("student/reports/new_admission", $data);
         }

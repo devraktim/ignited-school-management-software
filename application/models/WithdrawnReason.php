@@ -81,10 +81,12 @@
         
         public function delete_withdrawn_student($id) {
             
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+            
             $data = $this->db->where(["id" => $id])->get("withdrawn_students")->row_array();
             
             $this->db->delete('withdrawn_students', array('id' => $id));
             
-            $this->db->where(["student_id" => $data['student_id'], "session_id" => 1])->update("student_session", ['withdraw' => 0]);
+            $this->db->where(["student_id" => $data['student_id'], "session_id" => $academy_session_id])->update("student_session", ['withdraw' => 0]);
         }
     }

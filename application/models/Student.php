@@ -89,190 +89,378 @@
             }
         }
 
+        // public function get_where($clauses) {
+        //     // $clauses["students.deleted"] = 0;
+        //     // $clauses["student_session.session_id"] = $this->session->academy_session['current_session']['id'];
+         
+         
+        //     // Check if 'students.deleted' is not set or is empty
+        //     if (!isset($clauses["students.deleted"]) || empty($clauses["students.deleted"])) {
+        //         $clauses["students.deleted"] = 0;
+        //     }
+            
+        //     // Check if 'student_session.session_id' is not set or is empty
+        //     if (!isset($clauses["student_session.session_id"]) || empty($clauses["student_session.session_id"])) {
+        //         $clauses["student_session.session_id"] = $this->session->academy_session['current_session']['id'];
+        //     }
+
+
+        //     // Promoted
+        //     if(!array_key_exists('student_session.promoted', $clauses)) {
+        //         $clauses["student_session.promoted"] = 0;
+        //     }
+        //     else if(array_key_exists('student_session.promoted', $clauses)) {
+        //         if($clauses['student_session.promoted'] === "ANY")
+        //         {
+        //             unset($clauses['student_session.promoted']);
+        //         }
+        //     }
+            
+        //     // Withdraw
+        //     if (!array_key_exists('student_session.withdraw', $clauses)) {
+        //         $clauses["student_session.withdraw"] = 0;
+        //     }
+        //     else if(array_key_exists('student_session.withdraw', $clauses)) {
+        //         if($clauses['student_session.withdraw'] === "ANY")
+        //         {
+        //             unset($clauses['student_session.withdraw']);
+        //         }
+        //     }
+            
+        //     // Passout
+        //     if (!array_key_exists('student_session.passout', $clauses)) {
+        //         $clauses["student_session.passout"] = 0;
+        //     }
+        //     else if(array_key_exists('student_session.passout', $clauses)) {
+        //         if($clauses['student_session.passout'] === "ANY")
+        //         {
+        //             unset($clauses['student_session.passout']);
+        //         }
+        //     }
+            
+        //     if (array_key_exists('class_id', $clauses)) {
+        //         $clauses['student_session.class_id'] = $clauses['class_id'];
+        //         unset($clauses['class_id']);
+        //     }
+            
+        //     if (array_key_exists('section_id', $clauses)) {
+        //         $clauses['student_session.section_id'] = $clauses['section_id'];
+        //         unset($clauses['section_id']);
+        //     }
+            
+        //     $student_session_new_session_id = "";
+            
+        //     if (array_key_exists('student_session.new_session_id', $clauses)) {
+        //         $student_session_new_session_id = $clauses["student_session.new_session_id"];
+        //         unset($clauses['student_session.new_session_id']);
+        //     }
+            
+        //     $transformed = array();
+            
+        //     foreach ($clauses as $key => $value) {
+        //         if (strpos($key, 'ss.') === 0) {
+        //             // Replace 'ss.' with 'student_session.'
+        //             $newKey = 'student_session.' . substr($key, 3);
+        //             $transformed[$newKey] = $value;
+        //         } elseif (strpos($key, 's.') === 0) {
+        //             // Replace 's.' with 'students.'
+        //             $newKey = 'students.' . substr($key, 2);
+        //             $transformed[$newKey] = $value;
+        //         } else {
+        //             $transformed[$key] = $value;
+        //         }
+                
+        //     }
+            
+        //     $sort_by = $this->db->from("settings")->where("key_name", "student_sort_by")->get()->row_array();
+        //     $student_name_display_format = $this->db->from("settings")->where("key_name", "student_name_display_format")->get()->row_array();
+            
+        //     // $records = $this->db
+        //     //             ->select(
+        //     //                 "students.*, 
+        //     //                 student_session.session_id as student_session_session_id, 
+        //     //                 student_session.class_id as student_session_class_id, 
+        //     //                 student_session.section_id as student_session_section_id"
+        //     //             )
+        //     //             ->from($this->table)
+        //     //             ->join("student_session", "student_session.student_id = students.id")
+        //     //             ->where($transformed);
+            
+        //     $records = $this->db
+        //                     ->select(
+        //                         "students.*, 
+        //                         student_session.session_id as student_session_session_id, 
+        //                         student_session.class_id as student_session_class_id, 
+        //                         student_session.section_id as student_session_section_id, 
+        //                         houses.name as house_name, 
+        //                         categories.name as category_name, 
+        //                         student_types.name as student_type_name, 
+        //                         religions.name as religion_name, 
+        //                         nationalities.name as nationality_name, 
+        //                         states.name as state_name"
+        //                     )
+        //                     ->from($this->table)
+        //                     ->join("student_session", "student_session.student_id = students.id", "left")
+        //                     ->join("houses", "houses.id = students.house_id", "left")
+        //                     ->join("categories", "categories.id = students.category_id", "left")
+        //                     ->join("student_types", "student_types.id = students.student_type_id", "left")
+        //                     ->join("religions", "religions.id = students.religion_id", "left")
+        //                     ->join("nationalities", "nationalities.id = students.nationality_id", "left")
+        //                     ->join("states", "states.id = students.state_id", "left")
+        //                     ->where($transformed);
+                            
+        //     if($sort_by['value'] == "student_no") {
+        //         $records = $records->order_by('students.student_no', 'ASC');
+        //     }
+        //     elseif($sort_by['value'] == "first_name") {
+        //        $records = $records->order_by('students.f_name', 'ASC');
+        //     } 
+        //     elseif($sort_by['value'] == "last_name") {
+        //        $records = $records->order_by('students.l_name', 'ASC');
+        //     } 
+        //     elseif($sort_by['value'] == "day_scholar") {
+        //         // Adjust the order by to prioritize student_type_id = 1, then student_type_id = 3
+        //         $records = $records->order_by('students.student_type_id', 'ASC');
+        //     } 
+        //     elseif($sort_by['value'] == "boarders") {
+        //         // Adjust the order by to prioritize student_type_id = 3, then student_type_id = 1
+        //         $records = $records->order_by('students.student_type_id', 'DESC');
+        //     } 
+        //     else {}
+            
+        //     $records = $records->get()->result_array();
+
+        //     if($student_session_new_session_id != "") {
+                
+        //         $data = [];
+                
+        //         foreach($records as $record) {
+                    
+        //             $row = $this->db->from("student_session")
+        //                             ->where("student_session.session_id", ($student_session_new_session_id - 1))
+        //                             ->where("student_session.student_id", $record['id'])
+        //                             ->get()
+        //                             ->row_array();
+                                    
+        //             if (empty($row)) {
+        //                 $data[] = $record;
+        //             }
+                    
+        //         }
+            
+        //         $records = $data;
+        //     }
+            
+
+        //     for($i = 0; $i < count($records) ; $i++) {
+        //         $records[$i]["class_id"] = $records[$i]["student_session_class_id"];
+        //         $records[$i]["section_id"] = $records[$i]["student_session_section_id"];
+        //         $records[$i]["session_id"] = $records[$i]["student_session_session_id"];
+                
+        //         $f_name = $records[$i]["f_name"];
+        //         $m_name = $records[$i]["m_name"];
+        //         $l_name = $records[$i]["l_name"];
+                
+        //         if($student_name_display_format['value'] == "l_f_m") {
+        //             $records[$i]["f_name"] = $l_name;
+        //             $records[$i]["m_name"] = $f_name;
+        //             $records[$i]["l_name"] = $m_name;
+        //         }
+        //         elseif($student_name_display_format['value'] == "l_m_f") {
+        //             $records[$i]["f_name"] = $l_name;
+        //             $records[$i]["m_name"] = $m_name;
+        //             $records[$i]["l_name"] = $f_name;
+        //         }
+        //         else {}
+        //     }
+
+        //     return $records;
+        // }
+
         public function get_where($clauses) {
-            // $clauses["students.deleted"] = 0;
-            // $clauses["student_session.session_id"] = $this->session->academy_session['current_session']['id'];
-         
-         
-            // Check if 'students.deleted' is not set or is empty
+
+            // Default conditions
             if (!isset($clauses["students.deleted"]) || empty($clauses["students.deleted"])) {
                 $clauses["students.deleted"] = 0;
             }
-            
-            // Check if 'student_session.session_id' is not set or is empty
+
             if (!isset($clauses["student_session.session_id"]) || empty($clauses["student_session.session_id"])) {
                 $clauses["student_session.session_id"] = $this->session->academy_session['current_session']['id'];
             }
 
-
             // Promoted
-            if(!array_key_exists('student_session.promoted', $clauses)) {
+            if (!array_key_exists('student_session.promoted', $clauses)) {
                 $clauses["student_session.promoted"] = 0;
+            } elseif ($clauses['student_session.promoted'] === "ANY") {
+                unset($clauses['student_session.promoted']);
             }
-            else if(array_key_exists('student_session.promoted', $clauses)) {
-                if($clauses['student_session.promoted'] === "ANY")
-                {
-                    unset($clauses['student_session.promoted']);
-                }
-            }
-            
+
             // Withdraw
             if (!array_key_exists('student_session.withdraw', $clauses)) {
                 $clauses["student_session.withdraw"] = 0;
+            } elseif ($clauses['student_session.withdraw'] === "ANY") {
+                unset($clauses['student_session.withdraw']);
             }
-            else if(array_key_exists('student_session.withdraw', $clauses)) {
-                if($clauses['student_session.withdraw'] === "ANY")
-                {
-                    unset($clauses['student_session.withdraw']);
-                }
-            }
-            
+
             // Passout
             if (!array_key_exists('student_session.passout', $clauses)) {
                 $clauses["student_session.passout"] = 0;
+            } elseif ($clauses['student_session.passout'] === "ANY") {
+                unset($clauses['student_session.passout']);
             }
-            else if(array_key_exists('student_session.passout', $clauses)) {
-                if($clauses['student_session.passout'] === "ANY")
-                {
-                    unset($clauses['student_session.passout']);
-                }
-            }
-            
+
             if (array_key_exists('class_id', $clauses)) {
                 $clauses['student_session.class_id'] = $clauses['class_id'];
                 unset($clauses['class_id']);
             }
-            
+
             if (array_key_exists('section_id', $clauses)) {
                 $clauses['student_session.section_id'] = $clauses['section_id'];
                 unset($clauses['section_id']);
             }
-            
+
             $student_session_new_session_id = "";
-            
+
             if (array_key_exists('student_session.new_session_id', $clauses)) {
                 $student_session_new_session_id = $clauses["student_session.new_session_id"];
                 unset($clauses['student_session.new_session_id']);
             }
-            
+
+            // ✅ Extract admission date filters (from_date / to_date)
+            $from_date = null;
+            $to_date   = null;
+
+            if (array_key_exists('s.from_date', $clauses)) {
+                $from_date = $clauses['s.from_date'];
+                unset($clauses['s.from_date']);
+            }
+
+            if (array_key_exists('s.to_date', $clauses)) {
+                $to_date = $clauses['s.to_date'];
+                unset($clauses['s.to_date']);
+            }
+
+            // Transform keys
             $transformed = array();
-            
+
             foreach ($clauses as $key => $value) {
                 if (strpos($key, 'ss.') === 0) {
-                    // Replace 'ss.' with 'student_session.'
                     $newKey = 'student_session.' . substr($key, 3);
                     $transformed[$newKey] = $value;
                 } elseif (strpos($key, 's.') === 0) {
-                    // Replace 's.' with 'students.'
                     $newKey = 'students.' . substr($key, 2);
                     $transformed[$newKey] = $value;
                 } else {
                     $transformed[$key] = $value;
                 }
-                
             }
-            
-            $sort_by = $this->db->from("settings")->where("key_name", "student_sort_by")->get()->row_array();
-            $student_name_display_format = $this->db->from("settings")->where("key_name", "student_name_display_format")->get()->row_array();
-            
-            // $records = $this->db
-            //             ->select(
-            //                 "students.*, 
-            //                 student_session.session_id as student_session_session_id, 
-            //                 student_session.class_id as student_session_class_id, 
-            //                 student_session.section_id as student_session_section_id"
-            //             )
-            //             ->from($this->table)
-            //             ->join("student_session", "student_session.student_id = students.id")
-            //             ->where($transformed);
-            
+
+            $sort_by = $this->db->from("settings")
+                                ->where("key_name", "student_sort_by")
+                                ->get()
+                                ->row_array();
+
+            $student_name_display_format = $this->db->from("settings")
+                                                    ->where("key_name", "student_name_display_format")
+                                                    ->get()
+                                                    ->row_array();
+
             $records = $this->db
-                            ->select(
-                                "students.*, 
-                                student_session.session_id as student_session_session_id, 
-                                student_session.class_id as student_session_class_id, 
-                                student_session.section_id as student_session_section_id, 
-                                houses.name as house_name, 
-                                categories.name as category_name, 
-                                student_types.name as student_type_name, 
-                                religions.name as religion_name, 
-                                nationalities.name as nationality_name, 
-                                states.name as state_name"
-                            )
-                            ->from($this->table)
-                            ->join("student_session", "student_session.student_id = students.id", "left")
-                            ->join("houses", "houses.id = students.house_id", "left")
-                            ->join("categories", "categories.id = students.category_id", "left")
-                            ->join("student_types", "student_types.id = students.student_type_id", "left")
-                            ->join("religions", "religions.id = students.religion_id", "left")
-                            ->join("nationalities", "nationalities.id = students.nationality_id", "left")
-                            ->join("states", "states.id = students.state_id", "left")
-                            ->where($transformed);
-                            
-            if($sort_by['value'] == "student_no") {
-                $records = $records->order_by('students.student_no', 'ASC');
+                ->select(
+                    "students.*, 
+                    student_session.session_id as student_session_session_id, 
+                    student_session.class_id as student_session_class_id, 
+                    student_session.section_id as student_session_section_id, 
+                    houses.name as house_name, 
+                    categories.name as category_name, 
+                    student_types.name as student_type_name, 
+                    religions.name as religion_name, 
+                    nationalities.name as nationality_name, 
+                    states.name as state_name"
+                )
+                ->from($this->table)
+                ->join("student_session", "student_session.student_id = students.id", "left")
+                ->join("houses", "houses.id = students.house_id", "left")
+                ->join("categories", "categories.id = students.category_id", "left")
+                ->join("student_types", "student_types.id = students.student_type_id", "left")
+                ->join("religions", "religions.id = students.religion_id", "left")
+                ->join("nationalities", "nationalities.id = students.nationality_id", "left")
+                ->join("states", "states.id = students.state_id", "left")
+                ->where($transformed);
+
+            // ✅ Apply admission date filter (inclusive)
+            if (!empty($from_date)) {
+                $records = $records->where('students.admission_date >=', $from_date);
             }
-            elseif($sort_by['value'] == "first_name") {
-               $records = $records->order_by('students.f_name', 'ASC');
-            } 
-            elseif($sort_by['value'] == "last_name") {
-               $records = $records->order_by('students.l_name', 'ASC');
-            } 
-            elseif($sort_by['value'] == "day_scholar") {
-                // Adjust the order by to prioritize student_type_id = 1, then student_type_id = 3
+
+            if (!empty($to_date)) {
+                $records = $records->where('students.admission_date <=', $to_date);
+            }
+
+            // Sorting
+            if ($sort_by['value'] == "student_no") {
+                $records = $records->order_by('students.student_no', 'ASC');
+            } elseif ($sort_by['value'] == "first_name") {
+                $records = $records->order_by('students.f_name', 'ASC');
+            } elseif ($sort_by['value'] == "last_name") {
+                $records = $records->order_by('students.l_name', 'ASC');
+            } elseif ($sort_by['value'] == "day_scholar") {
                 $records = $records->order_by('students.student_type_id', 'ASC');
-            } 
-            elseif($sort_by['value'] == "boarders") {
-                // Adjust the order by to prioritize student_type_id = 3, then student_type_id = 1
+            } elseif ($sort_by['value'] == "boarders") {
                 $records = $records->order_by('students.student_type_id', 'DESC');
-            } 
-            else {}
-            
+            }
+
             $records = $records->get()->result_array();
 
-            if($student_session_new_session_id != "") {
-                
+            // New session filtering
+            if ($student_session_new_session_id != "") {
+
                 $data = [];
-                
-                foreach($records as $record) {
-                    
+
+                foreach ($records as $record) {
+
                     $row = $this->db->from("student_session")
                                     ->where("student_session.session_id", ($student_session_new_session_id - 1))
                                     ->where("student_session.student_id", $record['id'])
                                     ->get()
                                     ->row_array();
-                                    
+
                     if (empty($row)) {
                         $data[] = $record;
                     }
-                    
                 }
-            
+
                 $records = $data;
             }
-            
 
-            for($i = 0; $i < count($records) ; $i++) {
+            // Final formatting
+            for ($i = 0; $i < count($records); $i++) {
+
                 $records[$i]["class_id"] = $records[$i]["student_session_class_id"];
                 $records[$i]["section_id"] = $records[$i]["student_session_section_id"];
                 $records[$i]["session_id"] = $records[$i]["student_session_session_id"];
-                
+
                 $f_name = $records[$i]["f_name"];
                 $m_name = $records[$i]["m_name"];
                 $l_name = $records[$i]["l_name"];
-                
-                if($student_name_display_format['value'] == "l_f_m") {
+
+                if ($student_name_display_format['value'] == "l_f_m") {
                     $records[$i]["f_name"] = $l_name;
                     $records[$i]["m_name"] = $f_name;
                     $records[$i]["l_name"] = $m_name;
-                }
-                elseif($student_name_display_format['value'] == "l_m_f") {
+                } elseif ($student_name_display_format['value'] == "l_m_f") {
                     $records[$i]["f_name"] = $l_name;
                     $records[$i]["m_name"] = $m_name;
                     $records[$i]["l_name"] = $f_name;
                 }
-                else {}
             }
+
+
+            
+            // echo "<pre>";
+            // print_r($records);
+            // echo "</pre>";
+            // exit();
 
             return $records;
         }

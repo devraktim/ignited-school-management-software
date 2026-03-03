@@ -347,6 +347,7 @@
             else {
                 $file = $this->upload_file("image");
 
+
                 if($file["status"]) {
                     $prev_image = $this->input->post('prev_image');
                     unlink('storage/students/' . $prev_image);

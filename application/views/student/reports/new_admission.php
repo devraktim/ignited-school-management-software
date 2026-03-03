@@ -172,9 +172,9 @@
     <body data-new-gr-c-s-check-loaded="14.1098.0" data-gr-ext-installed="">
         <?php 
             $class_map = [
-                1 => "UKG", 2 => "I", 3 => "II", 4 => "III", 5 => "IV", 
-                6 => "V", 7 => "VI", 8 => "VII", 9 => "VIII", 10 => "IX", 
-                11 => "X", 12 => "XI", 13 => "XII"
+                1 => "NURSERY", 2 => "LKG", 3 => "UKG", 4 => "I", 5 => "II", 6 => "III", 7 => "IV", 
+                8 => "V", 9 => "VI", 10 => "VII", 11 => "VIII", 12 => "IX", 
+                13 => "X", 14 => "XI", 15 => "XII"
             ];
             
             $section_map = [
