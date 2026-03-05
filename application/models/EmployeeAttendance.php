@@ -70,6 +70,23 @@ class EmployeeAttendance extends CI_Model {
        
         return $query->row_array(); // Return a single attendance record or null if not found
     }
+
+    public function getYearAttendance($employeeIds, $session, $year)
+    {
+        if (empty($employeeIds)) {
+            return [];
+        }
+
+        $startDate = $year . '-01-01 00:00:00';
+        $endDate   = $year . '-12-31 23:59:59';
+
+        $this->db->where_in('employee_id', $employeeIds);
+        $this->db->where('session', $session);
+        $this->db->where('attendance_date >=', $startDate);
+        $this->db->where('attendance_date <=', $endDate);
+
+        return $this->db->get('employee_attendance_store')->result_array();
+    }
     
     // public function attendanceExists($employee_id, $session, $date) {
     //     $this->db->where('employee_id', $employee_id);

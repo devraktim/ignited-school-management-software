@@ -39,7 +39,7 @@
     </style>
 
     <div class="row mb-5">
-        <h1>Month Wise Employee Attendance Report</h1>
+        <h1>Month Wise Attendance</h1>
     </div>
 
     <form id="form" method="GET" action="<?php echo base_url() ?>personnel/attendance/month-wise-report">
@@ -119,7 +119,7 @@
                                             </select>
                                         </td>
                                         <td colspan="2">
-                                            <button type="submit" class="btn btn-success">Generate Report</button>
+                                            <button type="submit" class="btn btn-success">Search</button>
                                         </td>
                                     </tr>
                                 </tbody>

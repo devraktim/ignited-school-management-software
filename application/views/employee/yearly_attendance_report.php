@@ -1,7 +1,7 @@
 <?php $this->load->view("inc/app_header.php"); ?>
 
     <div class="row mb-5">
-        <h1>Employee Session Attendance Report</h1>
+        <h1>Session Wise Attendance</h1>
     </div>
     <form id="form" method="GET" action="<?php echo base_url() ?>personnel/attendance/session-wise-report">
         <div class="row mb-5">
@@ -122,7 +122,7 @@
                                 <td class="table-primary text-dark"><?php echo $slNo++; ?></td>
                                 <td><?php echo $employee['emp_code']; ?></td>
                                 <td><?php echo trim($employee['f_name'].' '.$employee['m_name'].' '.$employee['l_name']); ?></td>
-                                <td><?php echo $designations[$designationId]['name'] ?? ''; ?></td>
+                                <td><?php echo $designations[$designationId - 1]['name'] ?? ''; ?></td>
     
                                 <?php for ($m = 1; $m <= 12; $m++): 
                                     $monthKey = sprintf('%s-%02d', $year, $m);

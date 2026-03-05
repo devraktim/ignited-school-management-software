@@ -187,8 +187,12 @@
                                                 <input type="time"
                                                        class="form-control checkin-time"
                                                        name="checkin_time[<?= $empId; ?>]"
-                                                       value="<?= ($att && $att['attendance'] == 'P') ? $att['attendance_date'] ? date('H:i', strtotime($att['attendance_date'])) : '' : ''; ?>"
-                                                       <?= ($att && $att['attendance'] == 'A') ? 'disabled' : ''; ?>>
+                                                      value="<?= ($att && $att['attendance'] == 'P') 
+                                                                        ? (!empty($att['attendance_date']) 
+                                                                            ? date('H:i', strtotime($att['attendance_date'])) 
+                                                                            : '08:30') 
+                                                                        : ''; ?>"
+                                                            <?= ($att && $att['attendance'] == 'A') ? 'disabled' : ''; ?>>
                                             </td>
                                         
                                             <!-- Absent Reason -->

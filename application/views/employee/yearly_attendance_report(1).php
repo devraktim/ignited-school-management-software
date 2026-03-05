@@ -1,7 +1,7 @@
 <?php $this->load->view("inc/app_header.php"); ?>
 
     <div class="row mb-5">
-        <h1>Employee Session Attendance Report</h1>
+        <h1>Session Wise Attendance</h1>
     </div>
     <form id="form" method="GET" action="<?php echo base_url() ?>personnel/attendance/session-wise-report">
         <div class="row mb-5">
@@ -45,7 +45,7 @@
 
                                         
                                         <td colspan="2">
-                                            <button type="submit" class="btn btn-success">Generate Report</button>
+                                            <button type="submit" class="btn btn-success">Search</button>
                                         </td>
                                         <!--<td style="vertical-align: middle;">Job Status</td>-->
                                         <!--<td>-->

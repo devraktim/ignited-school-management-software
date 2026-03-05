@@ -281,59 +281,59 @@
 
 
     
-    <script>
-        $(document).ready(function() {
-            $('.retire-btn, .resign-btn').click(function() {
-                // Get data attributes from the button
-                
-                var id = $(this).data('id');
-                var empCode = $(this).data('emp-code');
-                var name = $(this).data('name');
-                var department = $(this).data('department');
-                var designation = $(this).data('designation');
-                var empType = $(this).data('emp-type');
-                var jobStatus = $(this).data('job-status');
-                var dateJoining = $(this).data('date-joining');
-                var since = $(this).data('since');
-                var address = $(this).data('address');
-                var phone = $(this).data('phone');
-                var retiredDate = $(this).data('date-retirement');
-                var resignationDate = $(this).data('date-resignation');
-                var resignationReason = $(this).data('reason-resignation');
-    
-                // Populate the input fields
-                $('#emp_id').val(id);
-                $('#emp-code').val(empCode).prop('disabled', true);
-                $('#name').val(name).prop('disabled', true);
-                $('#department').val(department).prop('disabled', true);
-                $('#designation').val(designation).prop('disabled', true);
-                $('#employee-type').val(empType).prop('disabled', true);
-                $('#job-status').val(jobStatus).prop('disabled', true);
-                $('#date-joining').val(dateJoining).prop('disabled', true);
-                
-                $('#date-retirement').val(retiredDate).prop('disabled', true);
-                $('#date-resignation').val(resignationDate).prop('disabled', true);
-                $('#reason-resignation').val(resignationReason).prop('disabled', true);
-                
-                $('#since').val(since).prop('disabled', true);
-                $('#address').val(address).prop('disabled', true);
-                $('#phone').val(phone).prop('disabled', true);
-    
-                // Reset and toggle visibility based on the button clicked
-                if ($(this).hasClass('retire-btn')) {
-                    $('#date-retirement-group').removeClass('hidden').find('input').prop('disabled', false);
-                    $('#date-resignation-group').addClass('hidden').find('input').prop('disabled', true);
-                    $('#reason-resignation-group').addClass('hidden').find('textarea').val('').prop('disabled', true);
-                } else if ($(this).hasClass('resign-btn')) {
-                    $('#date-retirement-group').addClass('hidden').find('input').val('').prop('disabled', true);
-                    $('#date-resignation-group').removeClass('hidden').find('input').prop('disabled', false);
-                    $('#reason-resignation-group').removeClass('hidden').find('textarea').prop('disabled', false);
-                }
-            });
-        });
-    </script>
-    
 <script>
+    $(document).ready(function() {
+        $('.retire-btn, .resign-btn').click(function() {
+            // Get data attributes from the button
+            
+            var id = $(this).data('id');
+            var empCode = $(this).data('emp-code');
+            var name = $(this).data('name');
+            var department = $(this).data('department');
+            var designation = $(this).data('designation');
+            var empType = $(this).data('emp-type');
+            var jobStatus = $(this).data('job-status');
+            var dateJoining = $(this).data('date-joining');
+            var since = $(this).data('since');
+            var address = $(this).data('address');
+            var phone = $(this).data('phone');
+            var retiredDate = $(this).data('date-retirement');
+            var resignationDate = $(this).data('date-resignation');
+            var resignationReason = $(this).data('reason-resignation');
+
+            // Populate the input fields
+            $('#emp_id').val(id);
+            $('#emp-code').val(empCode).prop('disabled', true);
+            $('#name').val(name).prop('disabled', true);
+            $('#department').val(department).prop('disabled', true);
+            $('#designation').val(designation).prop('disabled', true);
+            $('#employee-type').val(empType).prop('disabled', true);
+            $('#job-status').val(jobStatus).prop('disabled', true);
+            $('#date-joining').val(dateJoining).prop('disabled', true);
+            
+            $('#date-retirement').val(retiredDate).prop('disabled', true);
+            $('#date-resignation').val(resignationDate).prop('disabled', true);
+            $('#reason-resignation').val(resignationReason).prop('disabled', true);
+            
+            $('#since').val(since).prop('disabled', true);
+            $('#address').val(address).prop('disabled', true);
+            $('#phone').val(phone).prop('disabled', true);
+
+            // Reset and toggle visibility based on the button clicked
+            if ($(this).hasClass('retire-btn')) {
+                $('#date-retirement-group').removeClass('hidden').find('input').prop('disabled', false);
+                $('#date-resignation-group').addClass('hidden').find('input').prop('disabled', true);
+                $('#reason-resignation-group').addClass('hidden').find('textarea').val('').prop('disabled', true);
+            } else if ($(this).hasClass('resign-btn')) {
+                $('#date-retirement-group').addClass('hidden').find('input').val('').prop('disabled', true);
+                $('#date-resignation-group').removeClass('hidden').find('input').prop('disabled', false);
+                $('#reason-resignation-group').removeClass('hidden').find('textarea').prop('disabled', false);
+            }
+        });
+    });
+</script>
+    
+<!-- <script>
 $(document).on('click', '.action-btn', function () {
 
     let d = $(this).data();
@@ -410,8 +410,168 @@ $(document).on('click', '.action-btn', function () {
         w.document.close();
     }
 });
-</script>
+</script> -->
 
+<script>
+$(document).on('click', '.action-btn', function () {
+
+    let d = $(this).data();
+
+    // Fill modal (unchanged)
+    $('#m_name').val(d.name);
+    $('#m_department').val(d.department);
+    $('#m_designation').val(d.designation);
+    $('#m_empType').val(d.empType);
+    $('#m_jobStatus').val(d.jobStatus);
+    $('#m_since').val(d.since);
+    $('#m_address').val(d.address);
+    $('#m_phone').val(d.phone);
+
+    $('#m_reason_group').addClass('d-none');
+
+    if (d.type === 'retire') {
+        $('#m_date_label').text('Date of Retirement');
+        $('#m_date').val(d.date);
+    } else {
+        $('#m_date_label').text('Date of Resignation');
+        $('#m_date').val(d.date);
+        $('#m_reason').val(d.reason);
+        $('#m_reason_group').removeClass('d-none');
+    }
+
+    // VIEW → MODAL
+    if (d.action === 'view') {
+        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+    }
+
+    // PRINT
+    if (d.action === 'print') {
+
+        let headerImage = "<?php echo base_url()?>/assets/media/logos/result_header.png";
+
+        let html = `
+        <html>
+        <head>
+            <title>Employee Details</title>
+
+            <style>
+
+                @page {
+                    size: A4;
+                    margin: 15mm;
+                }
+
+                body {
+                    font-family: "Segoe UI", Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    color: #000;
+                }
+
+                .print-container {
+                    width: 100%;
+                }
+
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+
+                .print-header img {
+                    width: 100%;
+                    max-height: 120px;
+                    object-fit: contain;
+                }
+
+                .report-title {
+                    text-align: center;
+                    font-size: 20px;
+                    font-weight: 600;
+                    margin: 15px 0 25px 0;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 14px;
+                }
+
+                td {
+                    padding: 10px 12px;
+                    border: 1px solid #222;
+                }
+
+                td:first-child {
+                    width: 35%;
+                    font-weight: 600;
+                    background-color: #f2f2f2;
+                }
+
+                .signature {
+                    width: 220px;
+                    text-align: center;
+                    border-top: 1px solid #000;
+                    padding-top: 5px;
+                    float: right;
+                    margin-top: 60px;
+                    font-size: 13px;
+                }
+
+            </style>
+        </head>
+
+        <body>
+
+            <div class="print-container">
+
+                <div class="print-header">
+                    <img src="${headerImage}" alt="Header Logo">
+                </div>
+
+                <div class="report-title">
+                    ${d.type === 'retire' ? 'Retired Employee Report' : 'Resigned Employee Report'}
+                </div>
+
+                <table>
+                    <tr><td>Name</td><td>${d.name}</td></tr>
+                    <tr><td>Department</td><td>${d.department}</td></tr>
+                    <tr><td>Designation</td><td>${d.designation}</td></tr>
+                    <tr><td>Employee Type</td><td>${d.empType}</td></tr>
+                    <tr><td>Job Status</td><td>${d.jobStatus}</td></tr>
+                    <tr><td>Date of Joining</td><td>${d.since}</td></tr>
+                    <tr><td>Address</td><td>${d.address}</td></tr>
+                    <tr><td>Phone</td><td>${d.phone}</td></tr>
+                    <tr>
+                        <td>${d.type === 'retire' ? 'Date of Retirement' : 'Date of Resignation'}</td>
+                        <td>${d.date}</td>
+                    </tr>
+                    ${d.reason ? `<tr><td>Reason</td><td>${d.reason}</td></tr>` : ``}
+                </table>
+
+                <div class="signature">
+                    Authorized Signature
+                </div>
+
+            </div>
+
+            <script>
+                window.onload = function(){
+                    window.print();
+                    window.close();
+                }
+            <\/script>
+
+        </body>
+        </html>`;
+
+        let w = window.open('', '', 'width=900,height=1000');
+        w.document.write(html);
+        w.document.close();
+    }
+});
+</script>
 
 
 <?php $this->load->view("inc/app_footer.php"); ?>

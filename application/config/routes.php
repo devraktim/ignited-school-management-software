@@ -403,7 +403,10 @@ $route["personnel/report"]["GET"] = "Personnel/EmployeeReportController/index";
 $route["personnel/report/employee-list"]["GET"] = "Personnel/EmployeeReportController/employee_list";
 $route["personnel/report/inactive-employee-list"]["GET"] = "Personnel/EmployeeReportController/inactive_employee_list";
 $route["personnel/report/employee-personal-details"]["GET"] = "Personnel/EmployeeReportController/employee_personal_details";
-$route["personnel/report/employee-personal-details"]["GET"] = "Personnel/EmployeeReportController/employee_personal_details";
+$route["personnel/report/retired-employee-list"]["GET"] = "Personnel/EmployeeReportController/retired_employee_list";
+$route["personnel/report/resigned-employee-list"]["GET"] = "Personnel/EmployeeReportController/resigned_employee_list";
+$route["personnel/report/monthly-attendance-report"]["GET"] = "Personnel/EmployeeReportController/monthly_attendance_report";
+$route["personnel/report/session-attendance-report"]["GET"] = "Personnel/EmployeeReportController/session_attendance_report";
 
 $route["personnel/report/user-defined-report"]["GET"] = "Personnel/EmployeeReportController/user_defined_report";
 $route["personnel/report/user-defined-report"]["POST"] = "Personnel/EmployeeReportController/generate_user_defined_report";

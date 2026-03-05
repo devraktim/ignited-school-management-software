@@ -317,11 +317,13 @@
             // Initialize an array to hold attendance data
             $attendanceData = [];
         
+            $session_id = $this->session->academy_session['current_session']['id'];
+
             // Check for existing attendance records for the employees
             foreach ($records as $record) {
               
                 $attendanceDate = $_GET['date'] ?? date('Y-m-d');
-                $attendance = $this->EmployeeAttendance->getAttendanceByEmployeeAndDate($record['id'], 1, $attendanceDate);
+                $attendance = $this->EmployeeAttendance->getAttendanceByEmployeeAndDate($record['id'], $session_id, $attendanceDate);
 
                 $attendanceData[$record['id']] = $attendance; // Store attendance data indexed by employee ID
             }
