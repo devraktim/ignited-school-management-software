@@ -155,7 +155,12 @@
 
             $data['employees'] = $this->Employee->search($_GET);
 
-            $this->load->view("employee/search.php", $data);
+            // echo "<pre>";
+            // print_r($data['employees']);
+            // echo "</pre>";
+            // exit();
+
+            $this->load->view("employee/search", $data);
         }
 
 
@@ -552,12 +557,7 @@
             
                 $data[] = $leave;
             }
-            
-            // echo "<pre>";
-            // print_r($data);
-            // echo "</pre>";
-            // exit();
-        
+                    
             $this->load->view('employee/leave_list', ["leaves" => $data]);
         }
         

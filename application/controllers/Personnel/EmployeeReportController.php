@@ -15,6 +15,8 @@
             $this->load->model("Nationality");
             $this->load->model("EmployeeAttendance");
             $this->load->model("Holiday");
+            $this->load->model("Leave");
+            $this->load->model("Setting");
         }
 
         public function index() {
@@ -400,8 +402,9 @@
                 "departments"       => $departments,
                 "designations"      => $designations,
                 "employee_types"    => $employee_types,
+                "job_statuses"      => $job_statuses,
                 "employeeRecords"   => $records,
-                "attendanceData"   => $attendanceData // Pass attendance data to the view
+                "attendanceData"    => $attendanceData // Pass attendance data to the view
             ];
             
             // echo "<pre>";
@@ -422,6 +425,7 @@
             $departments    = $this->Department->get();
             $designations   = $this->Designation->get();
             $employee_types = $this->EmployeeType->get();
+            $job_statuses   = $this->JobStatus->get();
             $session        = $this->session->academy_session['current_session']['id'];
 
             $clauses = $_GET;
@@ -530,6 +534,7 @@
                 "departments"        => $departments,
                 "designations"       => $designations,
                 "employee_types"     => $employee_types,
+                "job_statuses"       => $job_statuses,
                 "employeeRecords"    => $records,
                 "attendanceData"     => $attendanceData,
                 "monthlyWorkingDays" => $monthlyWorkingDays,
@@ -665,6 +670,31 @@
             ];
 
             $this->load->view("employee/reports/session_attendance_report", $data);
+        }
+
+        public function leave_applications() {
+            if (!$this->session->user) {
+                return redirect(base_url());
+            }
+        
+            $leaves = $this->Leave->get(); // Fetch all leaves
+            $data = [];
+            
+            foreach ($leaves as $leave) {
+                // Fetch employee info
+                $employee = $this->Employee->get($leave['employee_id']);
+            
+                // Check if $leave is an object or array
+                if (is_object($leave)) {
+                    $leave->employee = $employee;
+                } elseif (is_array($leave)) {
+                    $leave['employee'] = $employee;
+                }
+            
+                $data[] = $leave;
+            }
+                    
+            $this->load->view('employee/reports/leave_list', ["leaves" => $data]);
         }
 
         // public function year_wise_report()

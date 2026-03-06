@@ -162,14 +162,14 @@
                                                     <td class="table-dark text-light text-end"><?php echo $sl_no ?></td>
                                                     <td><?php echo $employee["emp_code"] ?></td>
                                                     <td><?php echo $employee["f_name"] . " " . $employee["m_name"] . " " . $employee["l_name"]?></td>
-                                                    <td><?php echo $employee["department"] ?></td>
-                                                    <td><?php echo $employee["designation"] ?></td>
+                                                    <td><?php echo $departments[$employee["department_id"] - 1]['name'] ?></td>
+                                                    <td><?php echo $designations[$employee["designation_id"] - 1]['name'] ?></td>
                                                     <td><?php echo $employee["sex"] ?></td>
-                                                    <td><?php echo $employee["category"] ?></td>
-                                                    <td><?php echo $employee["emp_type"] ?></td>
-                                                    <td><?php echo $employee["job_status"] ?></td>
-                                                    <td><?php echo $employee["religion"] ?></td>
-                                                    <td><?php echo $employee["nationality"] ?></td>
+                                                    <td><?php echo $categories[$employee["category_id"] - 1]['name'] ?></td>
+                                                    <td><?php echo $employee_types[$employee["emp_type_id"] - 1]['name'] ?></td>
+                                                    <td><?php echo $job_status[$employee["job_status_id"] - 1]['name'] ?></td>
+                                                    <td><?php echo $religions[$employee["religion_id"] - 1]['name'] ?></td>
+                                                    <td><?php echo $nationalities[$employee["nationality_id"] - 1]['name'] ?></td>
                                                 </tr>
                                             <?php } ?>
                                         </tbody>

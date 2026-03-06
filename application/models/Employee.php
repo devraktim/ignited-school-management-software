@@ -36,15 +36,41 @@
         // }
 
         public function get($id = NULL) {
+
+            // Fetch personnel settings
+            $settings = $this->db
+                ->from("settings")
+                ->where("module", "personnel")
+                ->get()
+                ->result_array();
+
+            $config = [];
+            foreach ($settings as $s) {
+                $config[$s['key_name']] = $s['value'];
+            }
+
+            // Sorting map
+            $sort_map = [
+                "employee_code" => "emp_code",
+                "first_name"    => "f_name",
+                "last_name"     => "l_name"
+            ];
+
+            $sort_column = isset($sort_map[$config['employee_sort_by']]) 
+                            ? $sort_map[$config['employee_sort_by']] 
+                            : "emp_code";
+
+
             if($id) {
-                return $this->db->select("employees.*, 
-                                        categories.name as category,
-                                        religions.name as religion,
-                                        nationalities.name as nationality,
-                                        departments.name as department,
-                                        employee_types.name as emp_type,
-                                        job_status.name as job_status,
-                                        designations.name as designation")
+
+                $record = $this->db->select("employees.*, 
+                                            categories.name as category,
+                                            religions.name as religion,
+                                            nationalities.name as nationality,
+                                            departments.name as department,
+                                            employee_types.name as emp_type,
+                                            job_status.name as job_status,
+                                            designations.name as designation")
                                 ->from($this->table)
                                 ->join("categories",    "employees.category_id = categories.id")
                                 ->join("religions",     "employees.religion_id = religions.id")
@@ -56,42 +82,201 @@
                                 ->where(["employees.id" => $id, "employees.deleted" => 0])
                                 ->get()
                                 ->row_array();
-            }
+
+
+                // Apply name display format
+                if($record) {
+
+                    $f = $record['f_name'];
+                    $m = $record['m_name'];
+                    $l = $record['l_name'];
+
+                    switch($config['employee_name_display_format'] ?? "f_m_s") {
+
+                        case "l_f_m":
+                            $record['f_name'] = $l;
+                            $record['m_name'] = $f;
+                            $record['l_name'] = $m;
+                            break;
+
+                        case "l_m_f":
+                            $record['f_name'] = $l;
+                            $record['m_name'] = $m;
+                            $record['l_name'] = $f;
+                            break;
+                    }
+                }
+
+                return $record;
+
+            } 
             else {
 
-                return $this->db->select("employees.*, designations.name as designation_name")
-                                ->from($this->table)
-                                ->join("designations", "employees.designation_id = designations.id")
-                                ->where("employees.deleted", 0)
-                                ->where("employees.id !=", 1)
-                                ->get()
-                                ->result_array();
+                $this->db->select("employees.*, designations.name as designation_name")
+                        ->from($this->table)
+                        ->join("designations", "employees.designation_id = designations.id")
+                        ->join("employee_retires", "employee_retires.employee_id = employees.id", "left")
+                        ->join("employee_resignations", "employee_resignations.employee_id = employees.id", "left")
+                        ->where("employees.deleted", 0)
+                        ->where("employees.id !=", 1);
+
+
+                // Hide inactive employees
+                if(isset($config['employee_display_inactive']) && $config['employee_display_inactive'] == 0) {
+                    $this->db->where("employees.status", "ACTIVE");
+                }
+
+                // Hide retired employees
+                if(isset($config['employee_display_retired']) && $config['employee_display_retired'] == 0) {
+                    $this->db->where("employee_retires.id IS NULL");
+                }
+
+                // Hide resigned employees
+                if(isset($config['employee_display_resigned']) && $config['employee_display_resigned'] == 0) {
+                    $this->db->where("employee_resignations.id IS NULL");
+                }
+
+                // Apply sorting
+                $this->db->order_by("employees.".$sort_column, "ASC");
+
+                $records = $this->db->get()->result_array();
+
+
+                // Apply name display format
+                foreach($records as $i => $emp) {
+
+                    $f = $emp['f_name'];
+                    $m = $emp['m_name'];
+                    $l = $emp['l_name'];
+
+                    switch($config['employee_name_display_format'] ?? "f_m_s") {
+
+                        case "l_f_m":
+                            $records[$i]['f_name'] = $l;
+                            $records[$i]['m_name'] = $f;
+                            $records[$i]['l_name'] = $m;
+                            break;
+
+                        case "l_m_f":
+                            $records[$i]['f_name'] = $l;
+                            $records[$i]['m_name'] = $m;
+                            $records[$i]['l_name'] = $f;
+                            break;
+                    }
+                }
+
+                return $records;
             }
         }
         
         public function get_where($clauses) {
-            $records = $this->db
-                ->select("employees.*")
-                ->from($this->table)
-                ->where('id !=', 1)
-                ->where($clauses)
-                ->get()
-                ->result_array();
-                
+
+            // Fetch personnel settings
+            $settings = $this->db->from("settings")
+                                ->where("module", "personnel")
+                                ->get()
+                                ->result_array();
+
+            $config = [];
+            foreach ($settings as $s) {
+                $config[$s['key_name']] = $s['value'];
+            }
+
+            $this->db->select("employees.*")
+                    ->from($this->table)
+                    ->join("employee_retires", "employee_retires.employee_id = employees.id", "left")
+                    ->join("employee_resignations", "employee_resignations.employee_id = employees.id", "left")
+                    ->where("employees.id !=", 1)
+                    ->where($clauses);
+
+            // Hide inactive employees
+            if(isset($config['employee_display_inactive']) && $config['employee_display_inactive'] == 0) {
+                $this->db->where("employees.status", "ACTIVE");
+            }
+
+            // Hide retired employees
+            if(isset($config['employee_display_retired']) && $config['employee_display_retired'] == 0) {
+                $this->db->where("employee_retires.id IS NULL");
+            }
+
+            // Hide resigned employees
+            if(isset($config['employee_display_resigned']) && $config['employee_display_resigned'] == 0) {
+                $this->db->where("employee_resignations.id IS NULL");
+            }
+
+            $records = $this->db->get()->result_array();
+
+            // Apply name format
+            foreach($records as $i => $emp) {
+
+                $f = $emp['f_name'];
+                $m = $emp['m_name'];
+                $l = $emp['l_name'];
+
+                switch($config['employee_name_display_format'] ?? "f_m_s") {
+
+                    case "l_f_m":
+                        $records[$i]['f_name'] = $l;
+                        $records[$i]['m_name'] = $f;
+                        $records[$i]['l_name'] = $m;
+                        break;
+
+                    case "l_m_f":
+                        $records[$i]['f_name'] = $l;
+                        $records[$i]['m_name'] = $m;
+                        $records[$i]['l_name'] = $f;
+                        break;
+                }
+            }
+
             return $records;
         }
 
+
         public function search($parameteres) {
+
+            // Fetch personnel settings
+            $settings = $this->db->from("settings")
+                                ->where("module", "personnel")
+                                ->get()
+                                ->result_array();
+
+            $config = [];
+            foreach ($settings as $s) {
+                $config[$s['key_name']] = $s['value'];
+            }
+
             $parameteres["deleted"] = 0;
-            $employees = $this->db->where($parameteres)->where('id !=', 1)->get($this->table)->result_array();
+
+            $this->db->from($this->table)
+                    ->join("employee_retires", "employee_retires.employee_id = employees.id", "left")
+                    ->join("employee_resignations", "employee_resignations.employee_id = employees.id", "left")
+                    ->where($parameteres)
+                    ->where("employees.id !=", 1);
+
+            // Hide inactive employees
+            if(isset($config['employee_display_inactive']) && $config['employee_display_inactive'] == 0) {
+                $this->db->where("employees.status", "ACTIVE");
+            }
+
+            // Hide retired employees
+            if(isset($config['employee_display_retired']) && $config['employee_display_retired'] == 0) {
+                $this->db->where("employee_retires.id IS NULL");
+            }
+
+            // Hide resigned employees
+            if(isset($config['employee_display_resigned']) && $config['employee_display_resigned'] == 0) {
+                $this->db->where("employee_resignations.id IS NULL");
+            }
+
+            $employees = $this->db->get()->result_array();
 
             for($i = 0 ; $i < count($employees) ; $i++) {
                 $employees[$i] = $this->get($employees[$i]["id"]);
             }
 
-            return $employees;
+            return $employees[0];
         }
-
         
         public function insert($data) {
             return $this->db->insert($this->table, $data);

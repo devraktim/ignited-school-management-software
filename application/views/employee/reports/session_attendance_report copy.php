@@ -75,32 +75,22 @@ body{
 <body>
 
 <?php 
-
 $sl_no = 0;
 $i = 0;
 $total = count($employeeRecords);
 
 $currentSession = $this->session->academy_session['current_session'];
 
-$sessionStart = new DateTime($currentSession['start']);
-$sessionEnd   = new DateTime($currentSession['end']);
+$sessionStart = $currentSession['start'];
+$sessionEnd   = $currentSession['end'];
 
-/* SESSION MONTH ORDER GENERATION */
+$year = $_GET['year'] ?? date('Y');
 
-$months = [];
-
-$tempDate = clone $sessionStart;
-
-while ($tempDate <= $sessionEnd) {
-
-    $months[] = [
-        'key' => $tempDate->format('Y-m'),
-        'name' => $tempDate->format('M')
-    ];
-
-    $tempDate->modify('+1 month');
-}
-
+$monthNames = [
+1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',
+5=>'May',6=>'Jun',7=>'Jul',8=>'Aug',
+9=>'Sep',10=>'Oct',11=>'Nov',12=>'Dec'
+];
 ?>
 
 <!-- HEADER -->
@@ -128,9 +118,7 @@ Session Wise Attendance Report
 </div>
 
 <div class="SubHeader">
-(<?php echo date('d-m-Y', strtotime($currentSession['start'])); ?> 
-to 
-<?php echo date('d-m-Y', strtotime($currentSession['end'])); ?>)
+(<?php echo date('d-m-Y', strtotime($sessionStart)); ?> to <?php echo date('d-m-Y', strtotime($sessionEnd)); ?>)
 </div>
 
 
@@ -151,9 +139,9 @@ to
 <th rowspan="2">Name</th>
 <th rowspan="2">Designation</th>
 
-<?php foreach($months as $month): ?>
-<th><?php echo $month['name']; ?></th>
-<?php endforeach; ?>
+<?php for($m=1;$m<=12;$m++): ?>
+<th><?php echo $monthNames[$m]; ?></th>
+<?php endfor; ?>
 
 <th>Total</th>
 </tr>
@@ -161,16 +149,14 @@ to
 
 <tr>
 
-<?php foreach($months as $month): 
-
-$monthKey = $month['key'];
+<?php for($m=1;$m<=12;$m++): 
+$monthKey = sprintf('%s-%02d', $year, $m);
 $workingDays = $monthlyWorkingDays[$monthKey] ?? 0;
-
 ?>
 
 <th><?php echo $workingDays; ?>D</th>
 
-<?php endforeach; ?>
+<?php endfor; ?>
 
 <th><?php echo $yearlyWorkingDays; ?>D</th>
 
@@ -206,16 +192,14 @@ $yearlyTotal = $attendanceData[$empId]['yearly_total'] ?? 0;
 <?php echo $designations[$designationId - 1]['name'] ?? ''; ?>
 </td>
 
-<?php foreach($months as $month): 
-
-$monthKey = $month['key'];
+<?php for($m=1;$m<=12;$m++): 
+$monthKey = sprintf('%s-%02d', $year, $m);
 $present = $attendanceData[$empId]['monthly'][$monthKey] ?? 0;
-
 ?>
 
 <td><?php echo $present; ?></td>
 
-<?php endforeach; ?>
+<?php endfor; ?>
 
 <td><strong><?php echo $yearlyTotal; ?></strong></td>
 
@@ -231,4 +215,3 @@ $present = $attendanceData[$empId]['monthly'][$monthKey] ?? 0;
 
 </body>
 </html>
-```

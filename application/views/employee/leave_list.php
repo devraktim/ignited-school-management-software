@@ -78,8 +78,8 @@
                                 <td>
                                     <div class="btn-group">
                                         <button class="btn btn-primary view-btn btn-sm mx-2" 
-        data-application='<?php echo htmlspecialchars($leave['application']); ?>' 
-        data-emp='<?php echo htmlspecialchars(json_encode($leave['employee'])); ?>'>View</button>
+                                            data-application='<?php echo htmlspecialchars($leave['application']); ?>' 
+                                            data-emp='<?php echo htmlspecialchars(json_encode($leave['employee'])); ?>'>View</button>
                             
                                         <a href="<?php echo base_url('personnel/leave/delete/'.$leave['id']); ?>" 
                                            class="btn btn-danger btn-sm" 

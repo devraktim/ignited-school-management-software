@@ -519,6 +519,28 @@ $(document).on('click', '.action-btn', function () {
                     font-size: 13px;
                 }
 
+                .header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .header img {
+                    height: 70px; /* Adjust as needed */
+                    margin-right: 20px;
+                }
+                .header-text h1 {
+                    font-size: 1.8rem;
+                    margin-bottom: 0;
+                    line-height: 1.2;
+                    font-weight: bold;
+                }
+                .header-text p {
+                    font-size: 1.1rem;
+                    margin-top: 5px;
+                    font-weight: 500;
+                }
             </style>
         </head>
 
@@ -526,8 +548,12 @@ $(document).on('click', '.action-btn', function () {
 
             <div class="print-container">
 
-                <div class="print-header">
-                    <img src="${headerImage}" alt="Header Logo">
+                <div class="header">
+                    <img src="https://ignitedsoft.in/stfrancis/assets/sfs_new_logo.png" alt="School Logo" class="invisible-placeholder">
+                    <div class="header-text invisible-placeholder">
+                        <h1>ST. FRANCIS' SCHOOL</h1>
+                        <p>JORETHANG, SOUTH SIKKIM</p>
+                    </div>
                 </div>
 
                 <div class="report-title">

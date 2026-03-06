@@ -8,8 +8,28 @@ class Leave extends CI_Model {
     /**
      * Get single leave or all leaves
      */
+    // public function get($id = NULL)
+    // {
+    //     if ($id) {
+    //         return $this->db
+    //             ->where("id", $id)
+    //             ->get($this->table)
+    //             ->row_array();
+    //     }
+
+    //     return $this->db
+    //         ->order_by("id", "DESC")
+    //         ->get($this->table)
+    //         ->result_array();
+    // }
+    
     public function get($id = NULL)
     {
+        $currentSession = $this->session->academy_session['current_session'];
+
+        $session_start = $currentSession['start'];
+        $session_end   = $currentSession['end'];
+
         if ($id) {
             return $this->db
                 ->where("id", $id)
@@ -17,8 +37,14 @@ class Leave extends CI_Model {
                 ->row_array();
         }
 
+        $this->db->where("
+            JSON_UNQUOTE(JSON_EXTRACT(application,'$.from_date')) <= '{$session_end}'
+            AND
+            JSON_UNQUOTE(JSON_EXTRACT(application,'$.to_date')) >= '{$session_start}'
+        ");
+
         return $this->db
-            ->order_by("id", "DESC")
+            ->order_by("id","DESC")
             ->get($this->table)
             ->result_array();
     }

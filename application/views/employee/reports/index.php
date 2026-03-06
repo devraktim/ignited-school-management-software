@@ -63,30 +63,64 @@
                                         <td style="vertical-align: middle;">From Month</td>
                                         <td>
                                             <select class="form-control" name="from_month" required>
-                                                <option value="">Select</option>
-                                                <?php 
-                                                $selectedFromMonth = isset($_GET['from_month']) ? (int)$_GET['from_month'] : null;
-                                                for ($i = 1; $i <= 12; $i++) {
-                                                    $monthName = date('F', mktime(0, 0, 0, $i, 1)); // Get month name
-                                                    $selected = ($i === $selectedFromMonth) ? 'selected' : '';
-                                                    echo "<option value=\"$i\" $selected>$monthName</option>";
-                                                }
+                                                <option value="">-- Select Month --</option>
+                                                <?php
+                                                // Month master (Jan = 1, Dec = 12)
+                                                $months = [
+                                                    1=>'Jan', 2=>'Feb', 3=>'Mar', 4=>'Apr',
+                                                    5=>'May', 6=>'Jun', 7=>'Jul', 8=>'Aug',
+                                                    9=>'Sep', 10=>'Oct', 11=>'Nov', 12=>'Dec'
+                                                ];
+
+                                                // Get academic session start month
+                                                $session = $this->session->academy_session['current_session'];
+                                                $startMonth = (int)date('n', strtotime($session['start'])); // 1–12
+
+                                                // Rearranged display order only
+                                                $monthOrder = array_merge(
+                                                    range($startMonth, 12),
+                                                    range(1, $startMonth - 1)
+                                                );
+
+                                                foreach ($monthOrder as $monthId) {
                                                 ?>
+                                                    <option value="<?php echo $monthId; ?>"
+                                                        <?php echo (isset($_GET['from_month']) && $_GET['from_month'] == $monthId) ? 'selected' : ''; ?>>
+                                                        <?php echo $months[$monthId]; ?>
+                                                    </option>
+                                                <?php } ?>
                                             </select>
                                         </td>
 
                                         <td style="vertical-align: middle;">To Month</td>
                                         <td>
                                             <select class="form-control" name="to_month" required>
-                                                <option value="">Select</option>
-                                                <?php 
-                                                $selectedToMonth = isset($_GET['to_month']) ? (int)$_GET['to_month'] : null;
-                                                for ($i = 1; $i <= 12; $i++) {
-                                                    $monthName = date('F', mktime(0, 0, 0, $i, 1)); // Get month name
-                                                    $selected = ($i === $selectedToMonth) ? 'selected' : '';
-                                                    echo "<option value=\"$i\" $selected>$monthName</option>";
-                                                }
+                                                <option value="">-- Select Month --</option>
+                                                <?php
+                                                // Month master (Jan = 1, Dec = 12)
+                                                $months = [
+                                                    1=>'Jan', 2=>'Feb', 3=>'Mar', 4=>'Apr',
+                                                    5=>'May', 6=>'Jun', 7=>'Jul', 8=>'Aug',
+                                                    9=>'Sep', 10=>'Oct', 11=>'Nov', 12=>'Dec'
+                                                ];
+
+                                                // Get academic session start month
+                                                $session = $this->session->academy_session['current_session'];
+                                                $startMonth = (int)date('n', strtotime($session['start'])); // 1–12
+
+                                                // Rearranged display order only
+                                                $monthOrder = array_merge(
+                                                    range($startMonth, 12),
+                                                    range(1, $startMonth - 1)
+                                                );
+
+                                                foreach ($monthOrder as $monthId) {
                                                 ?>
+                                                    <option value="<?php echo $monthId; ?>"
+                                                        <?php echo (isset($_GET['to_month']) && $_GET['to_month'] == $monthId) ? 'selected' : ''; ?>>
+                                                        <?php echo $months[$monthId]; ?>
+                                                    </option>
+                                                <?php } ?>
                                             </select>
                                         </td>
                                     </tr>
@@ -118,6 +152,8 @@
 
                         <button type="button" target="_blank" href="<?php echo base_url() ?>personnel/report/monthly-attendance-report" class="btn btn-primary mb-3 w-100" onclick="report('monthly-attendance-report')">Monthly Wise Attendance</button>
                         <button type="button" target="_blank" href="<?php echo base_url() ?>personnel/report/session-attendance-report" class="btn btn-primary mb-3 w-100" onclick="report('session-attendance-report')">Session Wise Attendance Report</button>
+
+                        <button type="button" target="_blank" href="<?php echo base_url() ?>personnel/report/leave-applications" class="btn btn-primary mb-3 w-100" onclick="report('leave-applications')">Leave Applications</button>
                     </div>
                 </div>
             </div>
@@ -276,6 +312,10 @@
                 $("#form").attr("method", "GET");
                 $("#form").attr("action", `<?php echo base_url() ?>personnel/report/${name}`);
             }
+            else if(name == "leave-applications") {
+                $("#form").attr("method", "GET");
+                $("#form").attr("action", `<?php echo base_url() ?>personnel/report/${name}`);
+            }
             else if (name == "monthly-attendance-report") {
 
                 let fromMonth = $("select[name='from_month']").val();
@@ -303,7 +343,6 @@
                 // If everything OK
                 $("#form").attr("method", "GET");
                 $("#form").attr("action", `<?php echo base_url() ?>personnel/report/${name}`);
-                $("#form").submit();
             }
             $("#form").submit()
         }

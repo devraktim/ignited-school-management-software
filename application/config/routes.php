@@ -407,6 +407,7 @@ $route["personnel/report/retired-employee-list"]["GET"] = "Personnel/EmployeeRep
 $route["personnel/report/resigned-employee-list"]["GET"] = "Personnel/EmployeeReportController/resigned_employee_list";
 $route["personnel/report/monthly-attendance-report"]["GET"] = "Personnel/EmployeeReportController/monthly_attendance_report";
 $route["personnel/report/session-attendance-report"]["GET"] = "Personnel/EmployeeReportController/session_attendance_report";
+$route["personnel/report/leave-applications"]["GET"] = "Personnel/EmployeeReportController/leave_applications";
 
 $route["personnel/report/user-defined-report"]["GET"] = "Personnel/EmployeeReportController/user_defined_report";
 $route["personnel/report/user-defined-report"]["POST"] = "Personnel/EmployeeReportController/generate_user_defined_report";
