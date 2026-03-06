@@ -233,7 +233,7 @@
         }
 
 
-        public function search($parameteres) {
+        public function search($parameters) {
 
             // Fetch personnel settings
             $settings = $this->db->from("settings")
@@ -246,12 +246,18 @@
                 $config[$s['key_name']] = $s['value'];
             }
 
-            $parameteres["deleted"] = 0;
+            $parameters["deleted"] = 0;
+
+            // Apply parameters only on employees table
+            $employeeParams = [];
+            foreach ($parameters as $key => $value) {
+                $employeeParams["employees.$key"] = $value;
+            }
 
             $this->db->from($this->table)
                     ->join("employee_retires", "employee_retires.employee_id = employees.id", "left")
                     ->join("employee_resignations", "employee_resignations.employee_id = employees.id", "left")
-                    ->where($parameteres)
+                    ->where($employeeParams)
                     ->where("employees.id !=", 1);
 
             // Hide inactive employees
@@ -261,21 +267,22 @@
 
             // Hide retired employees
             if(isset($config['employee_display_retired']) && $config['employee_display_retired'] == 0) {
-                $this->db->where("employee_retires.id IS NULL");
+                $this->db->where("employee_retires.id IS NULL", null, false);
             }
 
             // Hide resigned employees
             if(isset($config['employee_display_resigned']) && $config['employee_display_resigned'] == 0) {
-                $this->db->where("employee_resignations.id IS NULL");
+                $this->db->where("employee_resignations.id IS NULL", null, false);
             }
-
+            
+            $data = [];
             $employees = $this->db->get()->result_array();
 
             for($i = 0 ; $i < count($employees) ; $i++) {
-                $employees[$i] = $this->get($employees[$i]["id"]);
+                $data[$i] = $this->get($employees[$i]["id"]);
             }
 
-            return $employees[0];
+            return $employees; // return all results
         }
         
         public function insert($data) {

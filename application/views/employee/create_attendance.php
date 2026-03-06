@@ -187,12 +187,25 @@
                                                 <input type="time"
                                                        class="form-control checkin-time"
                                                        name="checkin_time[<?= $empId; ?>]"
-                                                      value="<?= ($att && $att['attendance'] == 'P') 
-                                                                        ? (!empty($att['attendance_date']) 
-                                                                            ? date('H:i', strtotime($att['attendance_date'])) 
-                                                                            : '08:30') 
-                                                                        : ''; ?>"
-                                                            <?= ($att && $att['attendance'] == 'A') ? 'disabled' : ''; ?>>
+                                                       <?php
+                                            $timeValue = '08:30'; // default time
+                                            $disabled = '';
+
+                                            if ($att) {
+                                                if ($att['attendance'] === 'P') {
+                                                    $timeValue = !empty($att['attendance_date']) 
+                                                                    ? date('H:i', strtotime($att['attendance_date'])) 
+                                                                    : '08:30';
+                                                } elseif ($att['attendance'] === 'A') {
+                                                    $timeValue = '';      // leave empty if absent
+                                                    $disabled = 'disabled'; // disable the input
+                                                }
+                                            }
+                                            ?>
+
+                                            <input type="time" 
+                                                value="<?= $timeValue; ?>" 
+                                                <?= $disabled; ?>>
                                             </td>
                                         
                                             <!-- Absent Reason -->
