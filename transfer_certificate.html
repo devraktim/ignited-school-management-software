@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Transfer Certificate</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+		<style>
+			body {
+				background: #f5f5f5;
+				font-family: "Times New Roman", serif;
+			}
+
+			.certificate {
+				width: 210mm;
+				min-height: 297mm;
+				background: white;
+				margin: auto;
+				padding: 40px 68px;
+				position: relative;
+				font-size: 17px;
+				line-height: 40px;
+				border: 2px solid black;
+			}
+
+			.logo {
+				width: 80px;
+			}
+
+			.school-title {
+				font-size: 30px;
+				font-weight: 700;
+				letter-spacing: 1px;
+			}
+
+			.school-sub {
+				font-size: 18px;
+				font-weight: 600;
+			}
+
+			.cert-title {
+				font-size: 20px;
+				font-weight: 700;
+				text-decoration: underline;
+				text-underline-offset: 5px;
+				margin-top: 5px;
+			}
+
+			.field {
+				border: none;
+				border-bottom: 1px solid #000;
+				outline: none;
+				background: transparent;
+				padding: 0 4px;
+				height: 24px;
+				vertical-align: baseline;
+				font-size: 15px;
+			}
+
+			.field::placeholder {
+				color: #555;
+				font-size: 14px;
+			}
+
+			select.field {
+				border: none;
+				border-bottom: 1px solid #000;
+				background: transparent;
+				outline: none;
+				height: 24px;
+			}
+
+			.field-sm {
+				width: 120px;
+			}
+
+			.field-md {
+				width: 200px;
+			}
+
+			.field-lg {
+				width: 320px;
+			}
+
+			.line {
+				margin-bottom: 10px;
+			}
+
+			.signature {
+				position: absolute;
+				bottom: 120px;
+				right: 80px;
+				text-align: center;
+				font-size: 14px;
+			}
+
+			.date {
+				position: absolute;
+				bottom: 110px;
+				left: 70px;
+				font-size: 14px;
+			}
+
+			input[type="date"] {
+				appearance: none;
+			}
+
+			/* PRINT SETTINGS */
+			@media print {
+				body {
+					background: white;
+				}
+
+				.certificate {
+					margin: 0;
+					width: 210mm;
+					height: 297mm;
+				}
+
+				/* remove calendar icon */
+				input[type="date"]::-webkit-calendar-picker-indicator {
+					display: none;
+					-webkit-appearance: none;
+				}
+
+				/* remove dropdown arrow */
+				select.field {
+					appearance: none;
+					-webkit-appearance: none;
+					-moz-appearance: none;
+					background: none;
+					height: 28px;
+					line-height: 28px;
+					padding-bottom: 2px;
+				}
+
+				/* remove dropdown arrow */
+				select::-ms-expand {
+					display: none;
+				}
+
+				/* keep proper spacing so text doesn't overlap */
+				.line {
+					margin-bottom: 14px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="certificate">
+			<div class="row align-items-center mb-3">
+				<div class="col-2">
+					<img src="https://ignitedsoft.in/stfrancis/assets/sfs_new_logo.png" class="logo">
+				</div>
+				<div class="col-10 text-center">
+					<div class="school-title">ST. FRANCIS' SCHOOL</div>
+					<div class="school-sub">JORETHANG, SOUTH SIKKIM</div>
+					<div class="cert-title">TRANSFER CERTIFICATE</div>
+				</div>
+			</div>
+			<div class="row mt-4">
+				<div class="col-6"> Apar ID : <input class="field field-md" name="field_1">
+				</div>
+				<div class="col-6 text-end"> Admission No : <input class="field field-md" name="field_2">
+				</div>
+			</div>
+			<div class="row mt-2">
+				<div class="col-6"> TC No : <input class="field field-md" name="field_3">
+				</div>
+				<div class="col-6 text-end"> UDISE PEN : <input class="field field-md" name="field_4">
+				</div>
+			</div>
+			<div class="mt-5">
+				<div class="line"> THIS IS TO CERTIFY THAT <input class="field field-lg" name="field_5" style="width:445px;">
+				</div>
+				<div class="line"> son / daughter of <input class="field field-lg" name="field_6" style="width:332px;"> was admitted into this school on <input class="field field-sm" type="date" name="field_7" style="width:197px;"> on a transfer from <input class="field field-md" name="field_8" style="width:225px;"> and left on </div>
+				<div class="line">
+					<input class="field field-sm" type="date" name="field_9" style="width:197px;"> with a <input class="field field-sm" name="field_10"> Character.
+				</div>
+				<div class="line"> He / She was studying in the <input class="field field-sm" name="field_11" style="width:100px;"> class of the <input class="field field-sm" name="field_12"> the school year being </div>
+				<div class="line"> from <select class="field field-sm" name="field_13" style="width:197px;">
+						<option value="">Month</option>
+						<option>January</option>
+						<option>February</option>
+						<option>March</option>
+						<option>April</option>
+						<option>May</option>
+						<option>June</option>
+						<option>July</option>
+						<option>August</option>
+						<option>September</option>
+						<option>October</option>
+						<option>November</option>
+						<option>December</option>
+					</select> to <select class="field field-sm" name="field_14" style="width:197px;">
+						<option value="">Month</option>
+						<option>January</option>
+						<option>February</option>
+						<option>March</option>
+						<option>April</option>
+						<option>May</option>
+						<option>June</option>
+						<option>July</option>
+						<option>August</option>
+						<option>September</option>
+						<option>October</option>
+						<option>November</option>
+						<option>December</option>
+					</select>
+				</div>
+				<div class="line"> All sums due to this school on his / her account has been remitted or satisfactorily arranged for. </div>
+				<div class="line"> His / Her date of birth, according to the Admission Register is <input class="field field-sm" type="date" name="field_15" style="width:197px;">
+				</div>
+				<div class="line"> Promotion has been <input class="field field-sm" name="field_16" style="width:250px;">
+				</div>
+			</div>
+			<div class="date"> Date : <input class="field field-sm" type="date" name="field_17">
+			</div>
+			<div class="signature"> Fr.Robin Kalikotey <br> Principal </div>
+		</div>
+	</body>
+</html>

@@ -95,6 +95,7 @@
                 <input type="text" class="d-none" name="tc_date" value="<?php echo $tc_date; ?>" />
                 <input type="text" class="d-none" name="date_of_leaving" value="<?php echo $date_of_leaving; ?>" />
                 <input type="text" class="d-none" name="reason" value="<?php echo $reason; ?>" />
+                <input type="text" class="d-none" name="version" value="<?php echo $version; ?>" />
                 
                 <button class="btn btn-success" type="submit">Save</button>
             <?php echo form_close() ?> 

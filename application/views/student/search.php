@@ -192,7 +192,11 @@
                                                 <tr class="text-center">
                                                     <td class="table-primary text-dark p-2"><?php echo $sl_no ?></td>
                                                     <td><?php echo $student["student_no"] ?></td>
-                                                    <td><?php echo $student["f_name"] . " " . $student["m_name"] . " " . $student["l_name"]?></td>
+                                                    <td>
+                                                        <a href="<?php echo base_url() ?>students/show/<?php echo $student["id"]?>">
+                                                            <?php echo $student["f_name"] . " " . $student["m_name"] . " " . $student["l_name"]?>
+                                                        </a>
+                                                    </td>
                                                     <td><?php 
                                                         foreach ($classes as $class) { 
                                                             

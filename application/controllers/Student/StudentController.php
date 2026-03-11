@@ -555,6 +555,11 @@
                 $students = $this->WithdrawnReason->get_withdrawn_students($params);
                 $academy_session_id = $this->session->academy_session['current_session']['id'];
                 $sections = $this->ClassSection->get_sections($academy_session_id, $_POST['class_id']);
+
+                // echo "<pre>";
+                // print_r($students);
+                // echo "</pre>";
+                // exit();
                 
                 $this->load->view("student/withdrawn_students", array("classes" => $classes, "sections" => $sections, "students" => $students, "data" => $_POST));
             }
@@ -683,53 +688,129 @@
             redirect($referrer, 'refresh');
         }
         
+        // public function generate_transfer_certificate() {
+
+        //     $version            = $this->input->get("version");
+        //     $student_id         = $this->input->get("student_id");
+        //     $tc_no              = $this->input->get("tc_no");
+        //     $tc_date            = $this->input->get("tc_date");
+        //     $date_of_leaving    = $this->input->get("date_of_leaving");
+        //     $reason             = $this->input->get("reason");
+            
+        //     $student_data = $this->Student->get($student_id);
+        //     $saved_data = $this->WithdrawnReason->get_withdrawn_students_saved_data($student_id)[0];
+            
+        //     $this->load->view("student/create_transfer_certificate_v".$version, array("student_id" => $student_id, "student_data" => $student_data, "saved_data" => $saved_data, "tc_no" => $tc_no, "tc_date" => $tc_date, "date_of_leaving" => $date_of_leaving, "reason" => $reason, "version" => $version));
+        // }
+        
+        // public function store_transfer_certificate() {
+           
+        //     $version = $this->input->post("version");    
+        //     $student_id = $this->input->post("student_id");
+        //     $student_data = $this->Student->get($student_id);
+            
+        //     $data = [
+        //       "field_1"         =>  $this->input->post("field_1"),
+        //       "field_2"         =>  $this->input->post("field_2"),
+        //       "field_3"         =>  $this->input->post("field_3"),
+        //       "field_4"         =>  $this->input->post("field_4"),
+        //       "field_5"         =>  $this->input->post("field_5"),
+        //       "field_6"         =>  $this->input->post("field_6"),
+        //       "field_7"         =>  $this->input->post("field_7"),
+        //       "field_8"         =>  $this->input->post("field_8"),
+        //       "field_9"         =>  $this->input->post("field_9"),
+        //       "field_10"        =>  $this->input->post("field_10"),
+        //       "field_11"        =>  $this->input->post("field_11"),
+        //       "field_12"        =>  $this->input->post("field_12"),
+        //     ];
+            
+        //     $this->WithdrawnReason->update_withdrawn_students($student_id, ["transfer_certificate" => json_encode($data)]);
+            
+        //     $this->load->view("student/view_transfer_certificate_v".$version, [
+        //         "data"              =>  $data,
+        //         "tc_no"             =>  $this->input->post("tc_no"),
+        //         "tc_date"           =>  $this->input->post("tc_date"),
+        //         "date_of_leaving"   =>  $this->input->post("date_of_leaving"),
+        //         "reason"            =>  $this->input->post("reason"),
+        //         "student_data"      =>  $student_data
+        //     ]);
+        // }
+
         public function generate_transfer_certificate() {
+
+            $version            = $this->input->get("version");
             $student_id         = $this->input->get("student_id");
             $tc_no              = $this->input->get("tc_no");
             $tc_date            = $this->input->get("tc_date");
             $date_of_leaving    = $this->input->get("date_of_leaving");
             $reason             = $this->input->get("reason");
-            
+
             $student_data = $this->Student->get($student_id);
-            $saved_data = $this->WithdrawnReason->get_withdrawn_students_saved_data($student_id)[0];
-            
-            $this->load->view("student/create_transfer_certificate", array("student_id" => $student_id, "student_data" => $student_data, "saved_data" => $saved_data, "tc_no" => $tc_no, "tc_date" => $tc_date, "date_of_leaving" => $date_of_leaving, "reason" => $reason));
+
+            $saved = $this->WithdrawnReason->get_withdrawn_students_saved_data($student_id);
+            $saved_data = !empty($saved) ? $saved[0] : (object)[];
+
+            $this->load->view(
+                "student/create_transfer_certificate_v".$version,
+                [
+                    "student_id"       => $student_id,
+                    "student_data"     => $student_data,
+                    "saved_data"       => $saved_data,
+                    "tc_no"            => $tc_no,
+                    "tc_date"          => $tc_date,
+                    "date_of_leaving"  => $date_of_leaving,
+                    "reason"           => $reason,
+                    "version"          => $version
+                ]
+            );
         }
-        
+
+
         public function store_transfer_certificate() {
-           
-            $student_id = $this->input->post("student_id");
+
+            $version     = $this->input->post("version");
+            $student_id  = $this->input->post("student_id");
+
             $student_data = $this->Student->get($student_id);
-            
-            $data = [
-              "field_1"         =>  $this->input->post("field_1"),
-              "field_2"         =>  $this->input->post("field_2"),
-              "field_3"         =>  $this->input->post("field_3"),
-              "field_4"         =>  $this->input->post("field_4"),
-              "field_5"         =>  $this->input->post("field_5"),
-              "field_6"         =>  $this->input->post("field_6"),
-              "field_7"         =>  $this->input->post("field_7"),
-              "field_8"         =>  $this->input->post("field_8"),
-              "field_9"         =>  $this->input->post("field_9"),
-              "field_10"        =>  $this->input->post("field_10"),
-              "field_11"        =>  $this->input->post("field_11"),
-              "field_12"        =>  $this->input->post("field_12"),
-            ];
-            
-            $this->WithdrawnReason->update_withdrawn_students($student_id, ["transfer_certificate" => json_encode($data)]);
-            
-            $this->load->view("student/view_transfer_certificate.php", [
-                "data"              =>  $data,
-                "tc_no"             =>  $this->input->post("tc_no"),
-                "tc_date"           =>  $this->input->post("tc_date"),
-                "date_of_leaving"   =>  $this->input->post("date_of_leaving"),
-                "reason"            =>  $this->input->post("reason"),
-                "student_data"      =>  $student_data
-            ]);
+
+            /* ------------------------------
+            Collect all dynamic TC fields
+            --------------------------------*/
+            $data = [];
+
+            foreach($_POST as $key => $value){
+                if(strpos($key,'field_') === 0){
+                    $data[$key] = $this->input->post($key, TRUE);
+                }
+            }
+
+            /* ------------------------------
+            Save JSON in DB
+            --------------------------------*/
+            $this->WithdrawnReason->update_withdrawn_students(
+                $student_id,
+                ["transfer_certificate" => json_encode($data)]
+            );
+
+            /* ------------------------------
+            Load certificate view
+            --------------------------------*/
+            $this->load->view(
+                "student/view_transfer_certificate_v".$version,
+                [
+                    "data"            => $data,
+                    "tc_no"           => $this->input->post("tc_no"),
+                    "tc_date"         => $this->input->post("tc_date"),
+                    "date_of_leaving" => $this->input->post("date_of_leaving"),
+                    "reason"          => $this->input->post("reason"),
+                    "student_data"    => $student_data
+                ]
+            );
         }
-        
                 
         public function generate_charecter_certificate() {
+
+            $version            = $this->input->get("version");
             $student_id         = $this->input->get("student_id");
             $tc_no              = $this->input->get("tc_no");
             $tc_date            = $this->input->get("tc_date");
@@ -739,13 +820,14 @@
             $student_data = $this->Student->get($student_id);
             $saved_data = $this->WithdrawnReason->get_withdrawn_students_saved_data($student_id)[0];
 
-            $this->load->view("student/create_charecter_certificate", array("student_id" => $student_id, "student_data" => $student_data, "saved_data" => $saved_data, "tc_no" => $tc_no, "tc_date" => $tc_date, "date_of_leaving" => $date_of_leaving, "reason" => $reason));
+            $this->load->view("student/create_charecter_certificate_v".$version, array("student_id" => $student_id, "student_data" => $student_data, "saved_data" => $saved_data, "tc_no" => $tc_no, "tc_date" => $tc_date, "date_of_leaving" => $date_of_leaving, "reason" => $reason, "version" => $version));
         }
         
         public function store_charecter_certificate() {
            
+            $version = $this->input->post("version");    
             $student_id = $this->input->post("student_id");
-            
+             
             $data = [
               "field_1"         =>  $this->input->post("field_1"),
               "field_2"         =>  $this->input->post("field_2"),
@@ -757,12 +839,12 @@
 
             $this->WithdrawnReason->update_withdrawn_students($student_id, ["charecter_certificate" => json_encode($data)]);
             
-            $this->load->view("student/view_charecter_certificate.php", [
-                "data"              =>  $data,
-                "tc_no"             =>  $this->input->post("tc_no"),
-                "tc_date"           =>  $this->input->post("tc_date"),
-                "date_of_leaving"   =>  $this->input->post("date_of_leaving"),
-                "reason"            =>  $this->input->post("reason"),
+            $this->load->view("student/view_charecter_certificate_v".$version, [
+                "data"              => $data,
+                "tc_no"             => $this->input->post("tc_no") ?? "",
+                "tc_date"           => $this->input->post("tc_date") ?? "",
+                "date_of_leaving"   => $this->input->post("date_of_leaving") ?? "",
+                "reason"            => $this->input->post("reason") ?? "",
             ]);
         }
         

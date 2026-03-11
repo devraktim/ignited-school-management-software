@@ -84,23 +84,25 @@
                                         <?php if($this->session->user['permissions'][0]['student_module'] != "VIEWER" && 
                                                  $this->session->user['permissions'][0]['student_module'] != "OPERATOR") { ?>
                                         <td>
-                                            <?php echo form_open(base_url("students/withdrawn/generate/transfer-certificate"), array("method" => "GET")) ?> 
+                                            <?php echo form_open(base_url("students/withdrawn/generate/transfer-certificate"), array("method" => "GET")) ?>
                                                 <input name="student_id" class="d-none" type="text" value="<?php echo $student["student_id"] ?>" />
                                                 <input name="tc_no" class="d-none" type="text" value="<?php echo $student["tc_no"] ?>" />
                                                 <input name="tc_date" class="d-none" type="text" value="<?php echo $student["tc_date"] ?>" />
                                                 <input name="date_of_leaving" class="d-none" type="text" value="<?php echo $student["date_of_leaving"] ?>" />
                                                 <input name="reason" class="d-none" type="text" value="<?php echo $student["reason"] ?>" />
+                                                <input name="version" class="d-none" type="text" value="<?php echo $student["version"] ?>" />
                                                 
                                                 <button type="submit" class="btn btn-sm btn-primary">Transfer Certificate</button>
                                             <?php echo form_close() ?> 
                                         </td>
                                         <td>
-                                            <?php echo form_open(base_url("students/withdrawn/generate/charecter-certificate"), array("method" => "GET")) ?> 
+                                            <?php echo form_open(base_url("students/withdrawn/generate/charecter-certificate"), array("method" => "GET")) ?>
                                                 <input name="student_id" class="d-none" type="text" value="<?php echo $student["student_id"] ?>" />
                                                 <input name="tc_no" class="d-none" type="text" value="<?php echo $student["tc_no"] ?>" />
                                                 <input name="tc_date" class="d-none" type="text" value="<?php echo $student["tc_date"] ?>" />
                                                 <input name="date_of_leaving" class="d-none" type="text" value="<?php echo $student["date_of_leaving"] ?>" />
                                                 <input name="reason" class="d-none" type="text" value="<?php echo $student["reason"] ?>" />
+                                                <input name="version" class="d-none" type="text" value="<?php echo $student["version"] ?>" />
                                                 
                                                 <button type="submit" class="btn btn-sm btn-primary">Charecter Certificate</button>
                                             <?php echo form_close() ?>

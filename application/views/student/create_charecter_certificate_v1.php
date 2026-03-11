@@ -71,6 +71,8 @@
                     </table>
                 </div>
                 <input type="text" class="d-none" name="student_id" value="<?php echo $student_id; ?>" />
+                <input type="text" class="d-none" name="version" value="<?php echo $version; ?>" />
+
                 <button class="btn btn-success" type="submit">Save</button>
             
             <?php echo form_close() ?> 
