@@ -139,7 +139,7 @@ display:none;
 <div class="row mt-4">
 
 <div class="col-6">
-Apar ID :
+Apaar ID :
 <input class="field field-md" name="field_1" value="<?= old_tc($saved_data,'field_1') ?>">
 </div>
 
@@ -175,7 +175,12 @@ value="<?= old_tc($saved_data,'field_5') ?: $student_data['f_name'].' '.$student
 
 <div class="line">
 
-son / daughter of
+<?php if ($student_data['sex'] == 'male') { ?>
+    Son of / <s>Daughter of</s>
+<?php } elseif ($student_data['sex'] == 'female') { ?>
+    <s>Son of</s> / Daughter of
+<?php } ?>
+
 
 <input class="field field-lg" style="width:332px;"
 name="field_6"

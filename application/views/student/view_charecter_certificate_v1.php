@@ -112,7 +112,7 @@
                     </tr>
                     <tr>
                         <td class="FldL" colspan="3">&nbsp;</td>
-                        <td class="FldR" style="text-align: center">Director / Principal <br>ST. Joseph's Convent School</td>
+                        <td class="FldR" style="text-align: center">Director / Principal <br>St. Francis’ School, Jorethang</td>
                     </tr>
                 </table>
             </div>

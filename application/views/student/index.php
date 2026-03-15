@@ -128,7 +128,10 @@
                                             <?php } ?>
                                         </div>
                                         <div class="card-body" style="padding: 0; padding-top: 10px;">
-                                            <h4 class="card-title text-center"><?php echo $student['f_name'] . " " . $student['m_name'] . " " . $student['l_name'] ?></h4>
+                                            <h4 class="card-title text-center">
+                                                <?php echo $student['f_name'] . " " . $student['m_name'] . " " . $student['l_name'] ?> 
+                                                <?php if ($student["withdraw"] == 1) { echo " (W)"; }?>
+                                            </h4>
                                         </div>
                                     </div>
                                 </a>

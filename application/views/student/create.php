@@ -53,7 +53,24 @@
                                 <label class="col-form-label required">Student No</label>
                             </div>
                             <div class="col-md-2">
-                                <input type="text" class="form-control" name="student_no" required value="<?php if(isset($student_no)) { echo $student_no; } else{ echo set_value('student_no'); } ?>" <?php if($settings['student_auto_generate_no']) {echo "disabled";}?>>
+                               <input type="text"
+                                class="form-control"
+                                name="student_no"
+                                required
+                                value="<?php 
+                                        if($settings['student_auto_generate_no'] == 1){
+                                            if(isset($student_no)){
+                                                echo $student_no;
+                                            } else {
+                                                echo set_value('student_no');
+                                            }
+                                        } else {
+                                            echo '';
+                                        }
+                                ?>"
+                                <?php if($settings['student_auto_generate_no'] == 1){ echo 'disabled'; } ?>
+                                >
+
                                 <div class="invalid-feedback d-block">
                                     <?php echo form_error('student_no');  ?>
                                 </div>

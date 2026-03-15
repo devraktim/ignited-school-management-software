@@ -67,10 +67,6 @@
                                         <th></th>
                                         <th>Student No</th>
                                         <th>Name</th>
-                                        <th>Class</th>
-                                        <th>Section</th>
-                                        <th>Nationality</th>
-                                        <th>Number</th>
                                         <th>Date of Issue</th>
                                         <th>Valid From</th>
                                         <th>Valid To</th>
@@ -83,10 +79,6 @@
                                             <td><?php echo $sl_no ?></td>
                                             <td><?php echo $student["student_no"] ?></td>
                                             <td><?php echo $student["f_name"] . " " . $student["m_name"] . " " . $student["l_name"]?></td>
-                                            <td><?php echo $student["class"] ?></td>
-                                            <td><?php echo $student["section"] ?></td>
-                                            <td><?php echo $student["nationality"] ?></td>
-                                            <td><?php echo $student["passport_no"] ?></td>
                                             <td><?php echo $student["passport_date_of_issue"] ?></td>
                                             <td><?php echo $student["passport_valid_from"] ?></td>
                                             <td><?php echo $student["passport_valid_to"] ?></td>

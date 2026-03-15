@@ -123,7 +123,7 @@ height:297mm;
 <div class="row mt-4">
 
 <div class="col-6">
-Apar ID :
+Apaar ID :
 <span class="field field-md"><?php echo $data["field_1"] ?? "" ?></span>
 </div>
 
@@ -162,7 +162,11 @@ THIS IS TO CERTIFY THAT
 
 <div class="line">
 
-son / daughter of
+<?php if ($student_data['sex'] == 'male') { ?>
+    Son of / <s>Daughter of</s>
+<?php } elseif ($student_data['sex'] == 'female') { ?>
+    <s>Son of</s> / Daughter of
+<?php } ?>
 
 <span class="field field-lg" style="width:332px;">
 <?php echo $data["field_6"] ?? "" ?>

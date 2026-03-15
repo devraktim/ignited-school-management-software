@@ -178,16 +178,15 @@ $field6 = isset($saved_data['field_6']) ? $saved_data['field_6'] : '';
 
 <br>
 
-<div class="cert-title">CERTIFICATE</div>
-<div class="cert-sub">of Good Character</div>
+<div class="cert-title">This Certificate Proudly Acknowledges</div>
+<br>
+<!-- <div class="cert-sub">of Good Character</div> -->
 
 </div>
 
 <br>
 
-<p class="text-center fs-5">
-This Certificate Proudly Acknowledges
-</p>
+<!-- <p class="text-center fs-5"> </p> -->
 
 
 <div class="text-center mb-4">
@@ -206,7 +205,11 @@ readonly
 
 <p class="fs-5">
 
-Son / Daughter of
+<?php if ($student_data['sex'] == 'male') { ?>
+    Son of / <s>Daughter of</s>
+<?php } elseif ($student_data['sex'] == 'female') { ?>
+    <s>Son of</s> / Daughter of
+<?php } ?>
 
 <input
 type="text"

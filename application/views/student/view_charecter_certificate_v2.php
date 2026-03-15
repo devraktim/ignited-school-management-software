@@ -116,15 +116,25 @@
 						<div class="school-title"> ST. FRANCIS’ SCHOOL </div>
 						<div class="school-subtitle"> JORETHANG, SOUTH SIKKIM </div>
 						<br>
-						<div class="cert-title"> CERTIFICATE </div>
-						<div class="cert-sub"> of Good Character </div>
+						<div class="cert-title">This Certificate Proudly Acknowledges</div>
+						<br>
+						<!-- <div class="cert-sub"> of Good Character </div> -->
 					</div>
 					<br>
-					<p class="text-center fs-5"> This Certificate Proudly Acknowledges </p>
+					<!-- <p class="text-center fs-5"> </p> -->
 					<div class="text-center mb-4">
 						<input type="text" name="field_1" class="form-control text-center fw-bold fs-4" placeholder="Student Name" value="<?php echo $data['field_1'] ?>" readonly>
 					</div>
-					<p class="fs-5"> Son / Daughter of <input type="text" name="field_2" class="form-control d-inline w-25 mx-2" value="<?php echo $data['field_2'] ?>" readonly> resident of <input type="text" name="field_3" class="form-control d-inline w-25 mx-2" value="<?php echo $data['field_3'] ?>" readonly> was a bonafide-student of this esteemed institution. </p>
+					
+					<p class="fs-5"> 
+						<?php if ($student_data['sex'] == 'male') { ?>
+							Son of / <s>Daughter of</s>
+						<?php } elseif ($student_data['sex'] == 'female') { ?>
+							<s>Son of</s> / Daughter of
+						<?php } ?>
+						<input type="text" name="field_2" class="form-control d-inline w-25 mx-2" value="<?php echo $data['field_2'] ?>" readonly> resident of <input type="text" name="field_3" class="form-control d-inline w-25 mx-2" value="<?php echo $data['field_3'] ?>" readonly> was a bonafide-student of this esteemed institution. 
+					</p>
+
 					<p class="fs-5"> The Character of the above mentioned student was <input type="text" name="field_4" class="form-control d-inline w-25 mx-2" value="<?php echo $data['field_4'] ?>" required readonly> . </p>
 					<p class="fs-5"> Academically the student was <input type="text" name="academic" class="form-control d-inline w-25 mx-2" value="<?php echo $data['field_5'] ?>" required readonly> . </p>
 					<br>

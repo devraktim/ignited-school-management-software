@@ -100,32 +100,25 @@
 
                                             <td><?php echo $student['roll_no'] ?></td>
 
-                                            <!-- Status -->
                                             <td>
                                                 <select class="form-select" name="status[]">
 
-                                                    <?php
-                                                    $class_id = isset($_GET["class_id"]) ? $_GET["class_id"] : '';
+                                                    <?php if(isset($_GET["class_id"]) && $_GET["class_id"] != 13) { ?>
+                                                        <option value="Promote">Promote</option>
+                                                    <?php } ?>
 
-                                                    // Show Promote for all except class 15
-                                                    if($class_id != 15){
-                                                        echo '<option value="Promote">Promote</option>';
-                                                    }
+                                                    <option value="Continue">Continue</option>
 
-                                                    // Continue always visible
-                                                    echo '<option value="Continue">Continue</option>';
-
-                                                    // Passout only for class 13 and 15
-                                                    if($class_id == 13 || $class_id == 15){
-                                                        $selected = ($class_id == 13 || $class_id == 15) ? 'selected' : '';
-                                                        echo '<option value="Passout" '.$selected.'>Passout</option>';
-                                                    }
-                                                    ?>
+                                                    <?php if(isset($_GET["class_id"]) && ($_GET["class_id"] == 11 || $_GET["class_id"] == 13)) { ?>
+                                                        <option value="Passout"
+                                                            <?php if(isset($_GET["class_id"]) && $_GET["class_id"] == 13){echo "selected";} ?>>
+                                                            Passout
+                                                        </option>
+                                                    <?php } ?>
 
                                                 </select>
                                             </td>
-                                            
-                                            <!-- New Class -->
+
                                             <td>
 
                                                 <select class="form-select" name="promote_class_id[]" readonly disabled
@@ -136,7 +129,7 @@
                                                     <?php foreach ($classes as $class) { ?>
 
                                                         <option value="<?php echo $class["id"] ?>"
-                                                            <?php if(isset($_GET["class_id"]) && ($_GET["class_id"] + 1) == $class["id"]){echo "selected";}?>>
+                                                            <?php if(isset($_GET["class_id"]) && ($_GET["class_id"] != 13) && ($_GET["class_id"]+1) == $class["id"]){echo "selected";}?>>
 
                                                             <?php echo $class["name"] ?>
 
@@ -171,7 +164,6 @@
 
                                             </td>
 
-                                            <!-- New Section -->
                                             <td>
 
                                                 <input type="text" class="d-none" name="id[]" value="<?php echo $student['id'] ?>" />

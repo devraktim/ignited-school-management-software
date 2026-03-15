@@ -101,6 +101,18 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>EMMIS TC No</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="emmis_tc_no" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>UDUSE PEN</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="uduse_pen" />
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>TC Date</td>
                                     <td>
                                         <input type="date" class="form-control" name="tc_date" value="<?php echo date('Y-m-d') ?>" />

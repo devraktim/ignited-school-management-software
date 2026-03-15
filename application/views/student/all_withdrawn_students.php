@@ -62,6 +62,8 @@
                                     <th>Name</th>
                                     <th>Roll No</th>
                                     <th>TC No</th>
+                                    <th>EMMIS TC No</th>
+                                    <th>UDUSE PEN</th>
                                     <th>TC Date</th>
                                     <th>Date of Leaving</th>
                                     <th>Reason</th>
@@ -81,6 +83,8 @@
                                         <td><?php echo $student['f_name'] . " " . $student['m_name'] . " " . $student['l_name'] ?></td>
                                         <td><?php echo $student['roll_no'] ?></td>
                                         <td><?php echo $student['tc_no'] ?></td>
+                                        <td><?php echo $student['emmis_tc_no'] ?></td>
+                                        <td><?php echo $student['uduse_pen'] ?></td>
                                         <td><?php echo $student['tc_date'] ?></td>
                                         <td><?php echo $student['date_of_leaving'] ?></td>
                                         <td><?php echo $student['reason'] ?></td>
@@ -93,6 +97,7 @@
                                                 <input name="tc_date" class="d-none" type="text" value="<?php echo $student["tc_date"] ?>" />
                                                 <input name="date_of_leaving" class="d-none" type="text" value="<?php echo $student["date_of_leaving"] ?>" />
                                                 <input name="reason" class="d-none" type="text" value="<?php echo $student["reason"] ?>" />
+                                                <input name="version" class="d-none" type="text" value="<?php echo $student["version"] ?>" />
                                                 
                                                 <button type="submit" class="btn btn-sm btn-primary">Transfer Certificate</button>
                                             <?php echo form_close() ?> 
@@ -104,6 +109,7 @@
                                                 <input name="tc_date" class="d-none" type="text" value="<?php echo $student["tc_date"] ?>" />
                                                 <input name="date_of_leaving" class="d-none" type="text" value="<?php echo $student["date_of_leaving"] ?>" />
                                                 <input name="reason" class="d-none" type="text" value="<?php echo $student["reason"] ?>" />
+                                                <input name="version" class="d-none" type="text" value="<?php echo $student["version"] ?>" />
                                                 
                                                 <button type="submit" class="btn btn-sm btn-primary">Charecter Certificate</button>
                                             <?php echo form_close() ?>

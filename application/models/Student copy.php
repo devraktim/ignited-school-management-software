@@ -22,8 +22,7 @@
                     student_session.session_id as student_session_session_id, 
                     student_session.class_id as student_session_class_id, 
                     sc.name as student_session_class_name, 
-                    student_session.section_id as student_session_section_id,
-                    student_session.withdraw as withdraw"
+                    student_session.section_id as student_session_section_id"
                 )
                 ->from($this->table)
                 ->join("student_session", "students.id = student_session.student_id")
@@ -90,194 +89,6 @@
             }
         }
 
-        // public function get_where($clauses) {
-
-        //     // Default conditions
-        //     if (!isset($clauses["students.deleted"]) || empty($clauses["students.deleted"])) {
-        //         $clauses["students.deleted"] = 0;
-        //     }
-
-        //     if (!isset($clauses["student_session.session_id"]) || empty($clauses["student_session.session_id"])) {
-        //         $clauses["student_session.session_id"] = $this->session->academy_session['current_session']['id'];
-        //     }
-
-        //     // Promoted
-        //     if (!array_key_exists('student_session.promoted', $clauses)) {
-        //         $clauses["student_session.promoted"] = 0;
-        //     } elseif ($clauses['student_session.promoted'] === "ANY") {
-        //         unset($clauses['student_session.promoted']);
-        //     }
-
-        //     // Withdraw
-        //     if (!array_key_exists('student_session.withdraw', $clauses)) {
-        //         $clauses["student_session.withdraw"] = 0;
-        //     } elseif ($clauses['student_session.withdraw'] === "ANY") {
-        //         unset($clauses['student_session.withdraw']);
-        //     }
-
-        //     // Passout
-        //     if (!array_key_exists('student_session.passout', $clauses)) {
-        //         $clauses["student_session.passout"] = 0;
-        //     } elseif ($clauses['student_session.passout'] === "ANY") {
-        //         unset($clauses['student_session.passout']);
-        //     }
-
-        //     if (array_key_exists('class_id', $clauses)) {
-        //         $clauses['student_session.class_id'] = $clauses['class_id'];
-        //         unset($clauses['class_id']);
-        //     }
-
-        //     if (array_key_exists('section_id', $clauses)) {
-        //         $clauses['student_session.section_id'] = $clauses['section_id'];
-        //         unset($clauses['section_id']);
-        //     }
-
-        //     $student_session_new_session_id = "";
-
-        //     if (array_key_exists('student_session.new_session_id', $clauses)) {
-        //         $student_session_new_session_id = $clauses["student_session.new_session_id"];
-        //         unset($clauses['student_session.new_session_id']);
-        //     }
-
-        //     // ✅ Extract admission date filters (from_date / to_date)
-        //     $from_date = null;
-        //     $to_date   = null;
-
-        //     if (array_key_exists('s.from_date', $clauses)) {
-        //         $from_date = $clauses['s.from_date'];
-        //         unset($clauses['s.from_date']);
-        //     }
-
-        //     if (array_key_exists('s.to_date', $clauses)) {
-        //         $to_date = $clauses['s.to_date'];
-        //         unset($clauses['s.to_date']);
-        //     }
-
-        //     // Transform keys
-        //     $transformed = array();
-
-        //     foreach ($clauses as $key => $value) {
-        //         if (strpos($key, 'ss.') === 0) {
-        //             $newKey = 'student_session.' . substr($key, 3);
-        //             $transformed[$newKey] = $value;
-        //         } elseif (strpos($key, 's.') === 0) {
-        //             $newKey = 'students.' . substr($key, 2);
-        //             $transformed[$newKey] = $value;
-        //         } else {
-        //             $transformed[$key] = $value;
-        //         }
-        //     }
-
-        //     $sort_by = $this->db->from("settings")
-        //                         ->where("key_name", "student_sort_by")
-        //                         ->get()
-        //                         ->row_array();
-
-        //     $student_name_display_format = $this->db->from("settings")
-        //                                             ->where("key_name", "student_name_display_format")
-        //                                             ->get()
-        //                                             ->row_array();
-
-        //     $records = $this->db
-        //         ->select(
-        //             "students.*, 
-        //             student_session.session_id as student_session_session_id, 
-        //             student_session.class_id as student_session_class_id, 
-        //             student_session.section_id as student_session_section_id, 
-        //             houses.name as house_name, 
-        //             categories.name as category_name, 
-        //             student_types.name as student_type_name, 
-        //             religions.name as religion_name, 
-        //             nationalities.name as nationality_name, 
-        //             states.name as state_name"
-        //         )
-        //         ->from($this->table)
-        //         ->join("student_session", "student_session.student_id = students.id", "left")
-        //         ->join("houses", "houses.id = students.house_id", "left")
-        //         ->join("categories", "categories.id = students.category_id", "left")
-        //         ->join("student_types", "student_types.id = students.student_type_id", "left")
-        //         ->join("religions", "religions.id = students.religion_id", "left")
-        //         ->join("nationalities", "nationalities.id = students.nationality_id", "left")
-        //         ->join("states", "states.id = students.state_id", "left")
-        //         ->where($transformed);
-
-        //     // ✅ Apply admission date filter (inclusive)
-        //     if (!empty($from_date)) {
-        //         $records = $records->where('students.admission_date >=', $from_date);
-        //     }
-
-        //     if (!empty($to_date)) {
-        //         $records = $records->where('students.admission_date <=', $to_date);
-        //     }
-
-        //     // Sorting
-        //     if ($sort_by['value'] == "student_no") {
-        //         $records = $records->order_by('students.student_no', 'ASC');
-        //     } elseif ($sort_by['value'] == "first_name") {
-        //         $records = $records->order_by('students.f_name', 'ASC');
-        //     } elseif ($sort_by['value'] == "last_name") {
-        //         $records = $records->order_by('students.l_name', 'ASC');
-        //     } elseif ($sort_by['value'] == "day_scholar") {
-        //         $records = $records->order_by('students.student_type_id', 'ASC');
-        //     } elseif ($sort_by['value'] == "boarders") {
-        //         $records = $records->order_by('students.student_type_id', 'DESC');
-        //     }
-
-        //     $records = $records->get()->result_array();
-
-        //     // New session filtering
-        //     if ($student_session_new_session_id != "") {
-
-        //         $data = [];
-
-        //         foreach ($records as $record) {
-
-        //             $row = $this->db->from("student_session")
-        //                             ->where("student_session.session_id", ($student_session_new_session_id - 1))
-        //                             ->where("student_session.student_id", $record['id'])
-        //                             ->get()
-        //                             ->row_array();
-
-        //             if (empty($row)) {
-        //                 $data[] = $record;
-        //             }
-        //         }
-
-        //         $records = $data;
-        //     }
-
-        //     // Final formatting
-        //     for ($i = 0; $i < count($records); $i++) {
-
-        //         $records[$i]["class_id"] = $records[$i]["student_session_class_id"];
-        //         $records[$i]["section_id"] = $records[$i]["student_session_section_id"];
-        //         $records[$i]["session_id"] = $records[$i]["student_session_session_id"];
-
-        //         $f_name = $records[$i]["f_name"];
-        //         $m_name = $records[$i]["m_name"];
-        //         $l_name = $records[$i]["l_name"];
-
-        //         if ($student_name_display_format['value'] == "l_f_m") {
-        //             $records[$i]["f_name"] = $l_name;
-        //             $records[$i]["m_name"] = $f_name;
-        //             $records[$i]["l_name"] = $m_name;
-        //         } elseif ($student_name_display_format['value'] == "l_m_f") {
-        //             $records[$i]["f_name"] = $l_name;
-        //             $records[$i]["m_name"] = $m_name;
-        //             $records[$i]["l_name"] = $f_name;
-        //         }
-        //     }
-
-
-            
-        //     // echo "<pre>";
-        //     // print_r($records);
-        //     // echo "</pre>";
-        //     // exit();
-
-        //     return $records;
-        // }
-
         public function get_where($clauses) {
 
             // Default conditions
@@ -327,7 +138,7 @@
                 unset($clauses['student_session.new_session_id']);
             }
 
-            // Admission date filters
+            // ✅ Extract admission date filters (from_date / to_date)
             $from_date = null;
             $to_date   = null;
 
@@ -356,18 +167,15 @@
                 }
             }
 
-            // Fetch settings
             $sort_by = $this->db->from("settings")
-                            ->where("key_name", "student_sort_by")
-                            ->get()
-                            ->row_array();
+                                ->where("key_name", "student_sort_by")
+                                ->get()
+                                ->row_array();
 
             $student_name_display_format = $this->db->from("settings")
-                                                ->where("key_name", "student_name_display_format")
-                                                ->get()
-                                                ->row_array();
-
-           
+                                                    ->where("key_name", "student_name_display_format")
+                                                    ->get()
+                                                    ->row_array();
 
             $records = $this->db
                 ->select(
@@ -392,8 +200,7 @@
                 ->join("states", "states.id = students.state_id", "left")
                 ->where($transformed);
 
-
-            // Admission date filtering
+            // ✅ Apply admission date filter (inclusive)
             if (!empty($from_date)) {
                 $records = $records->where('students.admission_date >=', $from_date);
             }
@@ -402,40 +209,20 @@
                 $records = $records->where('students.admission_date <=', $to_date);
             }
 
-            // Sorting based on settings
-            if (!empty($sort_by) && !empty($sort_by['value'])) {
-
-                switch ($sort_by['value']) {
-
-                    case "student_no":
-                        $records = $records->order_by('students.student_no', 'ASC');
-                    break;
-
-                    case "first_name":
-                        $records = $records->order_by('students.f_name', 'ASC');
-                    break;
-
-                    case "last_name":
-                        $records = $records->order_by('students.l_name', 'ASC');
-                    break;
-
-                    case "roll_no":
-                        $records = $records->order_by('students.roll_no', 'ASC');
-                    break;
-
-                    case "day_scholar":
-                        $records = $records->order_by('students.student_type_id', 'ASC');
-                    break;
-
-                    case "boarders":
-                        $records = $records->order_by('students.student_type_id', 'DESC');
-                    break;
-                }
+            // Sorting
+            if ($sort_by['value'] == "student_no") {
+                $records = $records->order_by('students.student_no', 'ASC');
+            } elseif ($sort_by['value'] == "first_name") {
+                $records = $records->order_by('students.f_name', 'ASC');
+            } elseif ($sort_by['value'] == "last_name") {
+                $records = $records->order_by('students.l_name', 'ASC');
+            } elseif ($sort_by['value'] == "day_scholar") {
+                $records = $records->order_by('students.student_type_id', 'ASC');
+            } elseif ($sort_by['value'] == "boarders") {
+                $records = $records->order_by('students.student_type_id', 'DESC');
             }
 
             $records = $records->get()->result_array();
-            // echo $this->db->last_query();
-            // exit();
 
             // New session filtering
             if ($student_session_new_session_id != "") {
@@ -469,565 +256,68 @@
                 $m_name = $records[$i]["m_name"];
                 $l_name = $records[$i]["l_name"];
 
-                if (!empty($student_name_display_format) && !empty($student_name_display_format['value'])) {
-
-                    switch ($student_name_display_format['value']) {
-
-                        case "l_f_m":
-                            $records[$i]["f_name"] = $l_name;
-                            $records[$i]["m_name"] = $f_name;
-                            $records[$i]["l_name"] = $m_name;
-                        break;
-
-                        case "l_m_f":
-                            $records[$i]["f_name"] = $l_name;
-                            $records[$i]["m_name"] = $m_name;
-                            $records[$i]["l_name"] = $f_name;
-                        break;
-
-                        case "f_m_l":
-                        default:
-                            $records[$i]["f_name"] = $f_name;
-                            $records[$i]["m_name"] = $m_name;
-                            $records[$i]["l_name"] = $l_name;
-                        break;
-                    }
+                if ($student_name_display_format['value'] == "l_f_m") {
+                    $records[$i]["f_name"] = $l_name;
+                    $records[$i]["m_name"] = $f_name;
+                    $records[$i]["l_name"] = $m_name;
+                } elseif ($student_name_display_format['value'] == "l_m_f") {
+                    $records[$i]["f_name"] = $l_name;
+                    $records[$i]["m_name"] = $m_name;
+                    $records[$i]["l_name"] = $f_name;
                 }
             }
+
+
+            
+            // echo "<pre>";
+            // print_r($records);
+            // echo "</pre>";
+            // exit();
 
             return $records;
         }
 
-        // public function get_student_list($parameters = [])
-        // {
-
-        //     $current_session_id = $this->session->academy_session['current_session']['id'];
-
-        //     // Default conditions
-        //     if (!isset($parameters["students.deleted"])) {
-        //         $parameters["students.deleted"] = 0;
-        //     }
-
-        //     if (!isset($parameters["student_session.session_id"])) {
-        //         $parameters["student_session.session_id"] = $current_session_id;
-        //     }
-
-        //     // Promoted
-        //     if (!array_key_exists('student_session.promoted', $parameters)) {
-        //         $parameters["student_session.promoted"] = 0;
-        //     } elseif ($parameters['student_session.promoted'] === "ANY") {
-        //         unset($parameters['student_session.promoted']);
-        //     }
-
-        //     // Withdraw
-        //     if (!array_key_exists('student_session.withdraw', $parameters)) {
-        //         $parameters["student_session.withdraw"] = 0;
-        //     } elseif ($parameters['student_session.withdraw'] === "ANY") {
-        //         unset($parameters['student_session.withdraw']);
-        //     }
-
-        //     // Passout
-        //     if (!array_key_exists('student_session.passout', $parameters)) {
-        //         $parameters["student_session.passout"] = 0;
-        //     } elseif ($parameters['student_session.passout'] === "ANY") {
-        //         unset($parameters['student_session.passout']);
-        //     }
-
-        //     // Class / Section mapping
-        //     if (array_key_exists('class_id', $parameters)) {
-        //         $parameters['student_session.class_id'] = $parameters['class_id'];
-        //         unset($parameters['class_id']);
-        //     }
-
-        //     if (array_key_exists('section_id', $parameters)) {
-        //         $parameters['student_session.section_id'] = $parameters['section_id'];
-        //         unset($parameters['section_id']);
-        //     }
-
-        //     $student_session_new_session_id = "";
-
-        //     if (array_key_exists('student_session.new_session_id', $parameters)) {
-        //         $student_session_new_session_id = $parameters["student_session.new_session_id"];
-        //         unset($parameters['student_session.new_session_id']);
-        //     }
-
-        //     // Admission date filters
-        //     $from_date = null;
-        //     $to_date   = null;
-
-        //     if (array_key_exists('s.from_date', $parameters)) {
-        //         $from_date = $parameters['s.from_date'];
-        //         unset($parameters['s.from_date']);
-        //     }
-
-        //     if (array_key_exists('s.to_date', $parameters)) {
-        //         $to_date = $parameters['s.to_date'];
-        //         unset($parameters['s.to_date']);
-        //     }
-
-        //     // Transform parameters (ss. → student_session , s. → students)
-        //     $transformed = [];
-
-        //     foreach ($parameters as $key => $value) {
-
-        //         if (strpos($key, 'ss.') === 0) {
-        //             $newKey = 'student_session.' . substr($key, 3);
-        //             $transformed[$newKey] = $value;
-
-        //         } elseif (strpos($key, 's.') === 0) {
-        //             $newKey = 'students.' . substr($key, 2);
-        //             $transformed[$newKey] = $value;
-
-        //         } else {
-        //             $transformed[$key] = $value;
-        //         }
-        //     }
-
-        //     // Fetch settings
-        //     $sort_by = $this->db->from("settings")
-        //                         ->where("key_name", "student_sort_by")
-        //                         ->get()
-        //                         ->row_array();
-
-        //     $student_name_display_format = $this->db->from("settings")
-        //                         ->where("key_name", "student_name_display_format")
-        //                         ->get()
-        //                         ->row_array();
-
-        //     $display_inactive = $this->db->from("settings")
-        //                         ->where("key_name", "student_display_inactive_student")
-        //                         ->get()
-        //                         ->row_array();
-
-        //     $display_withdrawn = $this->db->from("settings")
-        //                         ->where("key_name", "student_display_withdrawn_student")
-        //                         ->get()
-        //                         ->row_array();
-
-        //     $this->db->select("
-        //         students.*,
-        //         student_session.session_id as student_session_session_id,
-        //         student_session.class_id as student_session_class_id,
-        //         student_session.section_id as student_session_section_id,
-        //         student_session.withdraw,
-        //         student_session.passout,
-        //         houses.name as house_name,
-        //         categories.name as category_name,
-        //         student_types.name as student_type_name,
-        //         religions.name as religion_name,
-        //         nationalities.name as nationality_name,
-        //         states.name as state_name
-        //     ");
-
-        //     $this->db->from("students");
-
-        //     $this->db->join(
-        //         "student_session",
-        //         "student_session.student_id = students.id AND student_session.session_id = ".$this->db->escape($current_session_id),
-        //         "left"
-        //     );
-
-        //     $this->db->join("houses", "houses.id = students.house_id", "left");
-        //     $this->db->join("categories", "categories.id = students.category_id", "left");
-        //     $this->db->join("student_types", "student_types.id = students.student_type_id", "left");
-        //     $this->db->join("religions", "religions.id = students.religion_id", "left");
-        //     $this->db->join("nationalities", "nationalities.id = students.nationality_id", "left");
-        //     $this->db->join("states", "states.id = students.state_id", "left");
-
-        //     $this->db->where($transformed);
-
-        //     // Withdrawn visibility from settings
-        //     if (!empty($display_withdrawn) && $display_withdrawn['value'] == 0) {
-        //         $this->db->where("student_session.withdraw", 0);
-        //     }
-
-        //     // Inactive visibility from settings
-        //     if (!empty($display_inactive) && $display_inactive['value'] == 0) {
-        //         $this->db->where("students.status !=", "INACTIVE");
-        //     }
-
-        //     // Admission date filter
-        //     if (!empty($from_date)) {
-        //         $this->db->where('students.admission_date >=', $from_date);
-        //     }
-
-        //     if (!empty($to_date)) {
-        //         $this->db->where('students.admission_date <=', $to_date);
-        //     }
-
-        //     // Sorting
-        //     if (!empty($sort_by) && !empty($sort_by['value'])) {
-
-        //         switch ($sort_by['value']) {
-
-        //             case "student_no":
-        //                 $this->db->order_by("students.student_no", "ASC");
-        //             break;
-
-        //             case "first_name":
-        //                 $this->db->order_by("students.f_name", "ASC");
-        //             break;
-
-        //             case "last_name":
-        //                 $this->db->order_by("students.l_name", "ASC");
-        //             break;
-
-        //             case "roll_no":
-        //                 $this->db->order_by("students.roll_no", "ASC");
-        //             break;
-
-        //             case "day_scholar":
-        //                 $this->db->order_by("students.student_type_id", "ASC");
-        //             break;
-
-        //             case "boarders":
-        //                 $this->db->order_by("students.student_type_id", "DESC");
-        //             break;
-        //         }
-        //     }
-
-        //     $records = $this->db->get()->result_array();
-
-        //     // New session filter
-        //     if ($student_session_new_session_id != "") {
-
-        //         $data = [];
-
-        //         foreach ($records as $record) {
-
-        //             $row = $this->db->from("student_session")
-        //                 ->where("student_session.session_id", ($student_session_new_session_id - 1))
-        //                 ->where("student_session.student_id", $record['id'])
-        //                 ->get()
-        //                 ->row_array();
-
-        //             if (empty($row)) {
-        //                 $data[] = $record;
-        //             }
-        //         }
-
-        //         $records = $data;
-        //     }
-
-        //     // Final formatting
-        //     for ($i = 0; $i < count($records); $i++) {
-
-        //         $records[$i]["class_id"]   = $records[$i]["student_session_class_id"];
-        //         $records[$i]["section_id"] = $records[$i]["student_session_section_id"];
-        //         $records[$i]["session_id"] = $records[$i]["student_session_session_id"];
-
-        //         $f_name = $records[$i]["f_name"];
-        //         $m_name = $records[$i]["m_name"];
-        //         $l_name = $records[$i]["l_name"];
-
-        //         if (!empty($student_name_display_format)) {
-
-        //             switch ($student_name_display_format['value']) {
-
-        //                 case "l_f_m":
-        //                     $records[$i]["f_name"] = $l_name;
-        //                     $records[$i]["m_name"] = $f_name;
-        //                     $records[$i]["l_name"] = $m_name;
-        //                 break;
-
-        //                 case "l_m_f":
-        //                     $records[$i]["f_name"] = $l_name;
-        //                     $records[$i]["m_name"] = $m_name;
-        //                     $records[$i]["l_name"] = $f_name;
-        //                 break;
-        //             }
-        //         }
-        //     }
-
-        //     echo "<pre>";
-        //     print_r($records);
-        //     echo "</pre>";
-        //     exit();
-
-        //     return $records;
-        // }
-
-        // public function search($parameters = [])
-        // {
-        //     $parameters["students.deleted"] = 0;
-
-        //     $current_session_id = $this->session->academy_session['current_session']['id'];
-
-        //     // fetch student settings
-        //     $settings = $this->get_student_settings();
-
-        //     echo "<pre>";
-        //     print_r($settings);
-        //     echo "</pre>";
-        //     exit();
-
-        //     $this->db->select("
-        //         students.*,
-        //         student_session.session_id as student_session_session_id,
-        //         student_session.class_id as student_session_class_id,
-        //         student_session.section_id as student_session_section_id,
-        //         student_session.withdraw,
-        //         student_session.passout
-        //     ");
-
-        //     $this->db->from("students");
-
-        //     $this->db->join(
-        //         "student_session",
-        //         "student_session.student_id = students.id 
-        //         AND student_session.session_id = ".$this->db->escape($current_session_id),
-        //         "left"
-        //     );
-
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Withdrawn Filter
-        //     |--------------------------------------------------------------------------
-        //     */
-
-        //     if (isset($parameters['withdrawn'])) {
-
-        //         if ($parameters['withdrawn'] == 1) {
-        //             $this->db->where("student_session.withdraw", 1);
-        //         } else {
-        //             $this->db->where("student_session.withdraw", 0);
-        //         }
-
-        //         unset($parameters['withdrawn']);
-
-        //     } else {
-
-        //         if (!empty($settings['student_display_withdrawn_student']) 
-        //             && $settings['student_display_withdrawn_student'] == 0) {
-
-        //             $this->db->where("student_session.withdraw", 0);
-        //         }
-        //     }
-
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Inactive Students Filter
-        //     |--------------------------------------------------------------------------
-        //     */
-
-        //     if (!empty($settings['student_display_inactive_student']) 
-        //         && $settings['student_display_inactive_student'] == 0) {
-
-        //         $this->db->where("students.status !=", "INACTIVE");
-        //     }
-
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Other Conditions
-        //     |--------------------------------------------------------------------------
-        //     */
-
-        //     if (!empty($parameters)) {
-        //         $this->db->where($parameters);
-        //     }
-
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Sorting
-        //     |--------------------------------------------------------------------------
-        //     */
-
-        //     if (!empty($settings['student_sort_by'])) {
-
-        //         switch ($settings['student_sort_by']) {
-
-        //             case "student_no":
-        //                 $this->db->order_by("students.student_no", "ASC");
-        //             break;
-
-        //             case "first_name":
-        //                 $this->db->order_by("students.f_name", "ASC");
-        //             break;
-
-        //             case "last_name":
-        //                 $this->db->order_by("students.l_name", "ASC");
-        //             break;
-
-        //             case "roll_no":
-        //                 $this->db->order_by("students.roll_no", "ASC");
-        //             break;
-
-        //             case "day_scholar":
-        //                 $this->db->order_by("students.student_type_id", "ASC");
-        //             break;
-
-        //             case "boarders":
-        //                 $this->db->order_by("students.student_type_id", "DESC");
-        //             break;
-        //         }
-        //     }
-
-        //     $students = $this->db->get()->result_array();
-
-        //     foreach ($students as &$student) {
-
-        //         $student = $this->get($student["id"]);
-
-        //         $student["class_id"]   = $student["student_session_class_id"];
-        //         $student["section_id"] = $student["student_session_section_id"];
-        //         $student["session_id"] = $student["student_session_session_id"];
-
-        //     }
-
-        //     // echo "<pre>";
-        //     // print_r($students);
-        //     // echo "</pre>";
-        //     // exit();
-
-        //     return $students;
-        // }
-
-        public function search($parameters = [])
-        {
-            $parameters["students.deleted"] = 0;
-
-            $current_session_id = $this->session->academy_session['current_session']['id'];
-
-            // fetch student settings
-            $settings = $this->get_student_settings();
-
-            $this->db->select("
-                students.*,
-                student_session.session_id as student_session_session_id,
-                student_session.class_id as student_session_class_id,
-                student_session.section_id as student_session_section_id,
-                student_session.withdraw,
-                student_session.passout
-            ");
-
-            $this->db->from("students");
-
-            $this->db->join(
-                "student_session",
-                "student_session.student_id = students.id 
-                AND student_session.session_id = ".$this->db->escape($current_session_id),
-                "left"
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Withdrawn Filter
-            |--------------------------------------------------------------------------
-            */
-
-            if (isset($parameters['withdrawn'])) {
-
-                if ($parameters['withdrawn'] == 1) {
-                    $this->db->where("student_session.withdraw", 1);
-                } else {
-                    $this->db->group_start();
-                    $this->db->where("student_session.withdraw", 0);
-                    $this->db->or_where("student_session.withdraw IS NULL", null, false);
-                    $this->db->group_end();
-                }
-
-                unset($parameters['withdrawn']);
-
-            } else {
-
-                if ($settings['student_display_withdrawn_student'] == 0) {
-                    $this->db->group_start();
-                    $this->db->where("student_session.withdraw", 0);
-                    $this->db->or_where("student_session.withdraw IS NULL", null, false);
-                    $this->db->group_end();
-                }
-
+        public function search($parameteres) {
+            $parameteres["deleted"] = 0;
+            $parameteres["student_session.session_id"] = $this->session->academy_session['current_session']['id'];
+            
+            $f_name = "";
+            
+            if(in_array("f_name", $parameteres)) {
+                $f_name = $parameteres['f_name'];
+                unset($parameteres['f_name']);
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Inactive Students Filter
-            |--------------------------------------------------------------------------
-            */
-
-            if ($settings['student_display_inactive_student'] == 0) {
-                $this->db->where("students.status !=", "INACTIVE");
+            
+            $students = $this->db
+                ->select(
+                    "students.*,
+                    student_session.session_id as student_session_session_id, 
+                    student_session.class_id as student_session_class_id, 
+                    student_session.section_id as student_session_section_id"
+                )
+                ->from($this->table)
+                ->join("student_session", "student_session.student_id = students.id");
+            
+            // Check if $f_name is not empty
+            if (!empty($f_name)) {
+                $this->db->like('students.f_name', $f_name, 'after'); 
             }
+            
+            $students = $this->db
+                ->where($parameteres) // Maintain existing parameters
+                ->get()
+                ->result_array();
 
-            /*
-            |--------------------------------------------------------------------------
-            | Other Conditions
-            |--------------------------------------------------------------------------
-            */
-
-            if (!empty($parameters)) {
-                $this->db->where($parameters);
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Sorting
-            |--------------------------------------------------------------------------
-            */
-
-            if (!empty($settings['student_sort_by'])) {
-
-                switch ($settings['student_sort_by']) {
-
-                    case "student_no":
-                        $this->db->order_by("students.student_no", "ASC");
-                        break;
-
-                    case "first_name":
-                        $this->db->order_by("students.f_name", "ASC");
-                        break;
-
-                    case "last_name":
-                        $this->db->order_by("students.l_name", "ASC");
-                        break;
-
-                    case "roll_no":
-                        $this->db->order_by("students.roll_no", "ASC");
-                        break;
-
-                    case "day_scholar":
-                        $this->db->order_by("students.student_type_id", "ASC");
-                        break;
-
-                    case "boarders":
-                        $this->db->order_by("students.student_type_id", "DESC");
-                        break;
-                }
-            }
-
-            $students = $this->db->get()->result_array();
-
-            foreach ($students as &$student) {
-
-                $student = $this->get($student["id"]);
-
-                $student["class_id"]   = $student["student_session_class_id"];
-                $student["section_id"] = $student["student_session_section_id"];
-                $student["session_id"] = $student["student_session_session_id"];
-
+            for($i = 0 ; $i < count($students) ; $i++) {
+                $students[$i]               = $this->get($students[$i]["id"]);
+                $students[$i]["class_id"]   = $students[$i]["student_session_class_id"];
+                $students[$i]["section_id"] = $students[$i]["student_session_section_id"];
+                $students[$i]["session_id"] = $students[$i]["student_session_session_id"];
             }
 
             return $students;
         }
-
-        private function get_student_settings()
-        {
-            $settings = $this->db
-                ->select("key_name, value")
-                ->from("settings")
-                ->where("module", "student")
-                ->get()
-                ->result_array();
-
-            $data = [];
-
-            foreach ($settings as $row) {
-                $data[$row['key_name']] = $row['value'];
-            }
-
-            return $data;
-        }
-                
+        
         public function is_student_no_exist($student_no) {
             $this->db->from('students');
             $this->db->where('student_no', $student_no);

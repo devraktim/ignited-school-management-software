@@ -33,9 +33,9 @@
                 $classes = $this->AcademyClass->get();
                 $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
                 
-                $students = $this->Student->get_where(array(
-                    "class_id"      => $class_id,
-                    "section_id"    => $section_id,
+                $students = $this->Student->search(array(
+                    "student_session.class_id"      => $class_id,
+                    "student_session.section_id"    => $section_id,
                     "student_session.promoted"  => "ANY"
                 ));
 
@@ -252,6 +252,11 @@
             if(count($arr) > 0)
                 $data['students'] = $this->Student->search($arr);
 
+            // echo "<pre>";
+            // print_r($data['students']);
+            // echo "</pre>";
+            // exit();
+
             $this->load->view("student/search.php", $data);
         }
 
@@ -419,7 +424,7 @@
             }
         
             if(count($params) > 0) {
-                $students = $this->Student->search($params);
+                $students = $this->Student->get_where($params);
             }
             
             $data = [
@@ -666,6 +671,8 @@
                 "section_id" => $this->input->post('section_id'),
                 "student_id" => $this->input->post('id'),
                 "tc_no" => $this->input->post('tc_no'),
+                "emmis_tc_no" => $this->input->post('emmis_tc_no'),
+                "uduse_pen" => $this->input->post('uduse_pen'),
                 "tc_date" => $this->input->post('tc_date'),
                 "date_of_leaving" => $this->input->post('date_of_leaving'),
                 "session_id" => $this->session->academy_session['current_session']['id'],
@@ -770,7 +777,6 @@
 
             $version     = $this->input->post("version");
             $student_id  = $this->input->post("student_id");
-
             $student_data = $this->Student->get($student_id);
 
             /* ------------------------------
@@ -827,6 +833,7 @@
            
             $version = $this->input->post("version");    
             $student_id = $this->input->post("student_id");
+            $student_data = $this->Student->get($student_id);
              
             $data = [
               "field_1"         =>  $this->input->post("field_1"),
@@ -845,6 +852,7 @@
                 "tc_date"           => $this->input->post("tc_date") ?? "",
                 "date_of_leaving"   => $this->input->post("date_of_leaving") ?? "",
                 "reason"            => $this->input->post("reason") ?? "",
+                "student_data"      => $student_data
             ]);
         }
         

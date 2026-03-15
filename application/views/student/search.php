@@ -180,6 +180,7 @@
                                                 <th>Name</th>
                                                 <th>Class</th>
                                                 <th>Section</th>
+                                                <th>Roll No</th>
                                                 <th>Student Type</th>
                                                 <th>House</th>
                                                 <th>Phone</th>
@@ -194,18 +195,17 @@
                                                     <td><?php echo $student["student_no"] ?></td>
                                                     <td>
                                                         <a href="<?php echo base_url() ?>students/show/<?php echo $student["id"]?>">
-                                                            <?php echo $student["f_name"] . " " . $student["m_name"] . " " . $student["l_name"]?>
+                                                            <?php 
+                                                                echo $student["f_name"] . " " . $student["m_name"] . " " . $student["l_name"];
+                                                                if ($student["withdraw"] == 1) {
+                                                                    echo " (W)";
+                                                                }
+                                                            ?>
                                                         </a>
                                                     </td>
-                                                    <td><?php 
-                                                        foreach ($classes as $class) { 
-                                                            
-                                                            if(isset($_GET['class_id']) && ($_GET['class_id'] == $class["id"])) {
-                                                                echo $class['name'];
-                                                            }
-                                                        }
-                                                    ?></td>
+                                                    <td><?php echo $student["student_session_class_name"] ?></td>
                                                     <td><?php echo $student["section"] ?></td>
+                                                    <td><?php echo $student["roll_no"] ?></td>
                                                     <td><?php echo $student["student_type"] ?></td>
                                                     <td><?php echo $student["house"] ?></td>
                                                     <td><?php echo $student["phone"] ?></td>

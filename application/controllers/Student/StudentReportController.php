@@ -96,7 +96,7 @@
                 if(is_null($value) || $value == '' || empty($value))
                     unset($clauses[$key]);
             }
-           
+
             // $clauses["student_session.new_session_id"] = $this->session->academy_session['current_session']['id'];
 
             $data['students']   = $this->Student->get_where($clauses);
@@ -121,8 +121,8 @@
             
             $clauses["students.status"] = "INACTIVE";
 
-            $data['students'] = $this->Student->get_where($clauses);
-            
+            $data["students"] = $this->Student->get_where($clauses);
+
             $this->load->view("student/reports/inactive_students", $data);
         }
         
