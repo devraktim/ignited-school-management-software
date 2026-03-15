@@ -1,58 +1,68 @@
 <?php $this->load->view("inc/app_header.php"); ?>
     <?php
-    $currentSession = $this->session->academy_session['current_session'];
+        $currentSession = $this->session->academy_session['current_session'];
 
-    $sessionEnd = $currentSession['end'];
+        $sessionEnd = $currentSession['end'];
 
-    $promotionMonth = date("m", strtotime($sessionEnd));
-    $promotionYear  = date("Y", strtotime($sessionEnd));
-
-    $currentMonth = date("m");
-    $currentYear  = date("Y");
+        $promotionDate = strtotime($sessionEnd);
+        $currentDate   = strtotime(date("Y-m-d"));
     ?>
 
     <div class="row mb-5">
         <h1>Promotion</h1>
     </div>
+    
+    <?php 
+        $is_time_to_promote = $currentDate >= $promotionDate;
+        $next_session_available = $next_session_id; 
+    ?>
 
-    <?php if(1) { ?>
-    <div class="card card-flush h-xl-100">
-        <div class="card-body py-9">
-            <?php echo form_open(base_url("academics/promotion"), array("method" => "GET")) ?> 
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <div class="form-group">
-                            <label class="form-label">Select Class</label>
-                            <select class="form-select" name="class_id" id="class_id" required>
-                                <option value="">Please Select</option>
-                                <?php foreach ($classes as $class) { ?>
-                                    <option value="<?php echo $class["id"] ?>" <?php if(isset($_GET["class_id"]) && $_GET["class_id"] == $class["id"]) {echo "selected";}?>><?php echo $class["name"] ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="form-group">
-                            <label class="form-label">Select Section</label>
-                            <select class="form-select" id="section_id" name="section_id" required <?php if(!isset($sections)) { echo "disabled"; }?>>
-                                <?php foreach ($sections as $section) { ?>
-                                    <option value="<?php echo $section["id"] ?>" <?php if(isset($_GET["section_id"]) && $_GET["section_id"] == $section["id"]) {echo "selected";}?>><?php echo $section["name"] ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3" style="margin-top: 25px;">
-                        <button id="btn_save" class="btn btn-success" <?php if(!isset($sections)) { echo "disabled"; }?>><i class="fa fa-search"></i> Search</button>
-                    </div>
-                </div>
-            <?php echo form_close() ?> 
+    <?php if(!$is_time_to_promote) { ?>
+            <div class="alert alert-info text-center mt-5">
+            Students will be available for promotion during
+            <strong><?php echo date("F Y", strtotime($sessionEnd)); ?></strong>.
         </div>
-    </div>
     <?php } ?>
 
+    <?php if($is_time_to_promote && !$next_session_available) { ?>
+            <div class="alert alert-info text-center mt-5">
+                Please create new session to promote student
+            </div>
+    <?php } ?>
 
-
-    <?php if(1) { ?>
+    <?php if($is_time_to_promote && $next_session_available) { ?>
+        <div class="card card-flush h-xl-100">
+            <div class="card-body py-9">
+                <?php echo form_open(base_url("academics/promotion"), array("method" => "GET")) ?> 
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Select Class</label>
+                                <select class="form-select" name="class_id" id="class_id" required>
+                                    <option value="">Please Select</option>
+                                    <?php foreach ($classes as $class) { ?>
+                                        <option value="<?php echo $class["id"] ?>" <?php if(isset($_GET["class_id"]) && $_GET["class_id"] == $class["id"]) {echo "selected";}?>><?php echo $class["name"] ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Select Section</label>
+                                <select class="form-select" id="section_id" name="section_id" required <?php if(!isset($sections)) { echo "disabled"; }?>>
+                                    <?php foreach ($sections as $section) { ?>
+                                        <option value="<?php echo $section["id"] ?>" <?php if(isset($_GET["section_id"]) && $_GET["section_id"] == $section["id"]) {echo "selected";}?>><?php echo $section["name"] ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3" style="margin-top: 25px;">
+                            <button id="btn_save" class="btn btn-success" <?php if(!isset($sections)) { echo "disabled"; }?>><i class="fa fa-search"></i> Search</button>
+                        </div>
+                    </div>
+                <?php echo form_close() ?> 
+            </div>
+        </div>
 
         <?php if(isset($students)) { ?>
             <?php echo form_open(base_url("academics/promotion"), array("method" => "POST")) ?> 
@@ -239,15 +249,8 @@
             <?php echo form_close() ?>
 
         <?php } ?>
+    <?php }?>
 
-    <?php } else { ?>
-
-    <div class="alert alert-info text-center mt-5">
-        Students will be available for promotion during
-        <strong><?php echo date("F Y", strtotime($sessionEnd)); ?></strong>.
-    </div>
-
-    <?php } ?>
 
     <script>
         $("#class_id").change(function(event) {

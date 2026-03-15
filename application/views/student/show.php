@@ -118,33 +118,33 @@
             <div class="card-body py-9">
                 <div class="row">
                     <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
-                        <li class="nav-item" role="presentation">
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-1" data-bs-toggle="pill" data-bs-target="#tab-1" type="button" role="tab" aria-controls="pills-home" aria-selected="false">Academics</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
+                        </li> -->
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-2" data-bs-toggle="pill" data-bs-target="#tab-2" type="button" role="tab" aria-controls="pills-fees" aria-selected="false">Fee Details</button>
-                        </li>
+                        </li> -->
                         <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-3" data-bs-toggle="pill" data-bs-target="#tab-3" type="button" role="tab" aria-controls="pills-family" aria-selected="false">Family</button>
                         </li>
-                        <li class="nav-item" role="presentation">
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-4" data-bs-toggle="pill" data-bs-target="#tab-4" type="button" role="tab" aria-controls="pills-curricular" aria-selected="false">Extra Curricular</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
+                        </li> -->
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-5" data-bs-toggle="pill" data-bs-target="#tab-5" type="button" role="tab" aria-controls="pills-discipline" aria-selected="false">Discipline</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
+                        </li> -->
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-6" data-bs-toggle="pill" data-bs-target="#tab-6" type="button" role="tab" aria-controls="pills-miscellaneous" aria-selected="false">Miscellaneous</button>
-                        </li>
+                        </li> -->
                         <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-7" data-bs-toggle="pill" data-bs-target="#tab-7" type="button" role="tab" aria-controls="pills-address" aria-selected="false">Address</button>
                         </li>
-                        <li class="nav-item" role="presentation">
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-8" data-bs-toggle="pill" data-bs-target="#tab-8" type="button" role="tab" aria-controls="pills-local_guardian" aria-selected="false">Local Guardian</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
+                        </li> -->
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link tab-button" id="pills-tab-9" data-bs-toggle="pill" data-bs-target="#tab-9" type="button" role="tab" aria-controls="pills-previous_school" aria-selected="false">Previous School</button>
-                        </li>
+                        </li> -->
                     </ul>
                     <div class="tab-content" id="pills-tabContent">
                         <div class="tab-pane fade" id="tab-3" role="tabpanel">

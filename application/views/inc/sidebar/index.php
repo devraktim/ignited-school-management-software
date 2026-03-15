@@ -861,19 +861,6 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" href="<?php echo base_url() ?>students/reports/generate-appraisal-academic">
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot"></span>
-                                            </span>
-                                            <span class="menu-title">Academic</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                    
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
                                         <a class="menu-link" href="<?php echo base_url() ?>students/reports/generate-appraisal-extra-curricular">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>

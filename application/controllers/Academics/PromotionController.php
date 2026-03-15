@@ -6,6 +6,7 @@
             parent::__construct();
 
             $this->load->model("AcademyClass");
+            $this->load->model("AcademySession");
             $this->load->model("StudentType");
             $this->load->model("Section");
             $this->load->model("House");
@@ -27,6 +28,8 @@
             $class_id   = $this->input->get("class_id");
             $section_id = $this->input->get("section_id");
             $academy_session_id = $this->session->academy_session['current_session']['id'];
+            $next_session_id = $this->AcademySession->get_next_session($academy_session_id);
+
 
             if($class_id && $section_id) {
                 $classes = $this->AcademyClass->get();
@@ -39,20 +42,21 @@
                     "student_session.promoted"  => 0
                 ));
                
-                $this->load->view("academics/promotion", array("classes" => $classes, "sections" => $sections, "next_class_sections" => $next_class_sections, "students" => $students));
+                $this->load->view("academics/promotion", array("classes" => $classes, "sections" => $sections, "next_class_sections" => $next_class_sections, "students" => $students, "next_session_id" => $next_session_id));
             }
             else if($class_id) {
                 $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
-                echo json_encode(array("sections" => $sections));
+                echo json_encode(array("sections" => $sections, "next_session_id" => $next_session_id));
             }
             else {
                 $classes = $this->AcademyClass->get();
-                $this->load->view("academics/promotion", array("classes" => $classes));
+                $this->load->view("academics/promotion", array("classes" => $classes, "next_session_id" => $next_session_id));
             }
         }
         
         public function promote()
-        {
+        {   
+
             $academy_session_id = $this->session->academy_session['current_session']['id'];
             $class_id = $_POST["class_id"];
             $ids = $_POST["id"];
@@ -122,14 +126,6 @@
                     }
                 }
             }
-            
-            // echo "<pre>";
-            // print_r($updates);
-            // print_r($data);
-            // echo "</pre>";
-            // exit();
-            
-         
             
             $this->Student->update_student_academy_session_batch($updates);
             $this->Student->create_student_academy_session_batch_inserts($data);
