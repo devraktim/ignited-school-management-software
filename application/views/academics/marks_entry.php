@@ -193,7 +193,32 @@
                 <input type="text" class="form-control d-none" name="subject_id"   value="<?php echo $subject_id ?>">
 
                 <?php if($this->session->user['permissions'][0]['academics_module'] != "VIEWER") { ?>
-                <button type="submit" class="btn btn-success rounded rounded-pill mt-4"><i class="fa fa-plus"></i> Save</button>
+
+                    <?php if($entry_status) { ?>
+
+                        <button
+                            type="submit"
+                            class="btn btn-success rounded rounded-pill mt-4"
+                        >
+                            <i class="fa fa-plus"></i>
+                            Save
+                        </button>
+
+                    <?php } else { ?>
+
+                        <div class="alert alert-danger mt-4 mb-0">
+                            <i class="fa fa-lock me-2"></i>
+
+                            <strong>Marks Entry Not Available</strong>
+
+                            <?php if(!empty($entry_message)){ ?>
+                                - <?php echo $entry_message; ?>
+                            <?php } ?>
+
+                        </div>
+
+                    <?php } ?>
+
                 <?php } ?>
             </form>
         <?php } else { ?>

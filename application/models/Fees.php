@@ -424,6 +424,21 @@
             // Return total affected rows (optional)
             return $updated_rows + $inserted_rows;
         }
+    
+        function delete_student_month_fees($data) {
+            $this->db->where([
+                'student_id'       => $data['student_id'],
+                'class_id'         => $data['class_id'],
+                'section_id'       => $data['section_id'],
+                'student_type_id'  => $data['student_type_id'],
+                'session_id'       => $data['session_id'],
+                'month'            => $data['month']
+            ]);
+            
+            $this->db->delete('fees');
+
+            return;
+        }
                 
         public function delete_fees($id) {
             // Ensure the record exists first

@@ -197,9 +197,8 @@
                                                         <a href="<?php echo base_url() ?>students/show/<?php echo $student["id"]?>">
                                                             <?php 
                                                                 echo $student["f_name"] . " " . $student["m_name"] . " " . $student["l_name"];
-                                                                if ($student["withdraw"] == 1) {
-                                                                    echo " (W)";
-                                                                }
+                                                                if ($student["withdraw"] == 1) { echo " (W)"; }
+                                                                if ($student["status"] == "INACTIVE") { echo " (I)"; }
                                                             ?>
                                                         </a>
                                                     </td>

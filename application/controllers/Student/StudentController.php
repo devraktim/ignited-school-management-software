@@ -33,13 +33,25 @@
                 $classes = $this->AcademyClass->get();
                 $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
                 
+                $withdrawn_students = $this->WithdrawnReason->get_withdrawn_students([
+                    "withdrawn_students.class_id" => $class_id,
+                    "withdrawn_students.section_id" => $section_id
+                ]);
+                $total_withdrawn_students = count($withdrawn_students);
+
                 $students = $this->Student->search(array(
                     "student_session.class_id"      => $class_id,
                     "student_session.section_id"    => $section_id,
                     "student_session.promoted"  => "ANY"
                 ));
+                
 
-                $this->load->view("student/index", array("classes" => $classes, "sections" => $sections, "students" => $students));
+                $this->load->view("student/index", array(
+                    "classes" => $classes, 
+                    "sections" => $sections, 
+                    "students" => $students,
+                    "total_withdrawn_students" => $total_withdrawn_students
+                ));
             }
             else if($class_id) {
                 $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
@@ -631,36 +643,142 @@
         }
 
         // New Student Withdrawn
+        // public function new_withdrawn_student() {
+        //     if(!$this->session->user) {
+        //         return redirect(base_url());
+        //     }
+            
+        //     $data;
+        //     $class_id   = $this->input->get("class_id");
+        //     $section_id = $this->input->get("section_id");
+        //     $academy_session_id = $this->session->academy_session['current_session']['id'];
+
+        //     if($class_id && $section_id) {
+        //         $classes = $this->AcademyClass->get();
+        //         $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
+                
+        //         $reasons = $this->WithdrawnReason->get();
+                
+        //         $students = $this->Student->get_where(array(
+        //             "class_id"      => $class_id,
+        //             "section_id"    => $section_id,
+        //         ));
+
+        //         $this->load->view("student/new_withdrawal", array("classes" => $classes, "sections" => $sections, "students" => $students, "reasons" => $reasons));
+        //     }
+        //     else if($class_id) {
+        //         $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
+        //         echo json_encode(array("sections" => $sections));
+        //     }
+        //     else {
+        //         $classes = $this->AcademyClass->get();
+        //         $this->load->view("student/new_withdrawal", array("classes" => $classes));
+        //     }
+        // }
+
+        // New Student Withdrawn
         public function new_withdrawn_student() {
             if(!$this->session->user) {
                 return redirect(base_url());
             }
-            
-            $data;
+
             $class_id   = $this->input->get("class_id");
             $section_id = $this->input->get("section_id");
-            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
+            $currentSession = $this->session->academy_session['current_session'];
+            $academy_session_id = $currentSession['id'];
+
+            /**
+             * ===========================
+             * Generate TC Number
+             * ===========================
+             */
+
+            // Extract years (last 2 digits)
+            $startYear = date("y", strtotime($currentSession['start']));
+            $endYear   = date("y", strtotime($currentSession['end']));
+
+            // Session suffix logic
+            if ($startYear == $endYear) {
+                $sessionSuffix = $startYear; // e.g., 25
+            } else {
+                $sessionSuffix = $startYear . "_" . $endYear; // e.g., 26_27
+            }
+
+            // Get last tc_no for current session
+            $this->db->select("tc_no");
+            $this->db->from("withdrawn_students");
+            $this->db->where("session_id", $academy_session_id);
+            $this->db->order_by("id", "DESC");
+            $this->db->limit(1);
+            $query = $this->db->get();
+            $lastRecord = $query->row();
+
+            $nextNumber = 1;
+
+            if ($lastRecord && !empty($lastRecord->tc_no)) {
+                // Extract numeric part
+                $parts = explode("_", $lastRecord->tc_no);
+                $lastNumber = intval($parts[0]);
+                $nextNumber = $lastNumber + 1;
+            }
+
+            // Apply 4-digit padding
+            $paddedNumber = str_pad($nextNumber, 4, "0", STR_PAD_LEFT);
+
+            // Final TC number
+            $new_tc_no = $paddedNumber . "_" . $sessionSuffix;
+
+            /**
+             * ===========================
+             * Existing Logic
+             * ===========================
+             */
 
             if($class_id && $section_id) {
+
                 $classes = $this->AcademyClass->get();
                 $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
-                
                 $reasons = $this->WithdrawnReason->get();
-                
+                $student_settings = $this->Setting->get("student");
+                $student_auto_generate_tc_no = $student_settings["student_auto_generate_tc_no"] == 1 ? 1 : 0;
+
                 $students = $this->Student->get_where(array(
-                    "class_id"      => $class_id,
-                    "section_id"    => $section_id,
+                    "class_id"   => $class_id,
+                    "section_id" => $section_id,
                 ));
 
-                $this->load->view("student/new_withdrawal", array("classes" => $classes, "sections" => $sections, "students" => $students, "reasons" => $reasons));
-            }
-            else if($class_id) {
+                // echo "<pre>";
+                // print_r(array(
+                //     "new_tc_no"                     => $new_tc_no,
+                //     "student_auto_generate_tc_no" => $student_auto_generate_tc_no
+                // ));
+                // echo "</pre>";
+                // exit();
+
+
+                $this->load->view("student/new_withdrawal", array(
+                    "classes"                       => $classes,
+                    "sections"                      => $sections,
+                    "students"                      => $students,
+                    "reasons"                       => $reasons,
+                    "new_tc_no"                     => $new_tc_no,
+                    "student_auto_generate_tc_no" => $student_auto_generate_tc_no
+                ));
+
+            } else if($class_id) {
+
                 $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
                 echo json_encode(array("sections" => $sections));
-            }
-            else {
+
+            } else {
+
                 $classes = $this->AcademyClass->get();
-                $this->load->view("student/new_withdrawal", array("classes" => $classes));
+
+                $this->load->view("student/new_withdrawal", array(
+                    "classes"   => $classes,
+                    "new_tc_no" => $new_tc_no
+                ));
             }
         }
         

@@ -97,7 +97,7 @@
                                 <tr>
                                     <td>TC No</td>
                                     <td>
-                                        <input type="text" class="form-control" name="tc_no" value="0000/23-24" />
+                                        <input type="text" class="form-control" name="tc_no" value="<?php $student_auto_generate_tc_no ?? $new_tc_no?>" <?php echo $student_auto_generate_tc_no ?? "readonly" ?> />
                                     </td>
                                 </tr>
                                 <tr>

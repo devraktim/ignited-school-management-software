@@ -155,6 +155,7 @@
                         <!-- Show buttons only if "Yes" is selected for assigning class teacher -->
                         <a href="<?php echo base_url()?>academics/setting/assign-teacher-class" class="btn btn-primary mb-3 w-100">Assign Class Teacher</a>
                         <a href="<?php echo base_url()?>academics/setting/show-class-teacher" class="btn btn-primary mb-3 w-100">Show Class Teacher</a>
+                        <a href="<?php echo base_url()?>academics/exam-control-privileges" class="btn btn-primary mb-3 w-100">Marks/ Grade Entry Permissions</a>
                     <?php endif; ?>
                 </div>
             </div>

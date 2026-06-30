@@ -462,10 +462,18 @@ $route["academics/exam-paper-student"]["POST"] = "Academics/ExamPaperController/
 $route["academics/evolution-paper"]["GET"] = "Academics/EvolutionPaperController/index";
 $route["academics/set-evolution-paper"]["GET"] = "Academics/EvolutionPaperController/create";
 $route["academics/set-evolution-paper"]["POST"] = "Academics/EvolutionPaperController/store";
-
 $route["academics/set-evolution-paper/delete/(:any)"]["GET"] = "Academics/EvolutionPaperController/delete/$1";
 $route["academics/set-evolution-paper/remove-subject"]["GET"] = "Academics/EvolutionPaperController/remove_subject";
 
+// Exam Control Privileges
+$route["academics/exam-control-privileges"]["GET"] = "Academics/ExamPaperController/exam_control_privileges_create";
+$route["academics/exam-marks-control-privileges"]["POST"] = "Academics/ExamPaperController/exam_marks_control_privileges";
+$route["academics/exam-marks-control-privileges/get-teachers"]["POST"] = "Academics/ExamPaperController/get_marks_entry_teachers";
+$route["academics/exam-marks-control-privileges/save-teachers"]["POST"] = "Academics/ExamPaperController/save_marks_entry_teachers";
+$route["academics/exam-marks-control-privileges/toggle-teacher"]["POST"] = "Academics/ExamPaperController/toggle_marks_entry_teacher";
+$route["academics/exam-marks-control-privileges/remove-teacher"]["POST"] = "Academics/ExamPaperController/remove_marks_entry_teacher";
+$route['academics/exam-marks-control-privileges/toggle-exam-lock']['POST'] = "Academics/ExamPaperController/toggle_exam_lock";
+$route['academics/exam-marks-control-privileges/toggle-subject-lock']['POST'] = "Academics/ExamPaperController/toggle_subject_lock";
 
 // Grade Entry
 $route["academics/grade-entry"]["GET"] = "Academics/GradeEntryController/index";
@@ -566,4 +574,19 @@ $route["fees/reports/students-monthly-payment"]["GET"] = "Fees/FeesReportControl
 $route["fees/setting/create"]["GET"] = "Fees/FeesController/fees_setting_create";
 $route["fees/setting/store"]["POST"] = "Fees/FeesController/fees_setting_store";
 
+
+// School Message API
+$route['api/v1/auth/login']['POST'] = 'Api/V1/Auth/login';
+$route['api/v1/auth/logout']['post'] = 'Api/V1/Auth/logout';
+
+$route['api/v1/profile']['GET'] = 'Api/V1/Profile/index';
+$route['api/v1/classes']['GET'] = 'Api/V1/Classes/index';
+$route['api/v1/students']['GET'] = 'Api/V1/Students/index';
+$route['api/v1/teachers']['GET'] = 'Api/V1/Teachers/index';
+
+$route['api/v1/chats/class/(:num)/messages']['GET'] = 'Api/V1/Chats/classMessages/$1';
+$route['api/v1/chats/class/(:num)/messages']['POST'] = 'Api/V1/Chats/sendClassMessage/$1';
+
+$route['api/v1/chats/individual/(:num)/messages']['get'] = 'Api/V1/Chats/individualMessages/$1';
+$route['api/v1/chats/individual/(:num)/messages']['post'] = 'Api/V1/Chats/sendIndividualMessage/$1';
 

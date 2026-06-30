@@ -43,7 +43,7 @@
             $total_students = count($students);
             $total_active_students = 0;
             $total_inactive_students = 0;
-            $total_withdrawn_students = 0;
+            // $total_withdrawn_students = 0;
             $total_dayscholar_students = 0;
             $total_dayborders_students = 0;
             $total_borders_students = 0;
@@ -55,7 +55,7 @@
             foreach($students as $student) {
                 if($student['status'] == 'ACTIVE') {$total_active_students++;}
                 if($student['status'] == 'INACTIVE') {$total_inactive_students++;}
-                if($student['status'] == 'WITHDRAWN') {$total_withdrawn_students++;}
+                // if($student['status'] == 'WITHDRAWN') {$total_withdrawn_students++;}
                 if($student['sex'] == 'male') {$total_male_students++;}
                 if($student['sex'] == 'female') {$total_female_students++;}
                 if($student['sex'] == 'other') {$total_other_students++;}
@@ -131,6 +131,7 @@
                                             <h4 class="card-title text-center">
                                                 <?php echo $student['f_name'] . " " . $student['m_name'] . " " . $student['l_name'] ?> 
                                                 <?php if ($student["withdraw"] == 1) { echo " (W)"; }?>
+                                                <?php if ($student["status"] == "INACTIVE") { echo " (I)"; }?>
                                             </h4>
                                         </div>
                                     </div>

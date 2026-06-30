@@ -739,7 +739,7 @@
                             'student_id'            => $student_id,
                             'class_id'              => $class_id,
                             'section_id'            => $section_id,
-                            'student_type_id'       => $section_id,
+                            'student_type_id'       => $student_type_id,
                             'session_id'            => $this->session->academy_session['current_session']['id'],
                             'month'                 => $month,
                             'due_date'              => $due_date,
@@ -846,6 +846,11 @@
             if (!$this->session->user) {
                 return redirect(base_url());
             }
+
+            // echo "<pre>";
+            // print_r($_POST);
+            // echo "</pre>";
+            // exit();
             
             $final_data = [];
 
@@ -880,8 +885,25 @@
                     ];
                 }
             }
+
+            // echo "<pre>";
+            // print_r(count($final_data));
+            // echo "</pre>";
+            // exit();
             
-            $this->Fees->insert_update_fees($final_data);
+            if(count($final_data) == 0) {
+                $this->Fees->delete_student_month_fees([
+                    'student_id'       => $student_id,
+                    'class_id'         => $class_id,
+                    'section_id'       => $section_id,
+                    'student_type_id'  => $student_type_id,
+                    'session_id'       => $session_id,
+                    'month'            => $month
+                ]);
+            }
+            else {
+                $this->Fees->insert_update_fees($final_data);
+            }
             
             $this->session->set_flashdata("success", "Data updated successfully");
             
@@ -1130,6 +1152,8 @@
                     "id"            => $student['id']
                 ];
             }
+
+
             
             if($st != null) {
                 $installments = $this->Fees->get_all_fees(array(
@@ -1149,6 +1173,8 @@
                     "student_id"        => $st['id'],
                     "current_session_id"=>  $this->session->academy_session['current_session']['id'],
                 ));
+
+               
             }
             
             $fine_counting = null;
@@ -1221,6 +1247,8 @@
                     "id"            => $student['id']
                 ];
             }
+
+
             
             if($st != null) {
                 $installments = $this->Fees->get_collection_adjusted_fees(array(
@@ -1266,6 +1294,8 @@
                     "student_id"        => $st['id'],
                     "session_id"        => $this->session->academy_session['current_session']['id']
                 ));
+
+
         
             }
             

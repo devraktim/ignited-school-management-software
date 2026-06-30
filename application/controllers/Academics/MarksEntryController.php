@@ -88,6 +88,129 @@
             }   
         }
 
+        // public function get_students() {
+        //     $class_id       = $this->input->post("class_id");
+        //     $section_id     = $this->input->post("section_id");
+        //     $exam_id        = $this->input->post("exam_id");
+        //     $component_id   = $this->input->post("component_id");
+        //     $subject_id     = $this->input->post("subject_id");
+            
+        //     $academy_session_id = $this->session->academy_session['current_session']['id'];
+            
+        //     $student_list = [];
+        //     $rows = $this->StudentSubject->get_students([
+        //         "academy_class_id" => $class_id,
+        //         "section_id" => $section_id,
+        //         "subject_id" => $subject_id,
+        //         "current_session_id" => $academy_session_id
+        //     ]);
+          
+        //     foreach($rows as $row) {
+        //         $student_list[] = $row["student_id"];
+        //     } 
+            
+        //     $rows = $this->ExamPaper->get_exams([
+        //         "class_id"      => $class_id, 
+        //         "exam_id"       => $exam_id,
+        //         "paper_type"    => "component"
+        //     ]);
+            
+        //     $components = [];
+        //     $subjects = [];
+            
+        //     $full_marks = "";
+        //     $pass_marks = "";
+        //     $component_name = "";
+            
+        //     $subject = $this->Subject->get($subject_id);
+        //     $subject_name = $subject["name"];
+            
+        
+       
+            
+        //     for($i = 0 ; $i < count($rows) ; $i++) { 
+
+        //         $r = json_decode($rows[$i]["marks"]);
+                
+        //         $subjects[] = explode(",", $rows[$i]["subjects"]);
+        //         $ss = explode(",", $rows[$i]["subjects"]);
+                
+        //         if($r->component_id && $component_id && in_array($subject_id, $ss)) {
+        //             $component = $this->Component->get($r->component_id);
+                    
+        //             $component_name = $component["name"];
+        //             $full_marks     = $r->marks->full_marks;
+        //             $pass_marks     = $r->marks->pass_marks;
+        //         }
+                
+        //         $components[] = $this->Component->get($r->component_id);
+        //     }
+        
+        //     $subjects = array_merge(...$subjects);
+        //     $subjects = array_unique($subjects);
+        //     $subject_list = [];
+            
+        //     foreach($subjects as $subject) {
+        //         $subject_list[] = $this->Subject->get($subject);
+        //     }
+        
+        //     $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
+        
+        //     $rows = $this->ExamPaper->get_exams([
+        //         "class_id" => $class_id, 
+        //         "paper_type" => "component", 
+        //     ]);
+            
+        //     $exams = [];
+        //     foreach($rows as $row) {
+        //         $exams[] = $this->Exam->get($row["exam_id"]);
+        //     }
+            
+         
+        //     $students = [];    
+        //     foreach($student_list as $student) {
+        //         $s = $this->Student->get($student);
+        //         $students[] = [
+        //             "id"            => $s["id"],
+        //             "student_no"    => $s["student_no"],
+        //             "roll_no"       => $s["roll_no"],
+        //             "f_name"        => $s["f_name"],
+        //             "m_name"        => $s["m_name"],
+        //             "l_name"        => $s["l_name"],
+        //             "marks"         => $this->Marks->get_marks([
+        //                                                         "class_id"      => $_POST["class_id"], 
+        //                                                         "section_id"    => $_POST["section_id"], 
+        //                                                         "exam_id"       => $_POST["exam_id"], 
+        //                                                         "subject_id"    => $_POST["subject_id"], 
+        //                                                         "student_id"    => $s["id"],
+        //                                                     ]),
+        //         ];
+        //     }
+            
+          
+        //     $data = [
+        //         "students"      => $students,
+        //         "classes"       => $this->AcademyClass->get(),
+        //         "sections"      => $sections,
+        //         "exams"         => $exams,
+        //         "components"    => $components,
+        //         "subjects"      => $subject_list,
+        //         "class_id"      => $class_id,
+        //         "section_id"    => $section_id,
+        //         "exam_id"       => $exam_id,
+        //         "component_id"  => $component_id,
+        //         "subject_id"    => $subject_id,
+        //         "full_marks"    => $full_marks,
+        //         "pass_marks"    => $pass_marks,
+        //         "subject_name"  => $subject_name,
+        //         "component_name"  => $component_name,
+        //     ];  
+            
+            
+        //     $this->load->view("academics/marks_entry", $data);
+            
+        // }
+
         public function get_students() {
             $class_id       = $this->input->post("class_id");
             $section_id     = $this->input->post("section_id");
@@ -96,6 +219,96 @@
             $subject_id     = $this->input->post("subject_id");
             
             $academy_session_id = $this->session->academy_session['current_session']['id'];
+
+            /*
+            |--------------------------------------------------------------------------
+            | Check Entry Permission
+            |--------------------------------------------------------------------------
+            */
+
+            $entry_status  = true;
+            $entry_message = "";
+
+            $employee_id = $this->session->user["employee_id"];
+
+            /*
+            |--------------------------------------------------------------------------
+            | Get all component papers of this exam
+            |--------------------------------------------------------------------------
+            */
+
+            $papers = $this->ExamPaper->get_exams([
+                "class_id"   => $class_id,
+                "exam_id"    => $exam_id,
+                "paper_type" => "component"
+            ]);
+
+            $paperIds = array_column($papers, "id");
+
+            /*
+            |--------------------------------------------------------------------------
+            | Exam Locked?
+            |--------------------------------------------------------------------------
+            */
+
+            if ($this->ExamPaper->isExamLocked($paperIds, $class_id, $section_id)) {
+
+                $entry_status  = false;
+                $entry_message = "Marks entry has been locked for this exam.";
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Subject Locked?
+            |--------------------------------------------------------------------------
+            */
+
+            elseif ($this->ExamPaper->isSubjectLocked(
+                $paperIds,
+                $class_id,
+                $section_id,
+                $subject_id
+            )) {
+
+                $entry_status  = false;
+                $entry_message = "Marks entry has been locked for this subject.";
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Teacher Permission
+            |--------------------------------------------------------------------------
+            */
+
+            else {
+
+                $hasPermission = false;
+
+                foreach ($paperIds as $paperId) {
+
+                    if ($this->ExamPaper->hasMarksEntryPermission(
+                        $paperId,
+                        $class_id,
+                        $section_id,
+                        $subject_id,
+                        $employee_id
+                    )) {
+
+                        $hasPermission = true;
+                        break;
+                    }
+                }
+
+                if (!$hasPermission) {
+
+                    $entry_status  = false;
+                    $entry_message = "You are not authorized to enter marks for this subject.";
+
+                }
+
+            }
             
             $student_list = [];
             $rows = $this->StudentSubject->get_students([
@@ -124,10 +337,7 @@
             
             $subject = $this->Subject->get($subject_id);
             $subject_name = $subject["name"];
-            
         
-       
-            
             for($i = 0 ; $i < count($rows) ; $i++) { 
 
                 $r = json_decode($rows[$i]["marks"]);
@@ -178,12 +388,12 @@
                     "m_name"        => $s["m_name"],
                     "l_name"        => $s["l_name"],
                     "marks"         => $this->Marks->get_marks([
-                                                                "class_id"      => $_POST["class_id"], 
-                                                                "section_id"    => $_POST["section_id"], 
-                                                                "exam_id"       => $_POST["exam_id"], 
-                                                                "subject_id"    => $_POST["subject_id"], 
-                                                                "student_id"    => $s["id"],
-                                                            ]),
+                                            "class_id"      => $_POST["class_id"], 
+                                            "section_id"    => $_POST["section_id"], 
+                                            "exam_id"       => $_POST["exam_id"], 
+                                            "subject_id"    => $_POST["subject_id"], 
+                                            "student_id"    => $s["id"],
+                                        ]),
                 ];
             }
             
@@ -204,12 +414,17 @@
                 "pass_marks"    => $pass_marks,
                 "subject_name"  => $subject_name,
                 "component_name"  => $component_name,
+                
+                // Add these
+                "entry_status"  => $entry_status,
+                "entry_message" => $entry_message,
             ];  
             
             
             $this->load->view("academics/marks_entry", $data);
             
         }
+
 
         public function marks_store() {
             $ids = $this->input->post("ids");

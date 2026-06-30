@@ -248,6 +248,7 @@
                     $data["image"] = $file['upload_data']['file_name'];
                 }
 
+
                 $id = $this->input->post('id');
                 $this->Employee->update($id, $data);
                 $this->session->set_flashdata("success", "Record Updated");
