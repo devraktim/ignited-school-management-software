@@ -141,22 +141,18 @@
                 </div>
             </div>
         </div>
-    
-        <?php
-        // Assume $settings['assign_class_teacher_to_classes'] is the selected value from the dropdown
-        $assignClassTeacher = isset($settings['assign_class_teacher_to_classes']) ? $settings['assign_class_teacher_to_classes'] : null;
-        ?>
         
         <div class="col-md-4">
             <div class="card card-flush h-xl-100">
                 <!--begin::Body-->
                 <div class="card-body py-9">
-                    <?php if ($assignClassTeacher == '1'): ?>
-                        <!-- Show buttons only if "Yes" is selected for assigning class teacher -->
-                        <a href="<?php echo base_url()?>academics/setting/assign-teacher-class" class="btn btn-primary mb-3 w-100">Assign Class Teacher</a>
-                        <a href="<?php echo base_url()?>academics/setting/show-class-teacher" class="btn btn-primary mb-3 w-100">Show Class Teacher</a>
-                        <a href="<?php echo base_url()?>academics/exam-control-privileges" class="btn btn-primary mb-3 w-100">Marks/ Grade Entry Permissions</a>
-                    <?php endif; ?>
+                    <!-- Show buttons only if "Yes" is selected for assigning class teacher -->
+                    <?php if($settings['assign_class_teacher_to_classes'] == '1') { ?>
+                    <a href="<?php echo base_url()?>academics/setting/assign-teacher-class" class="btn btn-primary mb-3 w-100">Assign Class Teacher</a>
+                    <?php } ?>
+
+                    <a href="<?php echo base_url()?>academics/setting/show-class-teacher" class="btn btn-primary mb-3 w-100">Show Class Teacher</a>
+                    <a href="<?php echo base_url()?>academics/exam-control-privileges" class="btn btn-primary mb-3 w-100">Marks/ Grade Entry Permissions</a>
                 </div>
             </div>
         </div>

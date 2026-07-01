@@ -1492,7 +1492,6 @@ class ExamPaperController extends CI_Controller
 
         }
 
-
         foreach ($sectionIds as $sectionId) {
 
             foreach ($paperIds as $paperId) {

@@ -6,6 +6,7 @@
             parent::__construct();
 
             $this->load->model("AcademyClass");
+            $this->load->model("ClassSection");
             $this->load->model("Section");
             $this->load->model("Employee");
             $this->load->model("Designation");
@@ -66,29 +67,123 @@
 
         }
 
-        public function assign_teacher_class_create() {
-            if(!$this->session->user) {
+        // public function assign_teacher_class_create() {
+        //     if(!$this->session->user) {
+        //         return redirect(base_url());
+        //     }
+
+        //     // $data = [
+        //     //     "classes" => $this->AcademyClass->get(),
+        //     //     "sections" => $this->Section->get(),
+        //     //     "employees" => $this->Employee->get(),
+        //     //     "records" => $this->ClassTeacher->get(), 
+        //     //     "selected" => []
+        //     // ];
+
+
+        //     $classes = $this->AcademyClass->get();
+
+        //     $sections = [];
+
+        //     foreach ($classes as $class) {
+
+        //         $classSections = $this->ClassSection->get_sections(
+        //             $this->session->academy_session["current_session"]["id"],
+        //             $class["id"]
+        //         );
+
+        //         foreach ($classSections as $section) {
+
+        //             $sections[$section["id"]] = $section;
+
+        //         }
+        //     }
+
+        //     $data = [
+        //         "classes"   => $classes,
+        //         "sections"  => array_values($sections),
+        //         "employees" => $this->Employee->get(),
+        //         "records"   => $this->ClassTeacher->get(),
+        //         "selected"  => []
+        //     ];
+
+        //     $selected = [];
+
+        //     for($i = 0 ; $i < count($data['records']) ;  $i++) {
+        //         $key = $data['records'][$i]['class_id'] . "_" . $data['records'][$i]['section_id'];
+        //         $selected[$key] = $data['records'][$i]['employee_id'];
+        //     }
+
+        //     $data["selected"] = $selected;
+
+        //     $this->load->view("academics/setting_assign_teacher_class_create", $data);
+        // }
+
+        public function assign_teacher_class_create()
+        {
+            if (!$this->session->user) {
                 return redirect(base_url());
             }
+            
+            // $d = $this->ClassTeacher->get();
 
-            $data = [
-                "classes" => $this->AcademyClass->get(),
-                "sections" => $this->Section->get(),
-                "employees" => $this->Employee->get(),
-                "records" => $this->ClassTeacher->get(), 
-                "selected" => []
-            ];
+            // echo "<pre>";
+            // print_r($d);
+            // echo "</pre>";
+            // exit();
+
+            $academySessionId =
+                $this->session
+                    ->academy_session["current_session"]["id"];
+
+            $classes =
+                $this->AcademyClass->get();
+
+            $classList = [];
+
+            foreach ($classes as $class) {
+
+                $class["sections"] =
+                    $this->ClassSection->get_sections(
+                        $academySessionId,
+                        $class["id"]
+                    );
+
+                $classList[] = $class;
+            }
+
+            $records =
+                $this->ClassTeacher->get();
 
             $selected = [];
 
-            for($i = 0 ; $i < count($data['records']) ;  $i++) {
-                $key = $data['records'][$i]['class_id'] . "_" . $data['records'][$i]['section_id'];
-                $selected[$key] = $data['records'][$i]['employee_id'];
+            foreach ($records as $record) {
+
+                $key =
+                    $record["class_id"] .
+                    "_" .
+                    $record["section_id"];
+
+                $selected[$key] =
+                    $record["employee_id"];
             }
 
-            $data["selected"] = $selected;
+            $data = [
 
-            $this->load->view("academics/setting_assign_teacher_class_create", $data);
+                "classes"   => $classList,
+
+                "employees" => $this->Employee->get(),
+
+                "records"   => $records,
+
+                "selected"  => $selected
+
+            ];
+
+            $this->load->view(
+                "academics/setting_assign_teacher_class_create",
+                $data
+            );
         }
 
         public function assign_teacher_class_store() {

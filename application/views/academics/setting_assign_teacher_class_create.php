@@ -6,16 +6,18 @@
         </div>
         <div class="col-md-2"></div>
         <div class="col-md-4 text-center">
-            <?php if($this->session->flashdata('success'))  {?>
+            <?php if ($this->session->flashdata("success")) { ?>
                 <div class="alert alert-success alert-dismissible">
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <strong><?php echo $this->session->flashdata('success')?></strong>
+                    <strong><?php echo $this->session->flashdata(
+                        "success"
+                    ); ?></strong>
                 </div>
             <?php } ?>
         </div>
     </div>
 
-    <form action="<?php echo base_url()?>academics/setting/assign-teacher-class" method="POST">
+    <form action="<?php echo base_url(); ?>academics/setting/assign-teacher-class" method="POST">
         <div class="row mb-5">
             <div class="col-md-3"></div>
             <div class="col-md-6">
@@ -31,24 +33,113 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php for($i = 0 ; $i < count($classes) ; $i++) { ?>
-                                        <?php for($j = 0 ; $j < count($sections) ; $j++) { ?>
+
+                                    <?php foreach ($classes as $class) { ?>
+
+                                        <?php if (empty($class["sections"])) { ?>
+
                                             <tr class="text-center">
-                                                <td style="vertical-align: middle;"><h4><?php echo $classes[$i]["name"] ?></h4></td>
-                                                <td style="vertical-align: middle;"><h4><?php echo $sections[$j]['name'] ?></h4></td>
-                                                <td>
-                                                    <input type="text" class="form-control d-none" name="class_id[]" value="<?php echo $classes[$i]['id'] ?>" />
-                                                    <input type="text" class="form-control d-none" name="section_id[]" value="<?php echo $sections[$j]['id'] ?>" />
-                                                    <select class="form-select" name="employee_id[]">
-                                                        <option value="">Please Select </option>
-                                                        <?php foreach($employees as $employee) { ?>
-                                                            <option value="<?php echo $employee['id']?>" <?php if(isset($selected[$classes[$i]['id'] . "_" . $sections[$j]['id']]) && ($selected[$classes[$i]['id'] . "_" . $sections[$j]['id']] == $employee['id'])) {echo "selected";} ?>><?php echo $employee['f_name']. " " . $employee['m_name']. " " . $employee['l_name'] . "      -  " . $employee['designation']?></option>
-                                                        <?php } ?>
-                                                    </select>
+
+                                                <td style="vertical-align:middle;">
+                                                    <h4>
+                                                        <?php echo $class["name"]; ?>
+                                                    </h4>
                                                 </td>
+
+                                                <td colspan="2">
+                                                    <span class="text-muted">
+                                                        No Sections Assigned
+                                                    </span>
+                                                </td>
+
                                             </tr>
+
+                                        <?php continue;} ?>
+
+                                        <?php foreach ($class["sections"] as $section) { ?>
+
+                                            <tr class="text-center">
+
+                                                <td style="vertical-align:middle;">
+
+                                                    <h4>
+                                                        <?php echo $class["name"]; ?>
+                                                    </h4>
+
+                                                </td>
+
+                                                <td style="vertical-align:middle;">
+
+                                                    <h4>
+                                                        <?php echo $section["name"]; ?>
+                                                    </h4>
+
+                                                </td>
+
+                                                <td>
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="class_id[]"
+                                                        value="<?php echo $class["id"]; ?>"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="section_id[]"
+                                                        value="<?php echo $section["id"]; ?>"
+                                                    >
+
+                                                    <select
+                                                        class="form-select"
+                                                        name="employee_id[]"
+                                                    >
+
+                                                        <option value="">
+                                                            Please Select
+                                                        </option>
+
+                                                        <?php $selectedKey =
+                                                            $class["id"] . "_" . $section["id"]; ?>
+
+                                                        <?php foreach ($employees as $employee) { ?>
+
+                                                            <option
+                                                                value="<?php echo $employee["id"]; ?>"
+
+                                                                <?php if (
+                                                                    isset($selected[$selectedKey]) &&
+                                                                    $selected[$selectedKey] == $employee["id"]
+                                                                ) {
+                                                                    echo "selected";
+                                                                } ?>
+                                                            >
+
+                                                                <?php echo trim(
+                                                                    $employee["f_name"] .
+                                                                        " " .
+                                                                        $employee["m_name"] .
+                                                                        " " .
+                                                                        $employee["l_name"]
+                                                                ); ?>
+
+                                                                
+                                                                <?php echo $employee["designation"]; ?>
+
+                                                            </option>
+
+                                                        <?php } ?>
+
+                                                    </select>
+
+                                                </td>
+
+                                            </tr>
+
                                         <?php } ?>
+
                                     <?php } ?>
+
                                 </tbody>
                             </table>
                         </div>
