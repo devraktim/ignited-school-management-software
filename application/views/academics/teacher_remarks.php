@@ -102,7 +102,18 @@
                     <input type="text" class="form-control d-none" name="exam_id"      value="<?php echo $exam_id ?>">
 
                     <?php if($this->session->user['permissions'][0]['academics_module'] != "VIEWER") { ?>
-                    <button type="submit" class="btn btn-success rounded rounded-pill mt-4"><i class="fa fa-plus"></i> Save</button>
+                        <?php if($class_teacher_can_enter_remarks == '1') { ?>
+                            <?php if($am_i_class_teacher == '1') { ?>
+                                <button type="submit" class="btn btn-success rounded rounded-pill mt-4"><i class="fa fa-plus"></i> Save</button>
+                            <?php } else { ?>
+                                <div class="alert alert-danger mt-4 mb-0">
+                                    <i class="fa fa-lock me-2"></i>
+                                    <strong>Marks Entry Not Available</strong> Only class teacher can entry remarks.
+                                </div>
+                            <?php } ?>
+                        <?php } else { ?>
+                            <button type="submit" class="btn btn-success rounded rounded-pill mt-4"><i class="fa fa-plus"></i> Save</button>
+                        <?php } ?>
                     <?php } ?>
                 </form>
             </div>

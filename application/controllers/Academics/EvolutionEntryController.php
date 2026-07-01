@@ -12,6 +12,8 @@
             $this->load->model("Exam");
             $this->load->model("Student");
             $this->load->model("Marks");
+            $this->load->model("ClassTeacher");
+            $this->load->model("Setting");
         }
 
         public function index() {
@@ -98,6 +100,15 @@
             $exam_id    = $this->input->post("exam_id");
             $academy_session_id = $this->session->academy_session['current_session']['id'];
 
+            $academics_settings = $this->Setting->get("academics");
+
+            for($i = 0 ; $i < count($academics_settings) ; $i++) {
+                $settings[$academics_settings[$i]['key_name']] = $academics_settings[$i]['value'];
+            };
+
+            $am_i_class_teacher = $this->ClassTeacher->am_i_class_teacher($class_id, $section_id);
+            $class_teacher_can_enter_personal_evaluation = $settings['class_teacher_can_enter_personal_evaluation'];
+
             $classes = $this->AcademyClass->get();
             $sections = $this->ClassSection->get_sections($academy_session_id, $class_id);
             
@@ -180,7 +191,9 @@
                 "exams"         => $exams,
                 "class_id"      => $class_id,
                 "section_id"    => $section_id,
-                "exam_id"       => $exam_id
+                "exam_id"       => $exam_id,
+                "am_i_class_teacher" => $am_i_class_teacher,
+                "class_teacher_can_enter_personal_evaluation" => $class_teacher_can_enter_personal_evaluation
             ));
         }
 

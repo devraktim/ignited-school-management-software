@@ -35,23 +35,43 @@
             return $this->db->insert($this->table, $data);
         }
 
-        public function insert_or_update($data) {
-            
-            for($i = 0; $i < count($data); $i++) {
-                $record = $this->db->where([
-                    "class_id" => $data[$i]["class_id"], 
-                    "section_id" => $data[$i]["section_id"],
-                ])
-                ->get($this->table)
-                ->row_array();
+        public function insert_or_update($data = [])
+        {
+            if (empty($data)) {
+                return true;
+            }
 
-                if($record) {
-                    $this->db->where("id", $record['id'])->update($this->table, $data[$i]);
-                }
-                else {
-                    $this->db->insert($this->table, $data[$i]);
+            $this->db->trans_start();
+
+            foreach ($data as $row) {
+
+                $record = $this->db
+                    ->where([
+                        'class_id'   => $row['class_id'],
+                        'section_id' => $row['section_id'],
+                        'session_id' => $row['session_id']
+                    ])
+                    ->get($this->table)
+                    ->row();
+
+                if ($record) {
+
+                    $this->db
+                        ->where('id', $record->id)
+                        ->update($this->table, [
+                            'employee_id' => $row['employee_id']
+                        ]);
+
+                } else {
+
+                    $this->db->insert($this->table, $row);
+
                 }
             }
+
+            $this->db->trans_complete();
+
+            return $this->db->trans_status();
         }
 
         public function update($id, $data) {
@@ -64,6 +84,27 @@
 
         public function restore($id) {
             return $this->db->where("id", $id)->update($this->table, ["deleted" => 0]);
+        }
+
+        public function am_i_class_teacher($class_id, $section_id)
+        {
+            $user = $this->session->userdata('user');
+
+            if (empty($user) || empty($user['employee_id'])) {
+                return false;
+            }
+
+            $record = $this->db
+                ->where([
+                    'class_id'      => $class_id,
+                    'section_id'    => $section_id,
+                    'employee_id'   => $user['employee_id'],
+                    'session_id'    => $this->session->academy_session["current_session"]["id"]
+                ])
+                ->get($this->table)
+                ->row();
+
+            return !empty($record);
         }
 
     }

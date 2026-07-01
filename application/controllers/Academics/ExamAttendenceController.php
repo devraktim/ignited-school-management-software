@@ -16,6 +16,8 @@
             $this->load->model("Component");
             $this->load->model("Marks");
             $this->load->model("ExamAttendence");
+            $this->load->model("ClassTeacher");
+            $this->load->model("Setting");
         }
 
         public function index() {
@@ -68,6 +70,17 @@
             if(!$this->session->user) {
                 return redirect(base_url());
             }
+            
+            $academics_settings = $this->Setting->get("academics");
+
+            for($i = 0 ; $i < count($academics_settings) ; $i++) {
+                $settings[$academics_settings[$i]['key_name']] = $academics_settings[$i]['value'];
+            };
+
+            $class_id = $_POST["class_id"];
+            $section_id = $_POST["section_id"];
+            $am_i_class_teacher = $this->ClassTeacher->am_i_class_teacher($class_id, $section_id);
+            $class_teacher_can_enter_attendance = $settings['class_teacher_can_enter_attendance'];
 
             $rows = $this->ExamPaper->get_subjects(["class_id" => $_POST["class_id"], "exam_id" => $_POST['exam_id']]);
             $subjects = [];
@@ -142,6 +155,8 @@
                 "class_id"          => $_POST["class_id"],
                 "section_id"        => $_POST["section_id"],
                 "exam_id"           => $_POST["exam_id"],
+                "am_i_class_teacher" => $am_i_class_teacher,
+                "class_teacher_can_enter_attendance" => $class_teacher_can_enter_attendance
             ]);
         }
 

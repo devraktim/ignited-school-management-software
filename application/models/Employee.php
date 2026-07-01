@@ -117,8 +117,8 @@
                         ->join("designations", "employees.designation_id = designations.id")
                         ->join("employee_retires", "employee_retires.employee_id = employees.id", "left")
                         ->join("employee_resignations", "employee_resignations.employee_id = employees.id", "left")
-                        ->where("employees.deleted", 0)
-                        ->where("employees.id !=", 1);
+                        ->where("employees.deleted", 0);
+                        // ->where("employees.id !=", 1);
 
 
                 // Hide inactive employees

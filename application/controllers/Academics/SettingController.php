@@ -67,70 +67,11 @@
 
         }
 
-        // public function assign_teacher_class_create() {
-        //     if(!$this->session->user) {
-        //         return redirect(base_url());
-        //     }
-
-        //     // $data = [
-        //     //     "classes" => $this->AcademyClass->get(),
-        //     //     "sections" => $this->Section->get(),
-        //     //     "employees" => $this->Employee->get(),
-        //     //     "records" => $this->ClassTeacher->get(), 
-        //     //     "selected" => []
-        //     // ];
-
-
-        //     $classes = $this->AcademyClass->get();
-
-        //     $sections = [];
-
-        //     foreach ($classes as $class) {
-
-        //         $classSections = $this->ClassSection->get_sections(
-        //             $this->session->academy_session["current_session"]["id"],
-        //             $class["id"]
-        //         );
-
-        //         foreach ($classSections as $section) {
-
-        //             $sections[$section["id"]] = $section;
-
-        //         }
-        //     }
-
-        //     $data = [
-        //         "classes"   => $classes,
-        //         "sections"  => array_values($sections),
-        //         "employees" => $this->Employee->get(),
-        //         "records"   => $this->ClassTeacher->get(),
-        //         "selected"  => []
-        //     ];
-
-        //     $selected = [];
-
-        //     for($i = 0 ; $i < count($data['records']) ;  $i++) {
-        //         $key = $data['records'][$i]['class_id'] . "_" . $data['records'][$i]['section_id'];
-        //         $selected[$key] = $data['records'][$i]['employee_id'];
-        //     }
-
-        //     $data["selected"] = $selected;
-
-        //     $this->load->view("academics/setting_assign_teacher_class_create", $data);
-        // }
-
         public function assign_teacher_class_create()
         {
             if (!$this->session->user) {
                 return redirect(base_url());
             }
-            
-            // $d = $this->ClassTeacher->get();
-
-            // echo "<pre>";
-            // print_r($d);
-            // echo "</pre>";
-            // exit();
 
             $academySessionId =
                 $this->session
@@ -186,30 +127,40 @@
             );
         }
 
-        public function assign_teacher_class_store() {
-            if(!$this->session->user) {
-                return redirect(base_url());
+        public function assign_teacher_class_store()
+        {
+            if (!$this->session->user) {
+                redirect(base_url());
             }
-            
-            $classes    =   $this->input->post('class_id');
-            $sections   =   $this->input->post('section_id');
-            $employees  =   $this->input->post('employee_id');
 
-            $data = array();
+            $classes    = $this->input->post('class_id');
+            $sections   = $this->input->post('section_id');
+            $employees  = $this->input->post('employee_id');
 
-            for($i = 0 ; $i < count($classes) ; $i++) {
-                $data[] = [
-                    "class_id" => $classes[$i],
-                    "section_id" => $sections[$i],
-                    "employee_id" => $employees[$i]
-                ];
-            };
+            $session_id = $this->session->academy_session["current_session"]["id"];
+
+            $data = [];
+
+            if (!empty($classes)) {
+                foreach ($classes as $key => $class_id) {
+
+                    if (empty($employees[$key])) {
+                        continue;
+                    }
+
+                    $data[] = [
+                        'class_id'    => $class_id,
+                        'section_id'  => $sections[$key],
+                        'employee_id' => $employees[$key],
+                        'session_id'  => $session_id
+                    ];
+                }
+            }
 
             $this->ClassTeacher->insert_or_update($data);
 
-            $this->session->set_flashdata("success", "Record Saved Successfully");
-            return redirect(base_url() . "academics/setting/assign-teacher-class");
-
+            $this->session->set_flashdata('success', 'Record Saved Successfully');
+            redirect(base_url('academics/setting/assign-teacher-class'));
         }
 
         public function show_class_teacher() {
