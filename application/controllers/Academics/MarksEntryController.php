@@ -14,6 +14,8 @@
             $this->load->model("Component");
             $this->load->model("Student");
             $this->load->model("Marks");
+            $this->load->model("ClassTeacher");
+            $this->load->model("Setting");
         }
 
         public function index() {
@@ -212,13 +214,22 @@
         // }
 
         public function get_students() {
+            
             $class_id       = $this->input->post("class_id");
             $section_id     = $this->input->post("section_id");
             $exam_id        = $this->input->post("exam_id");
             $component_id   = $this->input->post("component_id");
-            $subject_id     = $this->input->post("subject_id");
-            
+            $subject_id     = $this->input->post("subject_id");            
             $academy_session_id = $this->session->academy_session['current_session']['id'];
+
+            $academics_settings = $this->Setting->get("academics");
+
+            for($i = 0 ; $i < count($academics_settings) ; $i++) {
+                $settings[$academics_settings[$i]['key_name']] = $academics_settings[$i]['value'];
+            };
+
+            $am_i_class_teacher = $this->ClassTeacher->am_i_class_teacher($class_id, $section_id);
+            $assign_teacher_for_marks_entry = $settings['assign_teacher_for_marks_entry'];
 
             /*
             |--------------------------------------------------------------------------
@@ -418,6 +429,9 @@
                 // Add these
                 "entry_status"  => $entry_status,
                 "entry_message" => $entry_message,
+
+                "am_i_class_teacher" => $am_i_class_teacher,
+                "assign_teacher_for_marks_entry" => $assign_teacher_for_marks_entry
             ];  
             
             

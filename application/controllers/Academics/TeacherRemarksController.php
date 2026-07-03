@@ -77,8 +77,6 @@
                 $settings[$academics_settings[$i]['key_name']] = $academics_settings[$i]['value'];
             };
 
-           
-
             $class_id = $_POST["class_id"];
             $section_id = $_POST["section_id"];
             $am_i_class_teacher = $this->ClassTeacher->am_i_class_teacher($class_id, $section_id);

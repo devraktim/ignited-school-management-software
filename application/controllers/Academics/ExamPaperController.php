@@ -1091,15 +1091,42 @@ class ExamPaperController extends CI_Controller
 
         $data['all_paper_ids'] = $all_paper_ids;
 
-        $data['is_exam_locked'] =
-            $this->ExamPaper->isExamLocked(
-                $all_paper_ids,
-                $class_id,
-                $section_id
-            );
+        $data['is_exam_locked'] = false;
+
+        if($section_id != ''){
+
+            $data['is_exam_locked'] =
+                $this->ExamPaper->isExamLocked(
+                    $row['paper_ids'],
+                    $class_id,
+                    $section_id
+                );
+
+        }else{
+
+            $sections =
+                $this->ClassSection->get_sections(
+                    $academy_session_id,
+                    $class_id
+                );
+
+            foreach($sections as $section){
+
+                if(
+                    $this->ExamPaper->isExamLocked(
+                        $row['paper_ids'],
+                        $class_id,
+                        $section['id']
+                    )
+                ){
+                    $data['is_exam_locked'] = true;
+                }
+
+            }
+        }
         
         // echo "<pre>";
-        // print_r($data['all_paper_ids']);
+        // print_r($data);
         // echo "</pre>";
         // exit();
 
@@ -1455,7 +1482,7 @@ class ExamPaperController extends CI_Controller
         }
 
         // exit();
-
+        
         $paperIds = $this->input->post("paper_ids");
         $classId = $this->input->post("class_id");
         $sectionId = $this->input->post("section_id");
