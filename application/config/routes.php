@@ -491,8 +491,9 @@ $route["academics/exam-attendence-store"]["POST"] = "Academics/ExamAttendenceCon
 
 // Marks Entry
 $route["academics/marks-entry"]["GET"] = "Academics/MarksEntryController/index";
-$route["academics/marks-entry"]["POST"] = "Academics/MarksEntryController/get_students";
-$route["academics/marks-store"]["POST"] = "Academics/MarksEntryController/marks_store";
+$route["academics/marks-entry-filter"]["GET"] = "Academics/MarksEntryController/marks_entry_filter";
+$route["academics/marks-entry-filter"]["POST"] = "Academics/MarksEntryController/get_students";
+$route["academics/marks-store-filter"]["POST"] = "Academics/MarksEntryController/marks_store";
 
 // Evolution Entry
 $route["academics/evolution-entry"]["GET"] = "Academics/EvolutionEntryController/index";

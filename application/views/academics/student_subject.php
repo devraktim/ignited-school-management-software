@@ -133,7 +133,10 @@
                 </div>
             </div>
         </div>
+
+        <?php if($this->session->user['permissions'][0]['academics_module'] != "VIEWER") { ?>
         <button type="submit" class="btn btn-success rounded rounded-pill mt-4" onclick="submit()"><i class="fa fa-plus"></i> Save</button>
+        <?php } ?>    
     <?php } ?>
 
     <script>

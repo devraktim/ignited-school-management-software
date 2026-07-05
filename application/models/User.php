@@ -24,4 +24,45 @@
         public function get_permissions($id) {
             return $this->db->where('employee_id', $id)->get("permissions")->result_array();
         }
+
+       public function get_active_non_user_employee()
+        {
+            $this->db->select('employees.*');
+            $this->db->from('employees');
+
+            $this->db->join(
+                'users',
+                'users.employee_id = employees.id',
+                'left'
+            );
+
+            $this->db->join(
+                'employee_resignations',
+                'employee_resignations.employee_id = employees.id',
+                'left'
+            );
+
+            $this->db->join(
+                'employee_retires',
+                'employee_retires.employee_id = employees.id',
+                'left'
+            );
+
+            // Employee must be active
+            $this->db->where('employees.status', 'ACTIVE');
+
+            // Employee must not be deleted
+            $this->db->where('employees.deleted', 0);
+
+            // No user account
+            $this->db->where('users.employee_id IS NULL', null, false);
+
+            // Not resigned
+            $this->db->where('employee_resignations.employee_id IS NULL', null, false);
+
+            // Not retired
+            $this->db->where('employee_retires.employee_id IS NULL', null, false);
+
+            return $this->db->get()->result_array();
+        }
     }

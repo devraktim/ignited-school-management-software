@@ -152,14 +152,21 @@
                     <?php } ?>
 
                     <a href="<?php echo base_url()?>academics/setting/show-class-teacher" class="btn btn-primary mb-3 w-100">Show Class Teacher</a>
-                    <a href="<?php echo base_url()?>academics/exam-control-privileges" class="btn btn-primary mb-3 w-100">Marks/ Grade Entry Permissions</a>
+                    
+                    <?php if ($settings['assign_teacher_for_marks_entry'] != "2" || $settings['assign_teacher_for_grade_entry'] != "2") { ?>
+                        <a href="<?php echo base_url()?>academics/exam-control-privileges" class="btn btn-primary mb-3 w-100">
+                            Marks/ Grade Entry Permissions
+                        </a>
+                    <?php } ?>
                 </div>
             </div>
         </div>
 
     </div>
 
+    <?php if($this->session->user['permissions'][0]['academics_module'] != "VIEWER") { ?>
     <button type="submit" class="btn btn-success rounded rounded-pill mt-5"><i class="fa fa-plus"></i> Save</button>
+    <?php } ?>
 </form>
 
 <?php $this->load->view("inc/app_footer.php"); ?>

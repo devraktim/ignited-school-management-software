@@ -53,10 +53,13 @@
                 $user = $this->User->get($username);
 
                 $employee = $this->Employee->get($user->employee_id);
-                
+
                 $permissions = $this->User->get_permissions($user->employee_id);
-                
-                if(password_verify($password, $user->hash)) {
+
+                if($employee['status'] == "INACTIVE" || $employee['deleted'] == 1 || $user->status == "INACTIVE") {
+                    $this->session->set_flashdata('error', "You are not authenticate");
+                }
+                elseif(password_verify($password, $user->hash)) {
                     $this->session->user = [
                         "id"                    => $user->id,
                         "employee_id"           => $user->employee_id,
@@ -113,7 +116,7 @@
                 return redirect(base_url());
             }
 
-            $password = "1234";
+            $password = "abc";
             // $password = substr(str_shuffle(str_repeat('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)), 0, 8);
             $id = $this->input->post('id');
             

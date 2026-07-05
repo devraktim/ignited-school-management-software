@@ -18,6 +18,7 @@
             $this->load->model("Setting");
         }
 
+
         public function index() {
             if(!$this->session->user) {
                 return redirect(base_url());
@@ -88,6 +89,276 @@
         
                 $this->load->view("academics/marks_entry", ["classes" => $classes]);
             }   
+        }
+
+        // public function marks_entry_filter()
+        // {
+        //     if (!$this->session->userdata('user')) {
+        //         return redirect(base_url());
+        //     }
+
+        //     $user = $this->session->userdata('user');
+        //     $employeeId = $user['employee_id'];
+
+        //     $class_id   = $this->input->get("class_id");
+        //     $section_id = $this->input->get("section_id");
+        //     $exam_id    = $this->input->get("exam_id");
+
+        //     $academics_settings = $this->Setting->get("academics");
+
+        //     for($i = 0 ; $i < count($academics_settings) ; $i++) {
+        //         $settings[$academics_settings[$i]['key_name']] = $academics_settings[$i]['value'];
+        //     };
+
+        //     $assign_teacher_for_marks_entry = $settings['assign_teacher_for_marks_entry'];
+
+        //     /**
+        //      * =========================================================
+        //      * CASE 1: INITIAL LOAD (ONLY CLASSES)
+        //      * =========================================================
+        //      */
+        //     if (!$class_id) {
+
+        //         $classes = $this->ExamPaper->getEmployeeClasses($employeeId);
+
+        //         return $this->load->view("academics/marks_entry", [
+        //             "classes" => $classes
+        //         ]);
+        //     }
+
+        //     /**
+        //      * =========================================================
+        //      * CASE 2: CLASS SELECTED (LOAD SECTIONS)
+        //      * =========================================================
+        //      */
+        //     if ($class_id && !$section_id) {
+
+        //         $sections = $this->ExamPaper->getEmployeeSections($employeeId, $class_id);
+
+        //         return $this->output
+        //             ->set_content_type('application/json')
+        //             ->set_output(json_encode([
+        //                 "sections" => $sections
+        //             ]));
+        //     }
+
+        //     /**
+        //      * =========================================================
+        //      * CASE 3: SECTION SELECTED (LOAD EXAMS)
+        //      * =========================================================
+        //      */
+        //     if ($class_id && $section_id && !$exam_id) {
+
+        //         $exams = $this->ExamPaper->getEmployeeExams(
+        //             $employeeId,
+        //             $class_id,
+        //             $section_id
+        //         );
+
+        //         return $this->output
+        //             ->set_content_type('application/json')
+        //             ->set_output(json_encode([
+        //                 "exams" => $exams
+        //             ]));
+        //     }
+
+        //     /**
+        //      * =========================================================
+        //      * CASE 4: EXAM SELECTED (LOAD COMPONENTS + SUBJECTS)
+        //      * =========================================================
+        //      */
+        //     if ($class_id && $section_id && $exam_id) {
+
+        //         $data = $this->ExamPaper->getEmployeeSubjects(
+        //             $employeeId,
+        //             $class_id,
+        //             $section_id,
+        //             $exam_id
+        //         );
+
+        //         return $this->output
+        //             ->set_content_type('application/json')
+        //             ->set_output(json_encode([
+        //                 "components" => $data['components'],
+        //                 "subjects"   => $data['subjects']
+        //             ]));
+        //     }
+        // }
+
+        public function marks_entry_filter()
+        {
+            if (!$this->session->userdata('user')) {
+                return redirect(base_url());
+            }
+
+            $user = $this->session->userdata('user');
+            $employeeId = $user['employee_id'];
+
+            $class_id   = $this->input->get("class_id");
+            $section_id = $this->input->get("section_id");
+            $exam_id    = $this->input->get("exam_id");
+
+            $academy_session_id = $this->session->academy_session['current_session']['id'];
+
+            $academics_settings = $this->Setting->get("academics");
+
+            $settings = [];
+            foreach ($academics_settings as $row) {
+                $settings[$row['key_name']] = $row['value'];
+            }
+
+            $assign_teacher_for_marks_entry = $settings['assign_teacher_for_marks_entry'];
+
+            /*
+            |--------------------------------------------------------------------------
+            | NORMAL FILTER (LIKE index())
+            |--------------------------------------------------------------------------
+            */
+            if ($assign_teacher_for_marks_entry == "2") {
+
+                // CASE 1 : Components & Subjects
+                if ($class_id && $exam_id) {
+
+                    $rows = $this->ExamPaper->get_exams([
+                        "class_id"   => $class_id,
+                        "exam_id"    => $exam_id,
+                        "paper_type" => "component"
+                    ]);
+
+                    $components = [];
+                    $subjects   = [];
+
+                    foreach ($rows as $row) {
+
+                        $marks = json_decode($row["marks"]);
+
+                        $subjects[] = explode(",", $row["subjects"]);
+
+                        $components[] = $this->Component->get($marks->component_id);
+                    }
+
+                    $subjects = array_merge(...$subjects);
+                    $subjects = array_unique($subjects);
+
+                    $subject_list = [];
+
+                    foreach ($subjects as $subject) {
+                        $subject_list[] = $this->Subject->get($subject);
+                    }
+
+                    return $this->output
+                        ->set_content_type('application/json')
+                        ->set_output(json_encode([
+                            "components" => $components,
+                            "subjects"   => $subject_list
+                        ]));
+                }
+
+                // CASE 2 : Sections & Exams
+                if ($class_id) {
+
+                    $sections = $this->ClassSection->get_sections(
+                        $academy_session_id,
+                        $class_id
+                    );
+
+                    $rows = $this->ExamPaper->get_exams([
+                        "class_id"   => $class_id,
+                        "paper_type" => "component"
+                    ]);
+
+                    $exams = [];
+                    $temp  = [];
+
+                    foreach ($rows as $row) {
+
+                        if (!in_array($row["exam_id"], $temp)) {
+
+                            $temp[] = $row["exam_id"];
+                            $exams[] = $this->Exam->get($row["exam_id"]);
+                        }
+                    }
+
+                    return $this->output
+                        ->set_content_type('application/json')
+                        ->set_output(json_encode([
+                            "sections" => $sections,
+                            "exams"    => $exams
+                        ]));
+                }
+
+                // CASE 3 : Initial Load
+                $classes = $this->AcademyClass->get();
+
+                return $this->load->view("academics/marks_entry", [
+                    "classes" => $classes
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | EMPLOYEE WISE FILTER
+            |--------------------------------------------------------------------------
+            */
+
+            // CASE 1: Initial Load
+            if (!$class_id) {
+
+                $classes = $this->ExamPaper->getEmployeeClasses($employeeId);
+
+                return $this->load->view("academics/marks_entry", [
+                    "classes" => $classes
+                ]);
+            }
+
+            // CASE 2: Class Selected
+            if ($class_id && !$section_id) {
+
+                $sections = $this->ExamPaper->getEmployeeSections(
+                    $employeeId,
+                    $class_id
+                );
+
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_output(json_encode([
+                        "sections" => $sections
+                    ]));
+            }
+
+            // CASE 3: Section Selected
+            if ($class_id && $section_id && !$exam_id) {
+
+                $exams = $this->ExamPaper->getEmployeeExams(
+                    $employeeId,
+                    $class_id,
+                    $section_id
+                );
+
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_output(json_encode([
+                        "exams" => $exams
+                    ]));
+            }
+
+            // CASE 4: Exam Selected
+            if ($class_id && $section_id && $exam_id) {
+
+                $data = $this->ExamPaper->getEmployeeSubjects(
+                    $employeeId,
+                    $class_id,
+                    $section_id,
+                    $exam_id
+                );
+
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_output(json_encode([
+                        "components" => $data['components'],
+                        "subjects"   => $data['subjects']
+                    ]));
+            }
         }
 
         // public function get_students() {

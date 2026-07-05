@@ -17,6 +17,8 @@ class ExamPaperController extends CI_Controller
         $this->load->model("ExamGrade");
         $this->load->model("Component");
         $this->load->model("Marks");
+        $this->load->model("ClassTeacher");
+        $this->load->model("Setting");
     }
 
     public function index()
@@ -425,9 +427,16 @@ class ExamPaperController extends CI_Controller
         $exam_id = $this->input->get("exam_id");
         $component_id = $this->input->get("component_id");
         $subject_id = $this->input->get("subject_id");
+        $academy_session_id = $this->session->academy_session["current_session"]["id"];
 
-        $academy_session_id =
-            $this->session->academy_session["current_session"]["id"];
+        $academics_settings = $this->Setting->get("academics");
+
+        for($i = 0 ; $i < count($academics_settings) ; $i++) {
+            $settings[$academics_settings[$i]['key_name']] = $academics_settings[$i]['value'];
+        };
+
+        $assign_teacher_for_marks_entry = $settings['assign_teacher_for_marks_entry'];
+        $assign_teacher_for_grade_entry = $settings['assign_teacher_for_grade_entry'];
 
         if ($class_id && $exam_id) {
             $rows = $this->ExamPaper->get_exams([
@@ -484,190 +493,22 @@ class ExamPaperController extends CI_Controller
         } else {
             $classes = $this->AcademyClass->get();
 
+            // echo "<pre>";
+            // print_r([
+            //     "classes" => $classes,
+            //     "assign_teacher_for_marks_entry" => $assign_teacher_for_marks_entry,
+            //     "assign_teacher_for_grade_entry"    => $assign_teacher_for_grade_entry
+            // ]);
+            // echo "</pre>";
+            // exit();
+
             $this->load->view("academics/exam_control_privileges", [
                 "classes" => $classes,
+                "assign_teacher_for_marks_entry" => $assign_teacher_for_marks_entry,
+                "assign_teacher_for_grade_entry"    => $assign_teacher_for_grade_entry
             ]);
         }
     }
-
-    // Marks Entry Control Methods
-    // public function exam_marks_control_privileges()
-    // {
-    //     if (!$this->session->user) {
-    //         return redirect(base_url());
-    //     }
-
-    //     $class_id = "";
-    //     $section_id = "";
-    //     $component_id = "";
-    //     $exam_id = "";
-    //     $subject_id = "";
-
-    //     $class_id = $this->input->post("class_id") ?? '';
-    //     $section_id = $this->input->post("section_id") ?? '';
-    //     $component_id = $this->input->post("component_id") ?? '';
-    //     $exam_id = $this->input->post("exam_id") ?? '';
-    //     $subject_id = $this->input->post("subject_id") ?? '';
-    //     $academy_session_id = $this->session->academy_session['current_session']['id'];
-        
-    //     $clauses = ["class_id" => $class_id, "exam_id" => $exam_id];
-    //     $exam_papers = [$this->ExamPaper->get_where($clauses)];
-
-    //     // $exam_papers = $this->ExamPaper->get();
-    //     // echo "<pre>";
-    //     // print_r($subject_id);
-    //     // echo "</pre>";
-    //     // exit();
-
-    //     $papers = [];
-
-    //     for ($i = 0; $i < count($exam_papers); $i++) {
-    //         $paper = [
-    //             "id" => $exam_papers[$i]["id"],
-    //             "class" => $this->AcademyClass->get(
-    //                 $exam_papers[$i]["class_id"]
-    //             ),
-    //             "exam" => $this->Exam->get($exam_papers[$i]["exam_id"]),
-    //             "paper_type" => $exam_papers[$i]["paper_type"],
-    //             "subjects" => [],
-    //         ];
-
-    //         if ($exam_papers[$i]["subjects"] != "") {
-    //             $subjects = explode(",", $exam_papers[$i]["subjects"]);
-
-    //             for ($j = 0; $j < count($subjects); $j++) {
-
-    //                 if($subject_id != "") {
-    //                     if($subject_id == $subjects[$j]) {
-    //                         $paper["subjects"][] = $this->Subject->get($subjects[$j]);
-    //                     }
-    //                 }
-
-    //                 if($subject_id == "") {
-    //                     $paper["subjects"][] = $this->Subject->get($subjects[$j]);
-    //                 }
-    //             }
-    //         }
-
-    //         if ($paper["paper_type"] == "component") {
-    //             $obj = json_decode($exam_papers[$i]["marks"]);
-
-    //             $paper["marks"] = json_decode($exam_papers[$i]["marks"]);
-
-    //             $paper["component"] = $this->Component->get($obj->component_id);
-    //             $paper["full_marks"] = $obj->marks->full_marks;
-    //             $paper["pass_marks"] = $obj->marks->pass_marks;
-    //         }
-
-    //         if ($paper["paper_type"] == "mark_grade") {
-    //             $paper["marks"] = json_decode($exam_papers[$i]["marks"]);
-    //         }
-
-    //         $papers[] = $paper;
-    //     }
-
-    //     $rows = $this->ExamPaper->get_exams([
-    //         "class_id"      => $class_id, 
-    //         "exam_id"       => $exam_id,
-    //         "paper_type"    => "component"
-    //     ]);
-        
-    //     $components = [];
-    //     $subjects = [];
-        
-    //     for($i = 0 ; $i < count($rows) ; $i++) { 
-
-    //         $r = json_decode($rows[$i]["marks"]);
-            
-    //         $subjects[] = explode(",", $rows[$i]["subjects"]);
-            
-    //         $components[] = $this->Component->get($r->component_id);
-    //     }
-        
-    //     $subjects = array_merge(...$subjects);
-    //     $subjects = array_unique($subjects);
-    //     $subject_list = [];
-        
-    //     foreach($subjects as $subject) {
-    //         $subject_list[] = $this->Subject->get($subject);
-    //     }
-
-    //     $data = [
-    //         "classes" => $this->AcademyClass->get(),
-    //         "sections" => $this->ClassSection->get_sections($academy_session_id, $class_id),
-    //         "exams" => $this->Exam->get(),
-    //         "papers" => $papers,
-    //         "grades" => $this->ExamGrade->get(),
-    //         "components" => $components, 
-    //         "subjects" => $subject_list,
-    //         "class_id" => $class_id,
-    //         "section_id" => $section_id,
-    //         "subject_id" => $subject_id
-    //     ];
-
-    //     // Start Formatted Exam
-    //     $formattedData = [];
-
-    //     foreach ($data["papers"] as $entry) {
-    //         $id = $entry["id"];
-    //         $classId = $entry["class"]["id"];
-    //         $className = $entry["class"]["name"];
-    //         $examId = $entry["exam"]["id"];
-    //         $examName = $entry["exam"]["name"];
-
-    //         // Initialize class if not already
-    //         if (!isset($formattedData[$classId])) {
-    //             $formattedData[$classId] = [
-    //                 "class_name" => $className,
-    //                 "exams" => [],
-    //             ];
-    //         }
-
-    //         // Initialize exam under the class if not already
-    //         if (!isset($formattedData[$classId]["exams"][$examId])) {
-    //             $formattedData[$classId]["exams"][$examId] = [
-    //                 "exam_id" => $id,
-    //                 "exam_name" => $examName,
-    //                 "subjects" => [],
-    //             ];
-    //         }
-
-    //         // Loop through subjects
-    //         foreach ($entry["subjects"] as $subject) {
-    //             // Skip if subject is empty
-    //             if (empty($subject)) {
-    //                 continue;
-    //             }
-
-    //             $subjectId = $subject["id"];
-
-    //             $formattedData[$classId]["exams"][$examId]["subjects"][$subjectId] = [
-    //                 "paper_id" => $entry["id"],
-    //                 "class_id" => $classId,
-    //                 "section_id" => $entry["section"]["id"], // important
-    //                 "subject_name" => $subject["name"],
-    //                 "component_name" => $entry["component"]["name"],
-    //                 "full_marks" => $entry["marks"]->marks->full_marks,
-    //                 "pass_marks" => $entry["marks"]->marks->pass_marks,
-    //                 "assigned_teachers_for_marks_entry" => $this->ExamPaper->getMarksEntryTeachers(
-    //                     $entry["id"],
-    //                     $class_id,
-    //                     $section_id,
-    //                     $subjectId
-    //                 ),
-    //             ];
-    //         }
-    //     }
-    //     // End Formatted Exam
-
-    //     $data["papers"] = $formattedData;
-
-    //     // echo "<pre>";
-    //     // print_r($data);
-    //     // echo "</pre>";
-    //     // exit();
-    //     $this->load->view("academics/exam_control_privileges", $data);
-    // }
 
     public function exam_marks_control_privileges()
     {
@@ -680,8 +521,16 @@ class ExamPaperController extends CI_Controller
         $exam_id       = $this->input->post("exam_id") ?? '';
         $subject_id    = $this->input->post("subject_id") ?? '';
 
-        $academy_session_id =
-            $this->session->academy_session["current_session"]["id"];
+        $academy_session_id = $this->session->academy_session["current_session"]["id"];
+
+        $academics_settings = $this->Setting->get("academics");
+
+        for($i = 0 ; $i < count($academics_settings) ; $i++) {
+            $settings[$academics_settings[$i]['key_name']] = $academics_settings[$i]['value'];
+        };
+
+        $assign_teacher_for_marks_entry = $settings['assign_teacher_for_marks_entry'];
+        $assign_teacher_for_grade_entry = $settings['assign_teacher_for_grade_entry'];
 
         $exam_papers = [];
 
@@ -1124,12 +973,9 @@ class ExamPaperController extends CI_Controller
 
             }
         }
-        
-        // echo "<pre>";
-        // print_r($data);
-        // echo "</pre>";
-        // exit();
 
+        $data["assign_teacher_for_marks_entry"] = $assign_teacher_for_marks_entry;
+        $data["assign_teacher_for_grade_entry"] = $assign_teacher_for_grade_entry;
 
         $this->load->view(
             "academics/exam_control_privileges",

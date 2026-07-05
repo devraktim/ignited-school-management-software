@@ -161,31 +161,40 @@
     <div class="card-body py-9">
 
         <ul class="nav custom-tabs" role="tablist">
-            <li class="nav-item">
-                <button
-                    class="nav-link active"
-                    data-bs-toggle="tab"
-                    data-bs-target="#marksPrivilegeTab"
-                    type="button">
-                    <i class="fa fa-edit me-2"></i>
-                    Marks Entry Privileges
-                </button>
-            </li>
 
-            <li class="nav-item">
-                <button
-                    class="nav-link"
-                    data-bs-toggle="tab"
-                    data-bs-target="#gradePrivilegeTab"
-                    type="button">
-                    <i class="fa fa-graduation-cap me-2"></i>
-                    Grade Entry Privileges
-                </button>
-            </li>
+            <?php if ($assign_teacher_for_marks_entry == "1") { ?>
+                <li class="nav-item">
+                    <button
+                        class="nav-link active"
+                        data-bs-toggle="tab"
+                        data-bs-target="#marksPrivilegeTab"
+                        type="button">
+                        <i class="fa fa-edit me-2"></i>
+                        Marks Entry Privileges
+                    </button>
+                </li>
+            <?php } ?>
+
+            <?php if ($assign_teacher_for_grade_entry == "1") { ?>
+                <li class="nav-item">
+                    <button
+                        class="nav-link <?php echo ($assign_teacher_for_marks_entry != "1") ? 'active' : ''; ?>"
+                        data-bs-toggle="tab"
+                        data-bs-target="#gradePrivilegeTab"
+                        type="button">
+                        <i class="fa fa-graduation-cap me-2"></i>
+                        Grade Entry Privileges
+                    </button>
+                </li>
+            <?php } ?>
+
         </ul>
+        
+        <?php $isFirstPane = true; ?>
 
         <div class="tab-content">
-
+            
+            <?php if ($assign_teacher_for_marks_entry == "1") { ?>
             <div class="tab-pane fade show active" id="marksPrivilegeTab">
 
                 <form action="<?php echo base_url(); ?>academics/exam-marks-control-privileges" method="POST">
@@ -199,11 +208,12 @@
                                     <option value="<?php echo $class[
                                         "id"
                                     ]; ?>" <?php if (
-    isset($class_id) &&
-    $class_id == $class["id"]
-) {
-    echo "selected";
-} ?>><?php echo $class["name"]; ?></option>
+                                        isset($class_id) &&
+                                        $class_id == $class["id"]
+                                    ) {
+                                        echo "selected";
+                                    } ?>><?php echo $class["name"]; ?>
+                                    </option>
                                 <?php } ?>
                             </select>
                         </div>
@@ -216,11 +226,12 @@
                                     <option value="<?php echo $section[
                                         "id"
                                     ]; ?>" <?php if (
-    isset($section_id) &&
-    $section_id == $section["id"]
-) {
-    echo "selected";
-} ?>><?php echo $section["name"]; ?></option>
+                                        isset($section_id) &&
+                                        $section_id == $section["id"]
+                                    ) {
+                                        echo "selected";
+                                    } ?>><?php echo $section["name"]; ?>
+                                    </option>
                                 <?php } ?>
                             </select>
                         </div>
@@ -291,8 +302,10 @@
                 </form>
 
             </div>
-
-            <div class="tab-pane fade" id="gradePrivilegeTab">
+            <?php } ?>
+            
+            <?php if ($assign_teacher_for_grade_entry == "1") { ?>
+            <div class="tab-pane fade <?php echo ($assign_teacher_for_marks_entry != "1") ? 'show active' : ''; ?>" id="gradePrivilegeTab">
 
                 <form action="<?php echo base_url(); ?>academics/exam-grade-control-privileges" method="POST">
                     <div class="row">
@@ -349,6 +362,7 @@
                 </form>
 
             </div>
+             <?php } ?>
 
         </div>
 

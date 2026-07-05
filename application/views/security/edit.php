@@ -33,6 +33,15 @@
                                             <td class="table-primary p-2" style="color: black;">Designation</td>
                                             <td class="table-warning p-2" style="color: black;"><?php echo $user["designation"]?></td>
                                         </tr>
+										<tr>
+                                            <td class="table-primary p-2" style="color: black;">Active/ Inactive</td>
+                                            <td class="table-warning p-2" style="color: black;">
+												<select class="form-select" name="status">
+													<option value="ACTIVE" <?php if("ACTIVE" == $user["status"]) {echo "selected"; }?>>Active</option>
+													<option value="INACTIVE" <?php if("INACTIVE" == $user["status"]) {echo "selected"; }?>>In active</option>
+												</select>
+											</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

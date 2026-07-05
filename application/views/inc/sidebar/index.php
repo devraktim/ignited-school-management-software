@@ -999,7 +999,7 @@
                         <!--begin:Menu item-->
                         <div class="menu-item">
                             <!--begin:Menu link-->
-                            <a class="menu-link" href="<?php echo base_url() ?>academics/marks-entry/">
+                            <a class="menu-link" href="<?php echo base_url() ?>academics/marks-entry-filter/">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>

@@ -23,7 +23,7 @@
                 return redirect(base_url());
             }
 
-            $employees = $this->Employee->get();
+            $employees = $this->User->get_active_non_user_employee();
 
             $this->load->view("security/create", array("employees" => $employees));
         }
@@ -127,6 +127,7 @@
                 
                 $this->User->update($user_id, array(
                     "username" => $this->input->post('username'),
+                    "status" => $this->input->post('status'),
                 ));
                 
                 $this->session->set_flashdata("success", "Record updated");

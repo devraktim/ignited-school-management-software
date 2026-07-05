@@ -17,7 +17,7 @@
 
     <div class="card card-flush h-xl-100 mb-5">
         <div class="card-body py-9">
-            <form action="<?php echo base_url() ?>academics/marks-entry" method="POST">
+            <form action="<?php echo base_url() ?>academics/marks-entry-filter" method="POST">
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <div class="form-group">
@@ -78,7 +78,9 @@
                         </div>
                     </div>
                     <div class="col-md-3 mb-3" style="margin-top: 25px;">
-                        <button id="btn_save" class="btn btn-success" <?php if(!isset($sections)) { echo "disabled"; }?>><i class="fa fa-search"></i> Search</button>
+                        <button id="btn_save" class="btn btn-success" disabled>
+                            <i class="fa fa-search"></i> Search
+                        </button>
                     </div>
                 </div>
             </form>
@@ -87,7 +89,7 @@
 
     <?php if(isset($students)) { ?>
         <?php if(count($students) > 0) { ?>
-            <form action="<?php echo base_url()?>academics/marks-store/" method="POST">
+            <form action="<?php echo base_url()?>academics/marks-store-filter/" method="POST">
                 <div class="row">
                     <div class="col-md-8">
                         <div class="card card-flush h-xl-100">
@@ -237,104 +239,203 @@
         <?php } ?>
     <?php } ?>
 
-    <script>
-        $("#class_id").change(function(event) {
-            $("#class_id").val()
+<script>
+/**
+ * =========================================================
+ * ENABLE SEARCH BUTTON WHEN ALL FILTERS ARE SELECTED
+ * =========================================================
+ */
+function toggleSearchButton() {
 
-            fetch("<?php echo base_url('academics/marks-entry?class_id=') ?>" + $("#class_id").val())
-            .then(response => response.json())
-            .then(data => {
-                // Set Section Options
-                $("#section_id").empty()
+    const classId = $("#class_id").val();
+    const sectionId = $("#section_id").val();
+    const examId = $("#exam_id").val();
+    const componentId = $("#component_id").val();
+    const subjectId = $("#subject_id").val();
 
+    if (classId && sectionId && examId && componentId && subjectId) {
+        $("#btn_save").prop("disabled", false);
+    } else {
+        $("#btn_save").prop("disabled", true);
+    }
+}
+
+/**
+ * =========================================================
+ * 1. CLASS CHANGE → LOAD SECTIONS
+ * =========================================================
+ */
+$("#class_id").change(function () {
+
+    const classId = $("#class_id").val();
+
+    $("#btn_save").prop("disabled", true);
+
+    $("#section_id").html(`<option value="">Please Select</option>`);
+    $("#exam_id").html(`<option value="">Please Select</option>`);
+    $("#component_id").html(`<option value="">Please Select</option>`);
+    $("#subject_id").html(`<option value="">Please Select</option>`);
+
+    $("#section_id").prop("disabled", true);
+    $("#exam_id").prop("disabled", true);
+    $("#component_id").prop("disabled", true);
+    $("#subject_id").prop("disabled", true);
+
+    if (!classId) {
+        toggleSearchButton();
+        return;
+    }
+
+    fetch("<?php echo base_url('academics/marks-entry-filter?class_id=') ?>" + classId)
+        .then(res => res.json())
+        .then(data => {
+
+            data.sections.forEach(section => {
                 $("#section_id").append(`
-                    <option value=''>Please Select</option>
-                `)
-                
-                data.sections.forEach((section) => {
-                    $("#section_id").append(`
-                        <option value=${section.id}>${section.name}</option>
-                    `)
-                })
+                    <option value="${section.id}">${section.name}</option>
+                `);
+            });
 
-                // Set Exam Options
-                $("#exam_id").empty()
+            $("#section_id").prop("disabled", false);
+            toggleSearchButton();
+        });
+});
 
+
+/**
+ * =========================================================
+ * 2. SECTION CHANGE → LOAD EXAMS
+ * =========================================================
+ */
+$("#section_id").change(function () {
+
+    const classId = $("#class_id").val();
+    const sectionId = $("#section_id").val();
+
+    $("#btn_save").prop("disabled", true);
+
+    $("#exam_id").html(`<option value="">Please Select</option>`);
+    $("#component_id").html(`<option value="">Please Select</option>`);
+    $("#subject_id").html(`<option value="">Please Select</option>`);
+
+    $("#exam_id").prop("disabled", true);
+    $("#component_id").prop("disabled", true);
+    $("#subject_id").prop("disabled", true);
+
+    if (!classId || !sectionId) {
+        toggleSearchButton();
+        return;
+    }
+
+    fetch("<?php echo base_url('academics/marks-entry-filter') ?>" +
+        `?class_id=${classId}&section_id=${sectionId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            data.exams.forEach(exam => {
                 $("#exam_id").append(`
-                    <option value=''>Please Select</option>
-                `)
-                
-                // data.exams.forEach((exam) => {
-                //     $("#exam_id").append(`
-                //         <option value=${exam.id}>${exam.name}</option>
-                //     `)
-                // })
-                
-                const addedExamIds = new Set();
-                
-                // Loop through exams and add unique ones to the select element
-                data.exams.forEach((exam) => {
-                    if (!addedExamIds.has(exam.id)) {
-                        $("#exam_id").append(`
-                            <option value="${exam.id}">${exam.name}</option>
-                        `);
-                        addedExamIds.add(exam.id);  // Mark this exam ID as added
-                    }
-                });
+                    <option value="${exam.id}">${exam.name}</option>
+                `);
+            });
+
+            $("#exam_id").prop("disabled", false);
+            toggleSearchButton();
+        });
+});
 
 
-                $("#section_id").prop("disabled", false)
-                $("#exam_id").prop("disabled", false)
-                $("#btn_save").prop("disabled", false)
-            })
-        })
-        
-        $("#exam_id").change(function(event) {
+/**
+ * =========================================================
+ * 3. EXAM CHANGE → LOAD COMPONENTS + SUBJECTS
+ * =========================================================
+ */
+$("#exam_id").change(function () {
 
-            fetch("<?php echo base_url('academics/marks-entry?class_id=') ?>" + $("#class_id").val() + `&exam_id=${$("#exam_id").val()}&paper_type=component`)
-            .then(response => response.json())
-            .then(data => {
-                $("#component_id").empty()
-                
-                data.components.forEach((component) => {
-                    $("#component_id").append(`
-                        <option value=${component.id}>${component.name}</option>
-                    `)
-                })
-                
-                $("#subject_id").empty()
-                
-                data.subjects.forEach((subject) => {
-                    $("#subject_id").append(`
-                        <option value=${subject.id}>${subject.name}</option>
-                    `)
-                })
+    const classId = $("#class_id").val();
+    const sectionId = $("#section_id").val();
+    const examId = $("#exam_id").val();
 
-                $("#component_id").prop("disabled", false)
-                $("#subject_id").prop("disabled", false)
-                $("#btn_save").prop("disabled", false)
+    $("#btn_save").prop("disabled", true);
 
-            })
-        })
-        
-        function marks_input(input) {
-            const maxMarks = input.max;
-            const value = input.value.trim();  // Get the value and remove any leading/trailing spaces
-        
-            // Check if the value is a valid number
-            if (value === '' || isNaN(value)) {
-                // If the value is not a valid number, just return (do nothing)
-                return;
-            }
-        
-            // Convert the value to a number for comparison
-            const numValue = Number(value);
-        
-            // Check if the number exceeds the max marks
-            if (numValue > maxMarks) {
-                alert(`Marks cannot exceed ${maxMarks}`);
-                input.value = '';  // Clear the input value if it's too large
-            }
-        }
-    </script>
+    $("#component_id").html(`<option value="">Please Select</option>`);
+    $("#subject_id").html(`<option value="">Please Select</option>`);
+
+    $("#component_id").prop("disabled", true);
+    $("#subject_id").prop("disabled", true);
+
+    if (!classId || !sectionId || !examId) {
+        toggleSearchButton();
+        return;
+    }
+
+    fetch("<?php echo base_url('academics/marks-entry-filter') ?>" +
+        `?class_id=${classId}&section_id=${sectionId}&exam_id=${examId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            data.components.forEach(component => {
+                $("#component_id").append(`
+                    <option value="${component.id}">${component.name}</option>
+                `);
+            });
+
+            data.subjects.forEach(subject => {
+                $("#subject_id").append(`
+                    <option value="${subject.id}">${subject.name}</option>
+                `);
+            });
+
+            $("#component_id").prop("disabled", false);
+            $("#subject_id").prop("disabled", false);
+
+            toggleSearchButton();
+        });
+});
+
+
+/**
+ * =========================================================
+ * 4. COMPONENT & SUBJECT CHANGE
+ * =========================================================
+ */
+$("#component_id").change(function () {
+    toggleSearchButton();
+});
+
+$("#subject_id").change(function () {
+    toggleSearchButton();
+});
+
+
+/**
+ * =========================================================
+ * MARKS VALIDATION
+ * =========================================================
+ */
+function marks_input(input) {
+
+    const maxMarks = Number(input.max);
+    const value = input.value.trim();
+
+    if (value === '' || isNaN(value)) return;
+
+    const numValue = Number(value);
+
+    if (numValue > maxMarks) {
+        alert(`Marks cannot exceed ${maxMarks}`);
+        input.value = '';
+    }
+}
+
+
+/**
+ * =========================================================
+ * INITIAL STATE
+ * =========================================================
+ */
+$(document).ready(function () {
+    $("#btn_save").prop("disabled", true);
+    toggleSearchButton();
+});
+</script>
 <?php $this->load->view("inc/app_footer.php"); ?>
