@@ -467,13 +467,25 @@ $route["academics/set-evolution-paper/remove-subject"]["GET"] = "Academics/Evolu
 
 // Exam Control Privileges
 $route["academics/exam-control-privileges"]["GET"] = "Academics/ExamPaperController/exam_control_privileges_create";
+
+// Exam Marks Control Privileges
 $route["academics/exam-marks-control-privileges"]["POST"] = "Academics/ExamPaperController/exam_marks_control_privileges";
 $route["academics/exam-marks-control-privileges/get-teachers"]["POST"] = "Academics/ExamPaperController/get_marks_entry_teachers";
 $route["academics/exam-marks-control-privileges/save-teachers"]["POST"] = "Academics/ExamPaperController/save_marks_entry_teachers";
 $route["academics/exam-marks-control-privileges/toggle-teacher"]["POST"] = "Academics/ExamPaperController/toggle_marks_entry_teacher";
 $route["academics/exam-marks-control-privileges/remove-teacher"]["POST"] = "Academics/ExamPaperController/remove_marks_entry_teacher";
-$route['academics/exam-marks-control-privileges/toggle-exam-lock']['POST'] = "Academics/ExamPaperController/toggle_exam_lock";
-$route['academics/exam-marks-control-privileges/toggle-subject-lock']['POST'] = "Academics/ExamPaperController/toggle_subject_lock";
+$route['academics/exam-marks-control-privileges/toggle-exam-lock']['POST'] = "Academics/ExamPaperController/toggle_exam_marks_lock";
+$route['academics/exam-marks-control-privileges/toggle-subject-lock']['POST'] = "Academics/ExamPaperController/toggle_subject_marks_lock";
+
+// Exam Grade Control Privileges
+$route["academics/exam-grades-control-privileges"]["POST"] = "Academics/ExamPaperController/exam_grades_control_privileges";
+$route["academics/exam-grades-control-privileges/get-teachers"]["POST"] = "Academics/ExamPaperController/get_grades_entry_teachers";
+$route["academics/exam-grades-control-privileges/save-teachers"]["POST"] = "Academics/ExamPaperController/save_grades_entry_teachers";
+$route["academics/exam-grades-control-privileges/toggle-teacher"]["POST"] = "Academics/ExamPaperController/toggle_grades_entry_teacher";
+$route["academics/exam-grades-control-privileges/remove-teacher"]["POST"] = "Academics/ExamPaperController/remove_grades_entry_teacher";
+$route['academics/exam-grades-control-privileges/toggle-exam-lock']['POST'] = "Academics/ExamPaperController/toggle_exam_grades_lock";
+$route['academics/exam-grades-control-privileges/toggle-subject-lock']['POST'] = "Academics/ExamPaperController/toggle_subject_grades_lock";
+
 
 // Grade Entry
 $route["academics/grade-entry"]["GET"] = "Academics/GradeEntryController/index";

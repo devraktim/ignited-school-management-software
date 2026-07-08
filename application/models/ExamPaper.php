@@ -407,7 +407,7 @@ public function isExamLocked(
         ) > 0;
 }
 
-        public function hasMarksEntryPermission(
+public function hasMarksEntryPermission(
             $paperId,
             $classId,
             $sectionId,
@@ -439,27 +439,6 @@ public function getEmployeeClasses($employeeId)
         ->get()
         ->result_array();
 }
-
-// public function getEmployeeSections($employeeId, $classId)
-// {
-//     return $this->db
-//         ->select('sections.id, sections.name')
-//         ->from('exam_marks_entry_permissions')
-//         ->join('session_class_sections',
-//             'session_class_sections.class_id = exam_marks_entry_permissions.class_id'
-//         )
-//         ->join('sections',
-//             'sections.id = session_class_sections.section_id'
-//         )
-//         ->where('exam_marks_entry_permissions.employee_id', $employeeId)
-//         ->where('exam_marks_entry_permissions.status', 1)
-//         ->where('exam_marks_entry_permissions.class_id', $classId)
-//         ->where('session_class_sections.class_id', $classId)
-//         ->where('sections.deleted', 0)
-//         ->group_by('sections.id')
-//         ->get()
-//         ->result_array();
-// }
 
 public function getEmployeeSections(
     $employeeId,
@@ -519,66 +498,6 @@ public function getEmployeeExams($employeeId, $classId, $sectionId)
         ->get()
         ->result_array();
 }
-
-// public function getEmployeeSubjects($employeeId, $classId, $sectionId, $examId)
-// {
-//     $rows = $this->db
-//         ->select('exam_papers.subjects, exam_papers.marks')
-//         ->from('exam_marks_entry_permissions')
-//         ->join('exam_papers', 'exam_papers.id = exam_marks_entry_permissions.exam_paper_id')
-//         ->where('exam_marks_entry_permissions.employee_id', $employeeId)
-//         ->where('exam_marks_entry_permissions.status', 1)
-//         ->where('exam_marks_entry_permissions.class_id', $classId)
-//         ->where('exam_marks_entry_permissions.section_id', $sectionId)
-//         ->where('exam_papers.exam_id', $examId)
-//         ->get()
-//         ->result_array();
-
-//     $subjectIds = [];
-//     $components = [];
-
-//     foreach ($rows as $row) {
-
-//         // subjects (comma separated)
-//         if (!empty($row['subjects'])) {
-//             $subjectIds = array_merge($subjectIds, explode(',', $row['subjects']));
-//         }
-
-//         // components from JSON marks
-//         if (!empty($row['marks'])) {
-//             $marks = json_decode($row['marks']);
-//             if ($marks && isset($marks->component_id)) {
-//                 $components[] = $marks->component_id;
-//             }
-//         }
-//     }
-
-//     $subjectIds = array_unique($subjectIds);
-//     $componentIds = array_unique($components);
-
-//     $subjects = [];
-//     if (!empty($subjectIds)) {
-//         $subjects = $this->db
-//             ->where_in('id', $subjectIds)
-//             ->where('deleted', 0)
-//             ->get('subjects')
-//             ->result_array();
-//     }
-
-//     $components = [];
-//     if (!empty($componentIds)) {
-//         $components = $this->db
-//             ->where_in('id', $componentIds)
-//             ->where('deleted', 0)
-//             ->get('components')
-//             ->result_array();
-//     }
-
-//     return [
-//         'subjects'   => $subjects,
-//         'components' => $components
-//     ];
-// }
 
 public function getEmployeeSubjects(
     $employeeId,

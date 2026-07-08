@@ -1103,86 +1103,6 @@ class ExamPaperController extends CI_Controller
         ]);
     }
 
-    // public function remove_marks_entry_teacher()
-    // {
-    //     if (!$this->session->user) {
-
-    //         echo json_encode([
-    //             "status" => false,
-    //             "message" => "Unauthorised",
-    //         ]);
-
-    //         exit();
-    //     }
-
-    //     $paperIds = explode(
-    //         ",",
-    //         $this->input->post("paper_ids")
-    //     );
-
-    //     $subjectId = $this->input->post("subject_id");
-    //     $teacherId = $this->input->post("teacher_id");
-    //     $classId = $this->input->post("class_id");
-    //     $sectionId = $this->input->post("section_id");
-
-    //     foreach ($paperIds as $paperId) {
-
-    //         $this->ExamPaper->removeMarksEntryTeacher(
-    //             $paperId,
-    //             $classId,
-    //             $sectionId,
-    //             $subjectId,
-    //             $teacherId
-    //         );
-    //     }
-
-    //     echo json_encode([
-    //         "status" => true,
-    //         "message" => "Teacher removed successfully",
-    //     ]);
-    // }
-
-    // public function toggle_marks_entry_teacher()
-    // {
-    //     if (!$this->session->user) {
-
-    //         echo json_encode([
-    //             "status" => false,
-    //             "message" => "Unauthorised",
-    //         ]);
-
-    //         exit();
-    //     }
-
-    //     $paperIds = explode(
-    //         ",",
-    //         $this->input->post("paper_ids")
-    //     );
-
-    //     $subjectId = $this->input->post("subject_id");
-    //     $teacherId = $this->input->post("teacher_id");
-    //     $classId = $this->input->post("class_id");
-    //     $sectionId = $this->input->post("section_id");
-    //     $status = $this->input->post("status");
-
-    //     foreach ($paperIds as $paperId) {
-
-    //         $this->ExamPaper->toggleMarksEntryTeacher(
-    //             $paperId,
-    //             $classId,
-    //             $sectionId,
-    //             $subjectId,
-    //             $teacherId,
-    //             $status
-    //         );
-    //     }
-
-    //     echo json_encode([
-    //         "status" => true,
-    //         "message" => "Teacher status updated successfully",
-    //     ]);
-    // }
-
     public function remove_marks_entry_teacher()
     {
         if (!$this->session->user) {
@@ -1315,7 +1235,7 @@ class ExamPaperController extends CI_Controller
         ]);
     }
     
-    public function toggle_exam_lock()
+    public function toggle_exam_marks_lock()
     {
         if (!$this->session->user) {
 
@@ -1388,7 +1308,7 @@ class ExamPaperController extends CI_Controller
         ]);
     }
 
-    public function toggle_subject_lock()
+    public function toggle_subject_marks_lock()
     {
         if (!$this->session->user) {
 

@@ -1012,8 +1012,13 @@
                         }
             
                         // Grand Total
-                        $grand_total += $total;
-                        $grand_total_max += 100;
+                        // $grand_total += $total;
+                        // $grand_total_max += 100;
+
+                        if($subject_name != 'N/A') {
+                            $grand_total += $total;
+                            $grand_total_max += 100;
+                        }
             
                         // English I & II
                         if ($subject_id == 40) {

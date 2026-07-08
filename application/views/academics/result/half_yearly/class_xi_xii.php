@@ -294,6 +294,9 @@
                     <?php foreach (array_filter($student['subject_type_ids'], function($id) { return $id != 1 && $id != 2; }) as $id): ?>
                         <?php
                             $subject_name = $student['subjects']["s$id"] ?? 'Subject';
+
+                            if($subject_name == "N/A") continue;
+                            
                             $ut1 = $student['unit_test_marks']["s$id"] ?? 0;
                             $mid = $student['mid_term_marks']["s$id"] ?? 0;
                             $total = $student['totals']["s$id"] ?? 0;
